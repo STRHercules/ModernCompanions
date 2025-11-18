@@ -23,3 +23,9 @@ run
 
 # Files from Forge MDK
 forge*changelog.txt
+
+
+# Support Libs
+Minecraft_Client_Source_1.21.1
+ModDevGradle-main
+NeoForge-1.21.x
