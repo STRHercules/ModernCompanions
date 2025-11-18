@@ -22,6 +22,7 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 ├─ ModDevGradle-main/                 # Gradle Source Code (READ-ONLY)
 ├─ NeoForge-1.21.x                    # NeoForge Source Code for Minecraft 1.21.1 (READ-ONLY)
 ├─ Minecraft_Client_Source_1.21.1/    # Minecraft 1.21.1 Decompiled Source (READ-ONLY)
+├─ OriginalCompanions/                # Original Companions Source Code (READ-ONLY)
 └─ src/                               # Modern Companions Source Code (Only code to edit!)
 ```
 
