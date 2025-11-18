@@ -18,7 +18,7 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 ## Directory Policy
 ```
 / (root)
-├─ ModernCompanions/                  # Catalogue of verified Builds
+├─ ModernCompanions/                  # Catalogue of verified Builds (READ-ONLY)
 ├─ ModDevGradle-main/                 # Gradle Source Code (READ-ONLY)
 ├─ NeoForge-1.21.x                    # NeoForge Source Code for Minecraft 1.21.1 (READ-ONLY)
 ├─ Minecraft_Client_Source_1.21.1/    # Minecraft 1.21.1 Decompiled Source (READ-ONLY)
