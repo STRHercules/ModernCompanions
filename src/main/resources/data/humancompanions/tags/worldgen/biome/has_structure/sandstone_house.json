@@ -1,0 +1,9 @@
+{
+  "replace": false,
+
+  "values": [
+    "minecraft:desert",
+    "minecraft:beach",
+    "minecraft:snowy_beach"
+  ]
+}
