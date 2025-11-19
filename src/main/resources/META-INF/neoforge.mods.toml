@@ -1,0 +1,27 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "GPL-3.0-only"
+issueTrackerURL = "https://github.com/MajorBonghits/ModernCompanions/issues"
+
+[[mods]]
+modId = "${mod_id}"
+version = "${version}"
+displayName = "${mod_name}"
+authors = "${mod_author}; original: justinwon777"
+description = '''
+Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions mod. All original companion gameplay, entities, and structures will be brought forward while preserving attribution and GPL-3.0 licensing.
+'''
+
+[[dependencies.${mod_id}]]
+modId = "neoforge"
+mandatory = true
+versionRange = "[${neo_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${minecraft_version},1.22)"
+ordering = "NONE"
+side = "BOTH"

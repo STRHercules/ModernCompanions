@@ -1,0 +1,11 @@
+{
+  "entity.modern_companions.knight": "Рыцарь",
+  "entity.modern_companions.archer": "Лучник",
+  "entity.modern_companions.arbalist": "Арбалетчик",
+  "entity.modern_companions.axeguard": "Топорщик",
+  "container.modern_companions.companion_inventory": "Инвентарь компаньона",
+  "item.modern_companions.arbalist_spawn_egg": "Яйцо призыва арбалетчика",
+  "item.modern_companions.archer_spawn_egg": "Яйцо призыва лучника",
+  "item.modern_companions.axeguard_spawn_egg": "Яйцо призыва топорщика",
+  "item.modern_companions.knight_spawn_egg": "Яйцо призыва рыцаря"
+}

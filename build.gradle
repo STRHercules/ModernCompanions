@@ -1,0 +1,63 @@
+plugins {
+    id "java"
+    id "net.neoforged.moddev" version "2.0.76"
+}
+
+group = project.findProperty("group")
+version = project.findProperty("version")
+
+java {
+    toolchain {
+        // NeoForge 1.21.1 expects Java 21+
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    maven { url = "https://maven.neoforged.net/releases" }
+    maven { url = "https://maven.parchmentmc.org" }
+    mavenCentral()
+}
+
+neoForge {
+    // Core NeoForge + mappings configuration
+    version = project.findProperty("neo_version")
+    parchment {
+        minecraftVersion = project.findProperty("parchment_minecraft")
+        mappingsVersion = project.findProperty("parchment_version")
+    }
+
+    runs {
+        // Keep the standard dev run configs; we will wire mod content as it is ported.
+        client { client() }
+        server { server() }
+        data { data() }
+    }
+
+    mods {
+        // Single-mod workspace; hook main source set.
+        "${project.findProperty("mod_id")}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    // Mod runtime + compile dep; resolved via the NeoForge maven above.
+    implementation "net.neoforged:neoforge:${project.findProperty("neo_version")}"
+}
+
+java {
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+
+tasks.processResources.configure {
+    // Inject project properties into mod metadata.
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand(project.properties)
+    }
+}

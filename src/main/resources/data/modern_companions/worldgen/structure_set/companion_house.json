@@ -1,0 +1,45 @@
+{
+  "structures": [
+    {
+      "structure": "modern_companions:oak_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:oak_birch_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:birch_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:sandstone_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:acacia_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:spruce_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:dark_oak_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:terracotta_house",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "salt": 1234567890,
+
+    "spacing": 15,
+
+    "separation": 10,
+
+    "type": "minecraft:random_spread"
+  }
+}

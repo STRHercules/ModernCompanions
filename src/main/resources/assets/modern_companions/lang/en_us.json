@@ -1,0 +1,11 @@
+{
+  "entity.modern_companions.knight": "Knight",
+  "entity.modern_companions.archer": "Archer",
+  "entity.modern_companions.arbalist": "Arbalist",
+  "entity.modern_companions.axeguard": "Axeguard",
+  "container.modern_companions.companion_inventory": "Companion Inventory",
+  "item.modern_companions.arbalist_spawn_egg": "Arbalist Spawn Egg",
+  "item.modern_companions.archer_spawn_egg": "Archer Spawn Egg",
+  "item.modern_companions.axeguard_spawn_egg": "Axegurd Spawn Egg",
+  "item.modern_companions.knight_spawn_egg": "Knight Spawn Egg"
+}

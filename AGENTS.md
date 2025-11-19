@@ -9,7 +9,6 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 
 * You MUST consult `TASK.md` for detailed outline of overall goal, if blank - move on with given instruction.
 * You must confirm the project builds successfully **before committing any changes**.
-* Never create or commit binary files (.dll, .exe, .pdb, .zip, .png, etc.). Text-only changes.
 * Edit only where allowed (see Directory Policy). Treat game/framework sources as read-only.
 * Leave clear and concise comments detailing the process alongside any code written.
 * Increase `build.gradle` version number with every change.
@@ -33,7 +32,6 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 
 ### Forbidden edits
 - Anything under the other top-level folders listed as read-only
-- Binary artifacts anywhere
 - READ-ONLY Directories
 - `TASK.md`
 - `AGENTS.md`

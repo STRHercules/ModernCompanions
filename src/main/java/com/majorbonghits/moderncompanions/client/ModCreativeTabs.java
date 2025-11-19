@@ -1,0 +1,27 @@
+package com.majorbonghits.moderncompanions.client;
+
+import com.majorbonghits.moderncompanions.core.ModItems;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+
+import static com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID;
+
+/**
+ * Adds companion spawn eggs to the vanilla spawn eggs tab.
+ */
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = MOD_ID)
+public final class ModCreativeTabs {
+    private ModCreativeTabs() {}
+
+    @SubscribeEvent
+    public static void addItems(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
+            event.accept(ModItems.ARBALIST_SPAWN_EGG.get());
+            event.accept(ModItems.KNIGHT_SPAWN_EGG.get());
+            event.accept(ModItems.ARCHER_SPAWN_EGG.get());
+            event.accept(ModItems.AXEGUARD_SPAWN_EGG.get());
+        }
+    }
+}
