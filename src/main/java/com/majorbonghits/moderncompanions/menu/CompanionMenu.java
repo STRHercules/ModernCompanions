@@ -10,13 +10,10 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
-
 /**
  * Simple 3x9 inventory for companions (placeholder until full GUI is ported).
  */
 public class CompanionMenu extends AbstractContainerMenu {
-    public static final List<String> FLAG_KEYS = List.of("follow", "patrol", "guard", "hunt", "alert", "stationery");
     private static final int COMPANION_ROWS = 3;
     private final Container container;
     private final int companionId;

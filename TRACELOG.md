@@ -147,3 +147,73 @@
   - Rebuilt; output jar is `build/libs/ModernCompanions-0.0.11.jar`.
 - Rationale: Avoids double registration of default attributes that NeoForge rejects.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-19 (feature parity push)
+- Prompt/task: "Textures are now working, let's get started on making sure we have ported ALL functions and features from the original Companions mod to Modern Companions."
+- Steps:
+  - Ported full gameplay data from the original mod: companion names/skins/food tables, armor selection, health variance, XP/level tracking, taming requirements, patrol/guard/hunt/alert/stationary flags, and friendly-fire protections. Added NeoForge living events to award XP on kills and block owner/companion damage per config.
+  - Restored AI roles: custom follow/guard/patrol movement, creeper avoidance, low-health eating, ranged roles (archer/arbalist) using new attack goals, and melee roles (knight/axeguard) with weapon/armor auto-equipping. Updated GUI to include mode cycling, alert/hunt/stationary toggles, clear target, and release actions via new CompanionActionPayload.
+  - Introduced TagsInit for weapon tags, refreshed networking handlers, and rewired inventory persistence to the new data-component APIs. Bumped version to 0.1.01 and re-ran full Gradle build under NeoForge 1.21.1.
+- Rationale: Brings Modern Companions to feature parity with the original Human Companions while complying with NeoForge 1.21.1 APIs and repo constraints.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-20
+- Prompt/task: "Continue polishing and porting what we need."
+- Steps:
+  - Polished companion GUI to surface health and level while keeping new behavior toggles; added compact formatting helper.
+  - Incremented version to 0.1.02 per AGENTS rule and validated with `./gradlew build -x test`.
+- Rationale: Improves in-game visibility of companion status and keeps versioning/builds in compliance with project rules.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-20 (Arbalist crossbow parity)
+- Prompt/task: "2."
+- Steps:
+  - Replaced bow-based fallback with a dedicated crossbow attack goal (`ArbalistCrossbowAttackGoal`) adapted from vanilla 1.21 behavior (charge, cooldown, LOS checks, stationary/guard handling).
+  - Restored CrossbowAttackMob wiring on Arbalist (charging flag, performCrossbowAttack bridge) and kept auto-equip of carried crossbows.
+  - Bumped version to 0.1.03 and reran `./gradlew build -x test` successfully.
+- Rationale: Brings Arbalist combat in line with 1.21 crossbow mechanics and restores role parity with the original mod.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-20 (patrol radius + food UI)
+- Prompt/task: "2."
+- Steps:
+  - Added patrol-radius change payload and buttons in the companion UI; owners can now nudge patrol radius up/down (2–32) and see the current value.
+  - Surfaced detailed food requirements (requested items/remaining counts) in the screen; added a helper getter on companions.
+  - Registered new SetPatrolRadiusPayload in networking and updated GUI to send it; kept optimistic local updates. Bumped version to 0.1.04 and verified `./gradlew build -x test`.
+- Rationale: Improves player control over patrol behavior and clarity on taming requirements, matching original mod usability.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-20 (XP progress UI)
+- Prompt/task: "2."
+- Steps:
+  - Exposed companion XP progress/total on the entity and displayed percentage-to-next-level in the GUI alongside health and patrol radius.
+  - Bumped version to 0.1.05 and confirmed `./gradlew build -x test` succeeds.
+- Rationale: Gives players immediate feedback on companion leveling progress without extra GUI steps, improving parity with the original experience.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-20 (XP bar + numbers)
+- Prompt/task: "1."
+- Steps:
+  - Added XP bar with numeric progress (current/needed) to the companion screen for clearer leveling feedback.
+  - Kept the patrol radius and food info; health/level now show alongside the bar.
+  - Bumped version to 0.1.06 and validated with `./gradlew build -x test`.
+- Rationale: Provides at-a-glance leveling status comparable to the original mod’s experience cues.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-20 (Original GUI textures)
+- Prompt/task: "We need to incorporate the assets [...] construct the GUI exactly how they did."
+- Steps:
+  - Copied original GUI textures (inventory/background and control buttons) into `assets/modern_companions/textures/`.
+  - Rebuilt companion screen layout to match the original: textured buttons on the sidebar and stats floated to the right of the inventory. Used custom texture buttons to render the imported PNGs and kept patrol radius/food + XP bar on the right panel.
+  - Adjusted texture paths/casing to ensure they load correctly (moved under `textures/gui`). Verified build still passes (`./gradlew build -x test`) with version 0.1.08.
+- Rationale: Restores the look-and-feel of the original Companions GUI while preserving modern behavior and controls.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (radius buttons + stats visibility)
+- Prompt/task: "Buttons are not displaying properly ... radius buttons reuse assets."
+- Steps:
+  - Wired radius +/- to the new `radiusbutton.png` sprite sheet with correct UVs; treated them as click-only (no toggle state).
+  - Fixed CompanionButton rendering to use hover+mouse press for non-toggle buttons; added missing toggle flag plumbing.
+  - Kept stats panel on the right with darker text and ensured companion lookup each frame. Version bumped to 0.1.09 and build confirmed.
+- Rationale: Aligns radius controls with provided art and restores consistent button behavior; keeps stats visible when companion entity is available client-side.
+- Build/Test: `./gradlew build -x test` ✔️

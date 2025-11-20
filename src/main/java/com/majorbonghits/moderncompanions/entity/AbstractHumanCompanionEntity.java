@@ -1,78 +1,64 @@
 package com.majorbonghits.moderncompanions.entity;
 
 import com.majorbonghits.moderncompanions.core.ModConfig;
-import com.majorbonghits.moderncompanions.entity.ai.CustomFollowOwnerGoal;
-import com.majorbonghits.moderncompanions.entity.ai.AvoidCreeperGoal;
-import com.majorbonghits.moderncompanions.entity.ai.LowHealthGoal;
-import com.majorbonghits.moderncompanions.entity.ai.PatrolGoal;
-import com.majorbonghits.moderncompanions.entity.ai.MoveBackToPatrolGoal;
-import com.majorbonghits.moderncompanions.entity.ai.MoveBackToGuardGoal;
-import com.majorbonghits.moderncompanions.entity.ai.HuntGoal;
-import com.majorbonghits.moderncompanions.entity.ai.AlertGoal;
+import com.majorbonghits.moderncompanions.core.ModMenuTypes;
+import com.majorbonghits.moderncompanions.entity.ai.*;
+import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.network.chat.Component;
-import com.majorbonghits.moderncompanions.core.ModMenuTypes;
-import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 /**
- * Heavily simplified port of the original AbstractHumanCompanionEntity.
- * TODO: restore full AI, inventory GUI, networking, eating, patrol/guard logic, and worldgen interactions.
+ * Port of the original AbstractHumanCompanionEntity with taming, leveling, patrol/guard logic, and inventory handling.
  */
 public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private static final EntityDataAccessor<Integer> SKIN_VARIANT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> SEX = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Boolean> FOLLOWING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> PATROLLING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> GUARDING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> STATIONERY = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> BASE_HEALTH = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> EXP_LVL = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ALERT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> HUNTING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> PATROLLING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> FOLLOWING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> GUARDING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> STATIONERY = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Optional<BlockPos>> PATROL_POS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
     private static final EntityDataAccessor<Integer> PATROL_RADIUS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> FOOD1 = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
@@ -81,11 +67,23 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private static final EntityDataAccessor<Integer> FOOD2_AMT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
 
     protected final SimpleContainer inventory = new SimpleContainer(27);
-    private final Random rand = new Random();
-    private Map<net.minecraft.world.item.Item, Integer> foodRequirements = new HashMap<>();
+    protected final Map<Item, Integer> foodRequirements = new HashMap<>();
+    protected final Random rand = new Random();
+
+    public PatrolGoal patrolGoal;
+    public MoveBackToPatrolGoal moveBackGoal;
+
+    private int totalExperience;
+    private float experienceProgress;
+    private int lastLevelUpTime;
 
     protected AbstractHumanCompanionEntity(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
+        this.setTame(false, false);
+        if (this.getNavigation() instanceof GroundPathNavigation nav) {
+            nav.setCanOpenDoors(true);
+            nav.setCanFloat(true);
+        }
     }
 
     /* ---------- Registration ---------- */
@@ -93,10 +91,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public static AttributeSupplier.Builder createAttributes() {
         double baseHealth = ModConfig.BASE_HEALTH != null ? ModConfig.safeGet(ModConfig.BASE_HEALTH).doubleValue() : 20.0D;
         return TamableAnimal.createMobAttributes()
+                .add(Attributes.FOLLOW_RANGE, 20.0D)
                 .add(Attributes.MAX_HEALTH, baseHealth)
-                .add(Attributes.MOVEMENT_SPEED, 0.25D)
-                .add(Attributes.ATTACK_DAMAGE, 3.0D)
-                .add(Attributes.FOLLOW_RANGE, 24.0D);
+                .add(Attributes.ATTACK_DAMAGE, 1.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.32D);
     }
 
     @Override
@@ -104,36 +102,44 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         super.defineSynchedData(builder);
         builder.define(SKIN_VARIANT, 0);
         builder.define(SEX, 0);
-        builder.define(FOLLOWING, true);
+        builder.define(BASE_HEALTH, ModConfig.safeGet(ModConfig.BASE_HEALTH));
+        builder.define(EXP_LVL, 0);
+        builder.define(EATING, false);
+        builder.define(ALERT, false);
+        builder.define(HUNTING, false);
         builder.define(PATROLLING, false);
+        builder.define(FOLLOWING, false);
         builder.define(GUARDING, false);
         builder.define(STATIONERY, false);
-        builder.define(ALERT, true);
-        builder.define(HUNTING, false);
         builder.define(PATROL_POS, Optional.empty());
-        builder.define(PATROL_RADIUS, 4);
-        builder.define(FOOD1, "minecraft:apple");
-        builder.define(FOOD2, "minecraft:bread");
-        builder.define(FOOD1_AMT, 1);
-        builder.define(FOOD2_AMT, 1);
+        builder.define(PATROL_RADIUS, 10);
+        builder.define(FOOD1, "");
+        builder.define(FOOD2, "");
+        builder.define(FOOD1_AMT, 0);
+        builder.define(FOOD2_AMT, 0);
     }
 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(0, new EatGoal(this));
         this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
-        this.goalSelector.addGoal(3, new CustomFollowOwnerGoal(this, 1.1D, 4.0F, 2.0F, false));
-        this.goalSelector.addGoal(4, new AvoidCreeperGoal(this, 1.0D, 1.2D));
-        this.goalSelector.addGoal(5, new LowHealthGoal(this));
-        this.goalSelector.addGoal(6, new PatrolGoal(this, 40, getPatrolRadius()));
-        this.goalSelector.addGoal(7, new MoveBackToPatrolGoal(this, getPatrolRadius()));
-        this.goalSelector.addGoal(8, new MoveBackToGuardGoal(this));
-        this.goalSelector.addGoal(9, new WaterAvoidingRandomStrollGoal(this, 0.9D));
+        this.goalSelector.addGoal(2, new AvoidCreeperGoal(this, 1.5D, 1.5D));
+        this.goalSelector.addGoal(3, new MoveBackToGuardGoal(this));
+        this.goalSelector.addGoal(3, new CustomFollowOwnerGoal(this, 1.3D, 8.0F, 2.5F, false));
+        this.goalSelector.addGoal(4, new CustomWaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(7, new OpenDoorGoal(this, true));
+        this.goalSelector.addGoal(8, new LowHealthGoal(this));
+        patrolGoal = new PatrolGoal(this, 60, getPatrolRadius());
+        moveBackGoal = new MoveBackToPatrolGoal(this, getPatrolRadius());
+        this.goalSelector.addGoal(3, moveBackGoal);
+        this.goalSelector.addGoal(3, patrolGoal);
 
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new OwnerHurtByTargetGoal(this));
-        this.targetSelector.addGoal(3, new OwnerHurtTargetGoal(this));
+        this.targetSelector.addGoal(1, new CustomOwnerHurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new CustomOwnerHurtTargetGoal(this));
+        this.targetSelector.addGoal(3, new CustomHurtByTargetGoal(this));
         this.targetSelector.addGoal(4, new HuntGoal(this));
         this.targetSelector.addGoal(5, new AlertGoal(this));
     }
@@ -162,7 +168,11 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public void setPatrolPos(@Nullable BlockPos pos) { this.entityData.set(PATROL_POS, Optional.ofNullable(pos)); }
 
     public int getPatrolRadius() { return this.entityData.get(PATROL_RADIUS); }
-    public void setPatrolRadius(int radius) { this.entityData.set(PATROL_RADIUS, Mth.clamp(radius, 1, 64)); }
+    public void setPatrolRadius(int radius) {
+        this.entityData.set(PATROL_RADIUS, Mth.clamp(radius, 1, 64));
+        if (patrolGoal != null) patrolGoal.radius = radius;
+        if (moveBackGoal != null) moveBackGoal.radius = radius;
+    }
 
     public void clearPatrol() {
         setPatrolPos(null);
@@ -170,8 +180,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         setPatrolRadius(4);
     }
 
+    public String getFoodStatus() {
+        String f1 = entityData.get(FOOD1_AMT) > 0 ? entityData.get(FOOD1_AMT) + "x " + entityData.get(FOOD1) : "done";
+        String f2 = entityData.get(FOOD2_AMT) > 0 ? entityData.get(FOOD2_AMT) + "x " + entityData.get(FOOD2) : "done";
+        return "Wants: " + f1 + " and " + f2;
+    }
+
     public SimpleContainer getInventory() { return inventory; }
-    public Map<net.minecraft.world.item.Item, Integer> getFoodRequirements() { return foodRequirements; }
+    public Map<Item, Integer> getFoodRequirements() { return foodRequirements; }
     public int getSkinIndex() { return this.entityData.get(SKIN_VARIANT); }
     public void setSkinIndex(int index) {
         int sex = getSex();
@@ -180,9 +196,18 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public int getSex() { return this.entityData.get(SEX); }
-    public void setSex(int value) {
-        this.entityData.set(SEX, Mth.clamp(value, 0, CompanionData.skins.length - 1));
-    }
+    public void setSex(int value) { this.entityData.set(SEX, Mth.clamp(value, 0, CompanionData.skins.length - 1)); }
+
+    public int getBaseHealth() { return this.entityData.get(BASE_HEALTH); }
+    public void setBaseHealth(int health) { this.entityData.set(BASE_HEALTH, health); }
+
+    public boolean isEating() { return this.entityData.get(EATING); }
+    public void setEating(boolean eating) { this.entityData.set(EATING, eating); }
+
+    public int getExpLvl() { return this.entityData.get(EXP_LVL); }
+    public void setExpLvl(int lvl) { this.entityData.set(EXP_LVL, Math.max(lvl, 0)); }
+    public float getExperienceProgress() { return this.experienceProgress; }
+    public int getTotalExperience() { return this.totalExperience; }
 
     public ResourceLocation getSkinTexture() {
         int sex = Mth.clamp(getSex(), 0, CompanionData.skins.length - 1);
@@ -198,94 +223,119 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         return false;
     }
 
+    public ItemStack checkFood() {
+        for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
+            ItemStack itemstack = this.inventory.getItem(i);
+            FoodProperties food = itemstack.get(DataComponents.FOOD);
+            if (food != null && food.nutrition() + this.getHealth() <= this.getMaxHealth()) {
+                return itemstack;
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
     public void eatOneFood() {
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.getItem(i);
-            if (CompanionData.isFood(stack.getItem())) {
+            FoodProperties food = stack.get(DataComponents.FOOD);
+            if (food != null) {
                 stack.shrink(1);
-                this.heal(4.0F);
+                this.heal(food.nutrition());
                 return;
             }
         }
-    }
-
-    public int getCompanionSkin() {
-        return getSkinIndex();
     }
 
     /* ---------- Interaction ---------- */
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (!level().isClientSide() && player instanceof ServerPlayer serverPlayer) {
-            if (hand == InteractionHand.MAIN_HAND) {
-                ItemStack held = player.getItemInHand(hand);
-                if (!isTame()) {
-                    if (CompanionData.isFood(held.getItem())) {
-                        if (foodRequirements.isEmpty()) {
-                            assignFoodRequirements();
-                        }
-                        if (foodRequirements.containsKey(held.getItem()) && foodRequirements.get(held.getItem()) > 0) {
+        ItemStack held = player.getItemInHand(hand);
+        if (hand == InteractionHand.MAIN_HAND) {
+            if (!this.isTame() && !this.level().isClientSide()) {
+                if (held.has(DataComponents.FOOD)) {
+                    if (foodRequirements.isEmpty()) {
+                        assignFoodRequirements();
+                    }
+                    if (foodRequirements.containsKey(held.getItem())) {
+                        int remaining = foodRequirements.get(held.getItem());
+                        if (remaining > 0) {
                             held.shrink(1);
-                            foodRequirements.put(held.getItem(), foodRequirements.get(held.getItem()) - 1);
+                            foodRequirements.put(held.getItem(), remaining - 1);
                             syncFoodRequirements();
                             if (foodRequirements.values().stream().allMatch(v -> v <= 0)) {
                                 this.tame(player);
-                                setFollowing(true);
-                                clearPatrol();
-                                serverPlayer.sendSystemMessage(Component.translatable("chat.type.text", getDisplayName(),
+                                player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
                                         Component.literal("Thanks!")));
-                                return InteractionResult.SUCCESS;
+                                player.sendSystemMessage(Component.literal("Companion added"));
+                                setPatrolPos(null);
+                                setPatrolling(false);
+                                setFollowing(true);
+                                setPatrolRadius(4);
+                                if (patrolGoal != null) patrolGoal.radius = 4;
+                                if (moveBackGoal != null) moveBackGoal.radius = 4;
+                            } else if (foodRequirements.get(held.getItem()) == 0) {
+                                player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
+                                        CompanionData.ENOUGH_FOOD[this.random.nextInt(CompanionData.ENOUGH_FOOD.length)]));
                             } else {
-                                serverPlayer.sendSystemMessage(Component.translatable("chat.type.text", getDisplayName(),
-                                        CompanionData.tameFail[rand.nextInt(CompanionData.tameFail.length)]));
-                                return InteractionResult.SUCCESS;
+                                player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
+                                        CompanionData.tameFail[this.random.nextInt(CompanionData.tameFail.length)]));
                             }
                         } else {
-                            serverPlayer.sendSystemMessage(Component.translatable("chat.type.text", getDisplayName(),
-                                    CompanionData.WRONG_FOOD[rand.nextInt(CompanionData.WRONG_FOOD.length)]));
-                            return InteractionResult.SUCCESS;
+                            player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
+                                    CompanionData.ENOUGH_FOOD[this.random.nextInt(CompanionData.ENOUGH_FOOD.length)]));
                         }
                     } else {
-                        serverPlayer.sendSystemMessage(Component.translatable("chat.type.text", getDisplayName(),
-                                CompanionData.notTamed[rand.nextInt(CompanionData.notTamed.length)]));
-                        serverPlayer.sendSystemMessage(Component.literal(getFoodStatus()));
-                        return InteractionResult.SUCCESS;
+                        player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
+                                CompanionData.WRONG_FOOD[this.random.nextInt(CompanionData.WRONG_FOOD.length)]));
                     }
+                } else {
+                    player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
+                            CompanionData.notTamed[this.random.nextInt(CompanionData.notTamed.length)]));
+                    player.sendSystemMessage(Component.literal(getFoodStatus()));
                 }
-
-                // Open inventory menu when owned
-                if (isOwnedBy(player)) {
-                    // Shift-right-click toggles guarding at current position; second toggle clears guard/patrol.
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            } else {
+                if (this.isAlliedTo(player)) {
                     if (player.isShiftKeyDown()) {
-                        if (isGuarding()) {
-                            setGuarding(false);
-                            clearPatrol();
-                            serverPlayer.sendSystemMessage(Component.translatable("chat.type.text", getDisplayName(),
-                                    Component.literal("Standing down.")));
-                        } else {
-                            setGuarding(true);
-                            setPatrolling(false);
-                            setPatrolPos(blockPosition());
-                            serverPlayer.sendSystemMessage(Component.translatable("chat.type.text", getDisplayName(),
-                                    Component.literal("Guarding here.")));
+                        if (!this.level().isClientSide()) {
+                            toggleSit((ServerPlayer) player);
                         }
-                        return InteractionResult.SUCCESS;
+                    } else {
+                        if (!this.level().isClientSide()) {
+                            openGui((ServerPlayer) player);
+                        }
                     }
-
-                    MenuProvider provider = new SimpleMenuProvider(
-                            (id, inv, p) -> new CompanionMenu(id, inv, this),
-                            getDisplayName());
-                    serverPlayer.openMenu(provider, buf -> buf.writeVarInt(getId()));
-                    return InteractionResult.CONSUME;
                 }
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
         }
         return super.mobInteract(player, hand);
     }
 
+    private void toggleSit(ServerPlayer player) {
+        if (!this.isOrderedToSit()) {
+            this.setOrderedToSit(true);
+            Component text = Component.literal("I'll stand here.");
+            player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(), text));
+        } else {
+            this.setOrderedToSit(false);
+            Component text = Component.literal("I'll move around.");
+            player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(), text));
+        }
+    }
+
+    public void openGui(ServerPlayer player) {
+        MenuProvider provider = new SimpleMenuProvider(
+                (id, inv, p) -> new CompanionMenu(id, inv, this),
+                getDisplayName());
+        player.openMenu(provider, buf -> buf.writeVarInt(getId()));
+    }
+
     private void assignFoodRequirements() {
-        foodRequirements = CompanionData.getRandomFoodRequirement(rand);
+        Map<Item, Integer> newReq = CompanionData.getRandomFoodRequirement(rand);
+        foodRequirements.clear();
+        foodRequirements.putAll(newReq);
         var entries = foodRequirements.entrySet().stream().toList();
         this.entityData.set(FOOD1, BuiltInRegistries.ITEM.getKey(entries.get(0).getKey()).toString());
         this.entityData.set(FOOD1_AMT, entries.get(0).getValue());
@@ -305,59 +355,91 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         });
     }
 
-    private String getFoodStatus() {
-        String f1 = entityData.get(FOOD1_AMT) > 0 ? entityData.get(FOOD1_AMT) + "x " + entityData.get(FOOD1) : "done";
-        String f2 = entityData.get(FOOD2_AMT) > 0 ? entityData.get(FOOD2_AMT) + "x " + entityData.get(FOOD2) : "done";
-        return "Wants: " + f1 + " and " + f2;
-    }
-
     /* ---------- Breeding / persistence ---------- */
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putBoolean("Following", isFollowing());
-        tag.putBoolean("Patrolling", isPatrolling());
-        tag.putBoolean("Guarding", isGuarding());
-        tag.putBoolean("Stationery", isStationery());
-        tag.putBoolean("Alert", isAlert());
-        tag.putBoolean("Hunting", isHunting());
-        getPatrolPos().ifPresent(pos -> tag.putLong("PatrolPos", pos.asLong()));
-        tag.putInt("PatrolRadius", getPatrolRadius());
-        tag.putString("Food1", entityData.get(FOOD1));
-        tag.putString("Food2", entityData.get(FOOD2));
-        tag.putInt("Food1Amt", entityData.get(FOOD1_AMT));
-        tag.putInt("Food2Amt", entityData.get(FOOD2_AMT));
+        tag.put("Inventory", this.inventory.createTag(this.registryAccess()));
+        tag.putInt("skin", this.getSkinIndex());
+        tag.putBoolean("Eating", this.isEating());
+        tag.putBoolean("Alert", this.isAlert());
+        tag.putBoolean("Hunting", this.isHunting());
+        tag.putBoolean("Patrolling", this.isPatrolling());
+        tag.putBoolean("Following", this.isFollowing());
+        tag.putBoolean("Guarding", this.isGuarding());
+        tag.putBoolean("Stationery", this.isStationery());
+        tag.putInt("radius", this.getPatrolRadius());
+        tag.putInt("sex", this.getSex());
+        tag.putInt("baseHealth", this.getBaseHealth());
+        tag.putFloat("XpP", this.experienceProgress);
+        tag.putInt("XpLevel", this.getExpLvl());
+        tag.putInt("XpTotal", this.totalExperience);
+        tag.putString("food1", entityData.get(FOOD1));
+        tag.putString("food2", entityData.get(FOOD2));
+        tag.putInt("food1_amt", entityData.get(FOOD1_AMT));
+        tag.putInt("food2_amt", entityData.get(FOOD2_AMT));
+        if (this.getPatrolPos().isPresent()) {
+            int[] patrolPos = {this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(), this.getPatrolPos().get().getZ()};
+            tag.putIntArray("patrol_pos", patrolPos);
+        }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        setFollowing(tag.getBoolean("Following"));
-        setPatrolling(tag.getBoolean("Patrolling"));
-        setGuarding(tag.getBoolean("Guarding"));
-        setStationery(tag.getBoolean("Stationery"));
-        setAlert(tag.getBoolean("Alert"));
-        setHunting(tag.getBoolean("Hunting"));
-        if (tag.contains("PatrolPos")) setPatrolPos(BlockPos.of(tag.getLong("PatrolPos")));
-        setPatrolRadius(tag.getInt("PatrolRadius"));
-        if (tag.contains("Food1")) {
-            entityData.set(FOOD1, tag.getString("Food1"));
-            entityData.set(FOOD2, tag.getString("Food2"));
-            entityData.set(FOOD1_AMT, tag.getInt("Food1Amt"));
-            entityData.set(FOOD2_AMT, tag.getInt("Food2Amt"));
-            foodRequirements = new HashMap<>();
-            var item1 = BuiltInRegistries.ITEM.get(ResourceLocation.parse(entityData.get(FOOD1)));
-            var item2 = BuiltInRegistries.ITEM.get(ResourceLocation.parse(entityData.get(FOOD2)));
-            foodRequirements.put(item1, entityData.get(FOOD1_AMT));
-            foodRequirements.put(item2, entityData.get(FOOD2_AMT));
+        this.setSkinIndex(tag.getInt("skin"));
+        this.setEating(tag.getBoolean("Eating"));
+        this.setAlert(tag.getBoolean("Alert"));
+        this.setHunting(tag.getBoolean("Hunting"));
+        this.setPatrolling(tag.getBoolean("Patrolling"));
+        this.setFollowing(tag.getBoolean("Following"));
+        this.setGuarding(tag.getBoolean("Guarding"));
+        this.setStationery(tag.getBoolean("Stationery"));
+        this.setPatrolRadius(tag.getInt("radius"));
+        this.setSex(tag.getInt("sex"));
+        this.experienceProgress = tag.getFloat("XpP");
+        this.totalExperience = tag.getInt("XpTotal");
+        this.setExpLvl(tag.getInt("XpLevel"));
+        entityData.set(FOOD1, tag.getString("food1"));
+        entityData.set(FOOD2, tag.getString("food2"));
+        entityData.set(FOOD1_AMT, tag.getInt("food1_amt"));
+        entityData.set(FOOD2_AMT, tag.getInt("food2_amt"));
+        foodRequirements.clear();
+        ResourceLocation id1 = ResourceLocation.parse(entityData.get(FOOD1));
+        ResourceLocation id2 = ResourceLocation.parse(entityData.get(FOOD2));
+        foodRequirements.put(BuiltInRegistries.ITEM.get(id1), entityData.get(FOOD1_AMT));
+        foodRequirements.put(BuiltInRegistries.ITEM.get(id2), entityData.get(FOOD2_AMT));
+        if (tag.getInt("baseHealth") == 0) {
+            this.setBaseHealth(ModConfig.safeGet(ModConfig.BASE_HEALTH));
+        } else {
+            this.setBaseHealth(tag.getInt("baseHealth"));
         }
+        if (tag.contains("Inventory", 9)) {
+            this.inventory.fromTag(tag.getList("Inventory", 10), this.registryAccess());
+        }
+        if (tag.contains("patrol_pos")) {
+            int[] positions = tag.getIntArray("patrol_pos");
+            setPatrolPos(new BlockPos(positions[0], positions[1], positions[2]));
+        }
+        if (tag.contains("radius")) {
+            patrolGoal = new PatrolGoal(this, 60, tag.getInt("radius"));
+            moveBackGoal = new MoveBackToPatrolGoal(this, tag.getInt("radius"));
+            this.goalSelector.addGoal(3, moveBackGoal);
+            this.goalSelector.addGoal(3, patrolGoal);
+        }
+        this.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        checkArmor();
     }
 
     /* ---------- Spawning ---------- */
 
     @Override
-    public @Nullable AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
+    public @Nullable AgeableMob getBreedOffspring(ServerLevel level, AgeableMob parent) {
         return null; // companions do not breed
     }
 
@@ -373,36 +455,245 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     @Override
     public void tick() {
-        super.tick();
-        if (!level().isClientSide()) {
+        if (!this.level().isClientSide()) {
             checkArmor();
-            checkWeapon();
+            if (this.tickCount % 10 == 0) {
+                    checkStats();
+                    LivingEntity target = this.getTarget();
+                    if (target != null && !target.isAlive()) {
+                    this.setTarget(null);
+                    }
+                }
+        }
+        super.tick();
+    }
+
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
+        int baseHealth = ModConfig.safeGet(ModConfig.BASE_HEALTH) + CompanionData.getHealthModifier();
+        modifyMaxHealth(baseHealth - 20, "companion base health", true);
+        this.setHealth(this.getMaxHealth());
+        setBaseHealth(baseHealth);
+        setSex(this.random.nextInt(2));
+        setSkinIndex(this.random.nextInt(CompanionData.skins[getSex()].length));
+        setCustomName(Component.literal(CompanionData.getRandomName(getSex())));
+        setPatrolPos(this.blockPosition());
+        setPatrolling(true);
+        setPatrolRadius(15);
+        patrolGoal = new PatrolGoal(this, 60, getPatrolRadius());
+        moveBackGoal = new MoveBackToPatrolGoal(this, getPatrolRadius());
+        this.goalSelector.addGoal(3, moveBackGoal);
+        this.goalSelector.addGoal(3, patrolGoal);
+        assignFoodRequirements();
+
+        if (ModConfig.safeGet(ModConfig.SPAWN_ARMOR)) {
+            for (int i = 0; i < 4; i++) {
+                EquipmentSlot armorType = EquipmentSlot.values()[i + 2]; // FEET..HEAD
+                ItemStack itemstack = CompanionData.getSpawnArmor(armorType);
+                if (!itemstack.isEmpty()) {
+                    this.inventory.setItem(i, itemstack);
+                }
+            }
+            checkArmor();
+        }
+        return super.finalizeSpawn(level, difficulty, reason, spawnDataIn);
+    }
+
+    /* ---------- Orders & actions ---------- */
+
+    public void cycleOrders() {
+        if (isFollowing()) {
+            setPatrolling(true);
+            setFollowing(false);
+            setGuarding(false);
+            setPatrolPos(blockPosition());
+        } else if (isPatrolling()) {
+            setPatrolling(false);
+            setFollowing(false);
+            setGuarding(true);
+            setPatrolPos(blockPosition());
+        } else {
+            setPatrolling(false);
+            setFollowing(true);
+            setGuarding(false);
+        }
+    }
+
+    public void toggleAlert() {
+        setAlert(!isAlert());
+    }
+
+    public void toggleHunting() {
+        setHunting(!isHunting());
+    }
+
+    public void toggleStationery() {
+        setStationery(!isStationery());
+        if (!isStationery()) {
+            this.getNavigation().stop();
+        }
+    }
+
+    public void release() {
+        this.setTame(false, true);
+        this.setOwnerUUID(null);
+        setFollowing(false);
+        setAlert(false);
+        setHunting(false);
+        setPatrolPos(this.blockPosition());
+        setPatrolling(true);
+        setStationery(false);
+        setPatrolRadius(15);
+        assignFoodRequirements();
+        if (this.isOrderedToSit()) {
+            this.setOrderedToSit(false);
+        }
+    }
+
+    /* ---------- Experience ---------- */
+
+    public void giveExperiencePoints(int points) {
+        this.experienceProgress += (float) points / (float) this.getXpNeededForNextLevel();
+        this.totalExperience = Mth.clamp(this.totalExperience + points, 0, Integer.MAX_VALUE);
+
+        while (this.experienceProgress < 0.0F) {
+            float f = this.experienceProgress * (float) this.getXpNeededForNextLevel();
+            if (this.getExpLvl() > 0) {
+                this.giveExperienceLevels(-1);
+                this.experienceProgress = 1.0F + f / (float) this.getXpNeededForNextLevel();
+            } else {
+                this.giveExperienceLevels(-1);
+                this.experienceProgress = 0.0F;
+            }
+        }
+
+        while (this.experienceProgress >= 1.0F) {
+            this.experienceProgress = (this.experienceProgress - 1.0F) * (float) this.getXpNeededForNextLevel();
+            this.giveExperienceLevels(1);
+            this.experienceProgress /= (float) this.getXpNeededForNextLevel();
+        }
+    }
+
+    public void giveExperienceLevels(int levels) {
+        setExpLvl(getExpLvl() + levels);
+        if (getExpLvl() < 0) {
+            setExpLvl(0);
+            this.experienceProgress = 0.0F;
+            this.totalExperience = 0;
+        }
+        if (levels > 0 && this.getExpLvl() % 5 == 0 && (float) this.lastLevelUpTime < (float) this.tickCount - 100.0F) {
+            this.lastLevelUpTime = this.tickCount;
+        }
+    }
+
+    public int getXpNeededForNextLevel() {
+        if (this.getExpLvl() >= 30) {
+            return 112 + (this.getExpLvl() - 30) * 9;
+        } else {
+            return this.getExpLvl() >= 15 ? 37 + (this.getExpLvl() - 15) * 5 : 7 + this.getExpLvl() * 2;
+        }
+    }
+
+    public void modifyMaxHealth(int change, String name, boolean permanent) {
+        AttributeInstance attribute = this.getAttribute(Attributes.MAX_HEALTH);
+        if (attribute == null) return;
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, name.replace(" ", "_"));
+        attribute.removeModifier(id);
+        AttributeModifier modifier = new AttributeModifier(id, change, AttributeModifier.Operation.ADD_VALUE);
+        if (permanent) {
+            attribute.addPermanentModifier(modifier);
+        } else {
+            attribute.addTransientModifier(modifier);
+        }
+    }
+
+    public void checkStats() {
+        if ((int) this.getMaxHealth() != getBaseHealth() + (getExpLvl() / 3)) {
+            if (getExpLvl() / 3 != 0) {
+                modifyMaxHealth(getExpLvl() / 3, "companion level health", false);
+            }
+        }
+    }
+
+    /* ---------- Combat & equipment ---------- */
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        if (source.getEntity() == this.getOwner() && !ModConfig.safeGet(ModConfig.FRIENDLY_FIRE_PLAYER)) {
+            return false;
+        }
+        if (source.is(net.minecraft.tags.DamageTypeTags.IS_FALL) && !ModConfig.safeGet(ModConfig.FALL_DAMAGE)) {
+            return false;
+        }
+        hurtArmor(source, amount);
+        return super.hurt(source, amount);
+    }
+
+    public void hurtArmor(DamageSource source, float amount) {
+        if (!(amount <= 0.0F)) {
+            amount /= 4.0F;
+            if (amount < 1.0F) amount = 1.0F;
+
+            for (ItemStack itemstack : this.getArmorSlots()) {
+                if (itemstack.getItem() instanceof ArmorItem armorItem) {
+                    itemstack.hurtAndBreak((int) amount, this, armorItem.getEquipmentSlot());
+                }
+            }
         }
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
-        assignFoodRequirements();
-        setSex(this.random.nextBoolean() ? 0 : 1);
-        setSkinIndex(this.random.nextInt(CompanionData.skins[getSex()].length));
-        // small random health variance like original
-        double base = ModConfig.safeGet(ModConfig.BASE_HEALTH);
-        double varied = base + (rand.nextInt(9) - 4);
-        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(varied);
-        this.setHealth((float) varied);
+    protected void dropEquipment() {
+        super.dropEquipment();
+        for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
+            ItemStack itemstack = this.inventory.getItem(i);
+            if (!itemstack.isEmpty()) {
+                this.spawnAtLocation(itemstack);
+            }
+        }
+    }
 
-        if (ModConfig.safeGet(ModConfig.SPAWN_WEAPON)) {
-            this.inventory.setItem(0, new ItemStack(Items.IRON_SWORD));
+    @Override
+    public boolean doHurtTarget(Entity entity) {
+        ItemStack itemstack = this.getMainHandItem();
+        if (!this.level().isClientSide && !itemstack.isEmpty() && entity instanceof LivingEntity) {
+            itemstack.hurtAndBreak(1, this, EquipmentSlot.MAINHAND);
+            if (this.getMainHandItem().isEmpty() && this.isTame() && this.getOwner() != null) {
+                Component broken = Component.literal("My weapon broke!");
+                this.getOwner().sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(), broken));
+            }
         }
-        if (ModConfig.safeGet(ModConfig.SPAWN_ARMOR)) {
-            this.inventory.setItem(1, new ItemStack(Items.IRON_HELMET));
-            this.inventory.setItem(2, new ItemStack(Items.IRON_CHESTPLATE));
-            this.inventory.setItem(3, new ItemStack(Items.IRON_LEGGINGS));
-            this.inventory.setItem(4, new ItemStack(Items.IRON_BOOTS));
+        return super.doHurtTarget(entity);
+    }
+
+    public void checkArmor() {
+        ItemStack head = this.getItemBySlot(EquipmentSlot.HEAD);
+        ItemStack chest = this.getItemBySlot(EquipmentSlot.CHEST);
+        ItemStack legs = this.getItemBySlot(EquipmentSlot.LEGS);
+        ItemStack feet = this.getItemBySlot(EquipmentSlot.FEET);
+        for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
+            ItemStack itemstack = this.inventory.getItem(i);
+            if (itemstack.getItem() instanceof ArmorItem armorItem) {
+                switch (armorItem.getEquipmentSlot()) {
+                    case HEAD -> {
+                        if (head.isEmpty() || CompanionData.isBetterArmor(itemstack, head)) setItemSlot(EquipmentSlot.HEAD, itemstack);
+                    }
+                    case CHEST -> {
+                        if (chest.isEmpty() || CompanionData.isBetterArmor(itemstack, chest)) setItemSlot(EquipmentSlot.CHEST, itemstack);
+                    }
+                    case LEGS -> {
+                        if (legs.isEmpty() || CompanionData.isBetterArmor(itemstack, legs)) setItemSlot(EquipmentSlot.LEGS, itemstack);
+                    }
+                    case FEET -> {
+                        if (feet.isEmpty() || CompanionData.isBetterArmor(itemstack, feet)) setItemSlot(EquipmentSlot.FEET, itemstack);
+                    }
+                }
+            }
         }
-        checkArmor();
-        checkWeapon();
-        return super.finalizeSpawn(level, difficulty, reason, data);
+    }
+
+    public void checkWeapon() {
+        // base class intentionally does nothing; subclasses choose weapons
     }
 
     /* ---------- Network-driven flag setters ---------- */
@@ -411,12 +702,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             case "follow" -> setFollowing(value);
             case "patrol" -> {
                 setPatrolling(value);
+                setFollowing(!value);
                 setGuarding(false);
                 if (value) setPatrolPos(blockPosition());
             }
             case "guard" -> {
                 setGuarding(value);
                 setPatrolling(false);
+                setFollowing(!value);
                 if (value) setPatrolPos(blockPosition());
             }
             case "hunt" -> setHunting(value);
@@ -436,33 +729,5 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             case "stationery" -> isStationery();
             default -> false;
         };
-    }
-
-    @Override
-    public boolean isInvulnerableTo(DamageSource source) {
-        if (!ModConfig.safeGet(ModConfig.FALL_DAMAGE) && source.is(DamageTypeTags.IS_FALL)) {
-            return true;
-        }
-        return super.isInvulnerableTo(source);
-    }
-
-    /* ---------- Equipment helpers (stubs) ---------- */
-    public void checkArmor() {
-        for (int i = 0; i < inventory.getContainerSize(); i++) {
-            ItemStack stack = inventory.getItem(i);
-            if (stack.isEmpty()) continue;
-            EquipmentSlot slot = this.getEquipmentSlotForItem(stack);
-            if (CompanionData.isArmorSlot(slot) && CompanionData.isBetterArmor(stack, getItemBySlot(slot))) {
-                setItemSlot(slot, stack.copy());
-            }
-        }
-    }
-
-    public void checkWeapon() {
-        // TODO: port original weapon selection; for now ensure a basic sword if none
-        ItemStack hand = getMainHandItem();
-        if (hand.isEmpty()) {
-            setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
-        }
     }
 }
