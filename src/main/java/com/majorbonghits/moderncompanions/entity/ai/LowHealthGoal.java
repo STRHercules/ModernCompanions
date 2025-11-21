@@ -23,6 +23,7 @@ public class LowHealthGoal extends Goal {
 
     @Override
     public void start() {
-        companion.eatOneFood();
+        var stack = companion.checkFood();
+        companion.healFromFoodStack(stack);
     }
 }

@@ -46,32 +46,57 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
- * Port of the original AbstractHumanCompanionEntity with taming, leveling, patrol/guard logic, and inventory handling.
+ * Port of the original AbstractHumanCompanionEntity with taming, leveling,
+ * patrol/guard logic, and inventory handling.
  */
 public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
-    private static final EntityDataAccessor<Integer> SKIN_VARIANT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> SEX = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> BASE_HEALTH = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> EXP_LVL = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> STR = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> DEX = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> INTL = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> END = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> ALERT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> HUNTING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> PATROLLING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> FOLLOWING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> GUARDING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> STATIONERY = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> PICKUP_ITEMS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Optional<BlockPos>> PATROL_POS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
-    private static final EntityDataAccessor<Integer> PATROL_RADIUS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<String> FOOD1 = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<String> FOOD2 = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<Integer> FOOD1_AMT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> FOOD2_AMT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Float> EXP_PROGRESS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> SKIN_VARIANT = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> SEX = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> BASE_HEALTH = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> EXP_LVL = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> STR = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DEX = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> INTL = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> END = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> ALERT = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> HUNTING = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> PATROLLING = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> FOLLOWING = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> GUARDING = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> STATIONERY = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> PICKUP_ITEMS = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Optional<BlockPos>> PATROL_POS = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+    private static final EntityDataAccessor<Integer> PATROL_RADIUS = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> FOOD1 = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> FOOD2 = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> FOOD1_AMT = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> FOOD2_AMT = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> EXP_PROGRESS = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.FLOAT);
+    private static final int FOOD_REQUEST_COOLDOWN_TICKS = 600; // ~30s between requests
 
     protected final SimpleContainer inventory = new SimpleContainer(54);
     protected final Map<Item, Integer> foodRequirements = new HashMap<>();
@@ -79,6 +104,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public PatrolGoal patrolGoal;
     public MoveBackToPatrolGoal moveBackGoal;
+    private int lastFoodRequestTick = -200;
 
     private int totalExperience;
     private float experienceProgress;
@@ -96,7 +122,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     /* ---------- Registration ---------- */
 
     public static AttributeSupplier.Builder createAttributes() {
-        double baseHealth = ModConfig.BASE_HEALTH != null ? ModConfig.safeGet(ModConfig.BASE_HEALTH).doubleValue() : 20.0D;
+        double baseHealth = ModConfig.BASE_HEALTH != null ? ModConfig.safeGet(ModConfig.BASE_HEALTH).doubleValue()
+                : 20.0D;
         return TamableAnimal.createMobAttributes()
                 .add(Attributes.FOLLOW_RANGE, 20.0D)
                 .add(Attributes.MAX_HEALTH, baseHealth)
@@ -162,35 +189,80 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     /* ---------- Flags & helpers ---------- */
 
-    public boolean isFollowing() { return this.entityData.get(FOLLOWING); }
-    public void setFollowing(boolean value) { this.entityData.set(FOLLOWING, value); }
+    public boolean isFollowing() {
+        return this.entityData.get(FOLLOWING);
+    }
 
-    public boolean isPatrolling() { return this.entityData.get(PATROLLING); }
-    public void setPatrolling(boolean value) { this.entityData.set(PATROLLING, value); }
+    public void setFollowing(boolean value) {
+        this.entityData.set(FOLLOWING, value);
+    }
 
-    public boolean isGuarding() { return this.entityData.get(GUARDING); }
-    public void setGuarding(boolean value) { this.entityData.set(GUARDING, value); }
+    public boolean isPatrolling() {
+        return this.entityData.get(PATROLLING);
+    }
 
-    public boolean isPickupEnabled() { return this.entityData.get(PICKUP_ITEMS); }
-    public void setPickupEnabled(boolean value) { this.entityData.set(PICKUP_ITEMS, value); }
+    public void setPatrolling(boolean value) {
+        this.entityData.set(PATROLLING, value);
+    }
 
-    public boolean isStationery() { return this.entityData.get(STATIONERY); }
-    public void setStationery(boolean value) { this.entityData.set(STATIONERY, value); }
+    public boolean isGuarding() {
+        return this.entityData.get(GUARDING);
+    }
 
-    public boolean isAlert() { return this.entityData.get(ALERT); }
-    public void setAlert(boolean value) { this.entityData.set(ALERT, value); }
+    public void setGuarding(boolean value) {
+        this.entityData.set(GUARDING, value);
+    }
 
-    public boolean isHunting() { return this.entityData.get(HUNTING); }
-    public void setHunting(boolean value) { this.entityData.set(HUNTING, value); }
+    public boolean isPickupEnabled() {
+        return this.entityData.get(PICKUP_ITEMS);
+    }
 
-    public Optional<BlockPos> getPatrolPos() { return this.entityData.get(PATROL_POS); }
-    public void setPatrolPos(@Nullable BlockPos pos) { this.entityData.set(PATROL_POS, Optional.ofNullable(pos)); }
+    public void setPickupEnabled(boolean value) {
+        this.entityData.set(PICKUP_ITEMS, value);
+    }
 
-    public int getPatrolRadius() { return this.entityData.get(PATROL_RADIUS); }
+    public boolean isStationery() {
+        return this.entityData.get(STATIONERY);
+    }
+
+    public void setStationery(boolean value) {
+        this.entityData.set(STATIONERY, value);
+    }
+
+    public boolean isAlert() {
+        return this.entityData.get(ALERT);
+    }
+
+    public void setAlert(boolean value) {
+        this.entityData.set(ALERT, value);
+    }
+
+    public boolean isHunting() {
+        return this.entityData.get(HUNTING);
+    }
+
+    public void setHunting(boolean value) {
+        this.entityData.set(HUNTING, value);
+    }
+
+    public Optional<BlockPos> getPatrolPos() {
+        return this.entityData.get(PATROL_POS);
+    }
+
+    public void setPatrolPos(@Nullable BlockPos pos) {
+        this.entityData.set(PATROL_POS, Optional.ofNullable(pos));
+    }
+
+    public int getPatrolRadius() {
+        return this.entityData.get(PATROL_RADIUS);
+    }
+
     public void setPatrolRadius(int radius) {
         this.entityData.set(PATROL_RADIUS, Mth.clamp(radius, 1, 64));
-        if (patrolGoal != null) patrolGoal.radius = radius;
-        if (moveBackGoal != null) moveBackGoal.radius = radius;
+        if (patrolGoal != null)
+            patrolGoal.radius = radius;
+        if (moveBackGoal != null)
+            moveBackGoal.radius = radius;
     }
 
     public void clearPatrol() {
@@ -204,6 +276,17 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         String f2 = entityData.get(FOOD2_AMT) > 0 ? entityData.get(FOOD2_AMT) + "x " + entityData.get(FOOD2) : "done";
         return "Wants: " + f1 + " and " + f2;
     }
+
+    public String getFoodStatusForGui() {
+        if (!this.isTame()) {
+            return getWantedFoodsCompact();
+        }
+        if (this.getHealth() < this.getMaxHealth() - 0.5F) {
+            return hasFoodInInventory() ? "Healing..." : "Needs food to heal";
+        }
+        return "";
+    }
+
     public String getWantedFoodsCompact() {
         int amt1 = entityData.get(FOOD1_AMT);
         int amt2 = entityData.get(FOOD2_AMT);
@@ -211,41 +294,102 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         String id2 = entityData.get(FOOD2);
         String first = amt1 > 0 ? amt1 + "x " + prettyItemName(id1) : "";
         String second = amt2 > 0 ? amt2 + "x " + prettyItemName(id2) : "";
-        if (first.isEmpty() && second.isEmpty()) return "";
-        if (!first.isEmpty() && !second.isEmpty()) return first + ", " + second;
+        if (first.isEmpty() && second.isEmpty())
+            return "";
+        if (!first.isEmpty() && !second.isEmpty())
+            return first + ", " + second;
         return first + second;
     }
 
-    public SimpleContainer getInventory() { return inventory; }
-    public Map<Item, Integer> getFoodRequirements() { return foodRequirements; }
-    public int getSkinIndex() { return this.entityData.get(SKIN_VARIANT); }
+    public SimpleContainer getInventory() {
+        return inventory;
+    }
+
+    public Map<Item, Integer> getFoodRequirements() {
+        return foodRequirements;
+    }
+
+    public int getSkinIndex() {
+        return this.entityData.get(SKIN_VARIANT);
+    }
+
     public void setSkinIndex(int index) {
         int sex = getSex();
         int max = CompanionData.skins[sex].length;
         this.entityData.set(SKIN_VARIANT, Mth.clamp(index, 0, Math.max(0, max - 1)));
     }
 
-    public int getSex() { return this.entityData.get(SEX); }
-    public void setSex(int value) { this.entityData.set(SEX, Mth.clamp(value, 0, CompanionData.skins.length - 1)); }
+    public int getSex() {
+        return this.entityData.get(SEX);
+    }
 
-    public int getBaseHealth() { return this.entityData.get(BASE_HEALTH); }
-    public void setBaseHealth(int health) { this.entityData.set(BASE_HEALTH, health); }
+    public void setSex(int value) {
+        this.entityData.set(SEX, Mth.clamp(value, 0, CompanionData.skins.length - 1));
+    }
 
-    public boolean isEating() { return this.entityData.get(EATING); }
-    public void setEating(boolean eating) { this.entityData.set(EATING, eating); }
+    public int getBaseHealth() {
+        return this.entityData.get(BASE_HEALTH);
+    }
 
-    public int getExpLvl() { return this.entityData.get(EXP_LVL); }
-    public void setExpLvl(int lvl) { this.entityData.set(EXP_LVL, Math.max(lvl, 0)); }
-    public float getExperienceProgress() { return this.level().isClientSide ? this.entityData.get(EXP_PROGRESS) : this.experienceProgress; }
-    public int getTotalExperience() { return this.totalExperience; }
-    public int getStrength() { return this.entityData.get(STR); }
-    public int getDexterity() { return this.entityData.get(DEX); }
-    public int getIntelligence() { return this.entityData.get(INTL); }
-    public int getEndurance() { return this.entityData.get(END); }
-    public void setStrength(int value) { this.entityData.set(STR, Math.max(1, value)); }
-    public void setDexterity(int value) { this.entityData.set(DEX, Math.max(1, value)); }
-    public void setIntelligence(int value) { this.entityData.set(INTL, Math.max(1, value)); }
-    public void setEndurance(int value) { this.entityData.set(END, Math.max(1, value)); }
+    public void setBaseHealth(int health) {
+        this.entityData.set(BASE_HEALTH, health);
+    }
+
+    public boolean isEating() {
+        return this.entityData.get(EATING);
+    }
+
+    public void setEating(boolean eating) {
+        this.entityData.set(EATING, eating);
+    }
+
+    public int getExpLvl() {
+        return this.entityData.get(EXP_LVL);
+    }
+
+    public void setExpLvl(int lvl) {
+        this.entityData.set(EXP_LVL, Math.max(lvl, 0));
+    }
+
+    public float getExperienceProgress() {
+        return this.level().isClientSide ? this.entityData.get(EXP_PROGRESS) : this.experienceProgress;
+    }
+
+    public int getTotalExperience() {
+        return this.totalExperience;
+    }
+
+    public int getStrength() {
+        return this.entityData.get(STR);
+    }
+
+    public int getDexterity() {
+        return this.entityData.get(DEX);
+    }
+
+    public int getIntelligence() {
+        return this.entityData.get(INTL);
+    }
+
+    public int getEndurance() {
+        return this.entityData.get(END);
+    }
+
+    public void setStrength(int value) {
+        this.entityData.set(STR, Math.max(1, value));
+    }
+
+    public void setDexterity(int value) {
+        this.entityData.set(DEX, Math.max(1, value));
+    }
+
+    public void setIntelligence(int value) {
+        this.entityData.set(INTL, Math.max(1, value));
+    }
+
+    public void setEndurance(int value) {
+        this.entityData.set(END, Math.max(1, value));
+    }
 
     public ResourceLocation getSkinTexture() {
         int sex = Mth.clamp(getSex(), 0, CompanionData.skins.length - 1);
@@ -256,33 +400,75 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public boolean hasFoodInInventory() {
         for (int i = 0; i < inventory.getContainerSize(); i++) {
-            if (CompanionData.isFood(inventory.getItem(i).getItem())) return true;
+            if (CompanionData.isFood(inventory.getItem(i).getItem()))
+                return true;
         }
         return false;
     }
 
     public ItemStack checkFood() {
+        int missing = (int) Math.ceil(this.getMaxHealth() - this.getHealth());
+        ItemStack best = ItemStack.EMPTY;
+        int bestOverflow = Integer.MAX_VALUE;
+        int bestUnder = -1;
+
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
-            ItemStack itemstack = this.inventory.getItem(i);
-            if (!CompanionData.isFood(itemstack.getItem())) continue;
-            FoodProperties food = itemstack.get(DataComponents.FOOD);
-            if (food != null && food.nutrition() + this.getHealth() <= this.getMaxHealth()) {
-                return itemstack;
+            ItemStack stack = this.inventory.getItem(i);
+            if (!CompanionData.isFood(stack.getItem()))
+                continue;
+            FoodProperties food = stack.get(DataComponents.FOOD);
+            if (food == null || food.nutrition() <= 0)
+                continue;
+            int nutrition = food.nutrition();
+            if (nutrition >= missing) {
+                int overflow = nutrition - missing;
+                if (overflow < bestOverflow) {
+                    bestOverflow = overflow;
+                    best = stack;
+                }
+            } else if (bestOverflow == Integer.MAX_VALUE && nutrition > bestUnder) {
+                bestUnder = nutrition;
+                best = stack;
             }
         }
-        return ItemStack.EMPTY;
+        return best;
     }
 
-    public void eatOneFood() {
-        for (int i = 0; i < inventory.getContainerSize(); i++) {
-            ItemStack stack = inventory.getItem(i);
-            if (!CompanionData.isFood(stack.getItem())) continue;
-            FoodProperties food = stack.get(DataComponents.FOOD);
-            if (food != null) {
-                stack.shrink(1);
-                this.heal(food.nutrition());
-                return;
-            }
+    public boolean healFromFoodStack(ItemStack stack) {
+        if (stack.isEmpty() || !CompanionData.isFood(stack.getItem()))
+            return false;
+        FoodProperties food = stack.get(DataComponents.FOOD);
+        if (food == null)
+            return false;
+        float missing = this.getMaxHealth() - this.getHealth();
+        if (missing <= 0.01f)
+            return false;
+        int healAmount = Math.max(1, Math.min(food.nutrition(), (int) Math.ceil(missing)));
+        playEatingEffects(stack);
+        stack.shrink(1);
+        this.heal(healAmount);
+        return true;
+    }
+
+    private void playEatingEffects(ItemStack stack) {
+        if (this.level().isClientSide())
+            return;
+        // Sound
+        var sound = stack.getItem().getEatingSound();
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 0.7F,
+                1.0F + (this.getRandom().nextFloat() - 0.5F) * 0.2F);
+        // Particles roughly at face height
+        for (int j = 0; j < 5; ++j) {
+            double dx = this.getRandom().nextGaussian() * 0.02D;
+            double dy = this.getRandom().nextGaussian() * 0.02D;
+            double dz = this.getRandom().nextGaussian() * 0.02D;
+            this.level().addParticle(
+                    new net.minecraft.core.particles.ItemParticleOption(net.minecraft.core.particles.ParticleTypes.ITEM,
+                            stack.copyWithCount(1)),
+                    this.getX() + (double) (this.getRandom().nextFloat() * 0.4F - 0.2F),
+                    this.getY() + this.getBbHeight() * 0.8D,
+                    this.getZ() + (double) (this.getRandom().nextFloat() * 0.4F - 0.2F),
+                    dx, dy, dz);
         }
     }
 
@@ -312,11 +498,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                                 setPatrolling(false);
                                 setFollowing(true);
                                 setPatrolRadius(4);
-                                if (patrolGoal != null) patrolGoal.radius = 4;
-                                if (moveBackGoal != null) moveBackGoal.radius = 4;
+                                if (patrolGoal != null)
+                                    patrolGoal.radius = 4;
+                                if (moveBackGoal != null)
+                                    moveBackGoal.radius = 4;
                             } else if (foodRequirements.get(held.getItem()) == 0) {
                                 player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
-                                        CompanionData.ENOUGH_FOOD[this.random.nextInt(CompanionData.ENOUGH_FOOD.length)]));
+                                        CompanionData.ENOUGH_FOOD[this.random
+                                                .nextInt(CompanionData.ENOUGH_FOOD.length)]));
                             } else {
                                 player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
                                         CompanionData.tameFail[this.random.nextInt(CompanionData.tameFail.length)]));
@@ -384,7 +573,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     private void syncFoodRequirements() {
-        if (foodRequirements.isEmpty()) return;
+        if (foodRequirements.isEmpty())
+            return;
         foodRequirements.forEach((item, count) -> {
             String id = BuiltInRegistries.ITEM.getKey(item).toString();
             if (id.equals(entityData.get(FOOD1))) {
@@ -397,7 +587,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     private String prettyItemName(String id) {
         ResourceLocation rl = ResourceLocation.tryParse(id);
-        if (rl == null) return id;
+        if (rl == null)
+            return id;
         Item item = BuiltInRegistries.ITEM.get(rl);
         return item.getDescription().getString();
     }
@@ -432,7 +623,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putInt("Intelligence", getIntelligence());
         tag.putInt("Endurance", getEndurance());
         if (this.getPatrolPos().isPresent()) {
-            int[] patrolPos = {this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(), this.getPatrolPos().get().getZ()};
+            int[] patrolPos = { this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(),
+                    this.getPatrolPos().get().getZ() };
             tag.putIntArray("patrol_pos", patrolPos);
         }
     }
@@ -524,20 +716,24 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 collectNearbyItems();
             }
             if (this.tickCount % 10 == 0) {
-                    checkStats();
-                    LivingEntity target = this.getTarget();
-                    if (target != null && !target.isAlive()) {
+                checkStats();
+                if (shouldRequestFood())
+                    requestFoodFromOwner();
+                LivingEntity target = this.getTarget();
+                if (target != null && !target.isAlive()) {
                     this.setTarget(null);
-                    }
                 }
+            }
         }
         super.tick();
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason,
+            @Nullable SpawnGroupData spawnDataIn) {
         assignRpgAttributes();
-        int baseHealth = ModConfig.safeGet(ModConfig.BASE_HEALTH) + CompanionData.getHealthModifier() + getEnduranceBonusHealth();
+        int baseHealth = ModConfig.safeGet(ModConfig.BASE_HEALTH) + CompanionData.getHealthModifier()
+                + getEnduranceBonusHealth();
         modifyMaxHealth(baseHealth - 20, "companion base health", true);
         this.setHealth(this.getMaxHealth());
         setBaseHealth(baseHealth);
@@ -668,8 +864,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public void modifyMaxHealth(int change, String name, boolean permanent) {
         AttributeInstance attribute = this.getAttribute(Attributes.MAX_HEALTH);
-        if (attribute == null) return;
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, name.replace(" ", "_"));
+        if (attribute == null)
+            return;
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
+                com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, name.replace(" ", "_"));
         attribute.removeModifier(id);
         AttributeModifier modifier = new AttributeModifier(id, change, AttributeModifier.Operation.ADD_VALUE);
         if (permanent) {
@@ -711,7 +909,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public void hurtArmor(DamageSource source, float amount) {
         if (!(amount <= 0.0F)) {
             amount /= 4.0F;
-            if (amount < 1.0F) amount = 1.0F;
+            if (amount < 1.0F)
+                amount = 1.0F;
 
             for (ItemStack itemstack : this.getArmorSlots()) {
                 if (itemstack.getItem() instanceof ArmorItem armorItem) {
@@ -739,7 +938,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             itemstack.hurtAndBreak(1, this, EquipmentSlot.MAINHAND);
             if (this.getMainHandItem().isEmpty() && this.isTame() && this.getOwner() != null) {
                 Component broken = Component.literal("My weapon broke!");
-                this.getOwner().sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(), broken));
+                this.getOwner()
+                        .sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(), broken));
             }
         }
         return super.doHurtTarget(entity);
@@ -755,16 +955,20 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             if (itemstack.getItem() instanceof ArmorItem armorItem) {
                 switch (armorItem.getEquipmentSlot()) {
                     case HEAD -> {
-                        if (head.isEmpty() || CompanionData.isBetterArmor(itemstack, head)) setItemSlot(EquipmentSlot.HEAD, itemstack);
+                        if (head.isEmpty() || CompanionData.isBetterArmor(itemstack, head))
+                            setItemSlot(EquipmentSlot.HEAD, itemstack);
                     }
                     case CHEST -> {
-                        if (chest.isEmpty() || CompanionData.isBetterArmor(itemstack, chest)) setItemSlot(EquipmentSlot.CHEST, itemstack);
+                        if (chest.isEmpty() || CompanionData.isBetterArmor(itemstack, chest))
+                            setItemSlot(EquipmentSlot.CHEST, itemstack);
                     }
                     case LEGS -> {
-                        if (legs.isEmpty() || CompanionData.isBetterArmor(itemstack, legs)) setItemSlot(EquipmentSlot.LEGS, itemstack);
+                        if (legs.isEmpty() || CompanionData.isBetterArmor(itemstack, legs))
+                            setItemSlot(EquipmentSlot.LEGS, itemstack);
                     }
                     case FEET -> {
-                        if (feet.isEmpty() || CompanionData.isBetterArmor(itemstack, feet)) setItemSlot(EquipmentSlot.FEET, itemstack);
+                        if (feet.isEmpty() || CompanionData.isBetterArmor(itemstack, feet))
+                            setItemSlot(EquipmentSlot.FEET, itemstack);
                     }
                 }
             }
@@ -783,19 +987,22 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 setPatrolling(value);
                 setFollowing(!value);
                 setGuarding(false);
-                if (value) setPatrolPos(blockPosition());
+                if (value)
+                    setPatrolPos(blockPosition());
             }
             case "guard" -> {
                 setGuarding(value);
                 setPatrolling(false);
                 setFollowing(!value);
-                if (value) setPatrolPos(blockPosition());
+                if (value)
+                    setPatrolPos(blockPosition());
             }
             case "hunt" -> setHunting(value);
             case "alert" -> setAlert(value);
             case "stationery" -> setStationery(value);
             case "pickup" -> setPickupEnabled(value);
-            default -> {}
+            default -> {
+            }
         }
     }
 
@@ -813,13 +1020,16 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     /**
-     * Gently attract and collect nearby item entities into the companion's inventory to emulate player pickup.
+     * Gently attract and collect nearby item entities into the companion's
+     * inventory to emulate player pickup.
      */
     private void collectNearbyItems() {
         double range = 3.0D;
         var box = this.getBoundingBox().inflate(range);
-        for (ItemEntity item : this.level().getEntitiesOfClass(ItemEntity.class, box, e -> e.isAlive() && !e.hasPickUpDelay())) {
-            if (item.getItem().isEmpty()) continue;
+        for (ItemEntity item : this.level().getEntitiesOfClass(ItemEntity.class, box,
+                e -> e.isAlive() && !e.hasPickUpDelay())) {
+            if (item.getItem().isEmpty())
+                continue;
             var pull = this.position().subtract(item.position());
             if (pull.lengthSqr() > 0.01) {
                 item.setDeltaMovement(item.getDeltaMovement().scale(0.9).add(pull.normalize().scale(0.08)));
@@ -840,7 +1050,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     /* ---------- RPG attribute generation & effects ---------- */
 
     private void assignRpgAttributes() {
-        int[] stats = {4, 4, 4, 4}; // STR, DEX, INT, END base
+        int[] stats = { 4, 4, 4, 4 }; // STR, DEX, INT, END base
         for (int i = 0; i < 23; i++) {
             stats[this.random.nextInt(stats.length)]++;
         }
@@ -858,7 +1068,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         applyStrengthModifiers();
         applyDexterityModifiers();
         applyEnduranceModifiers();
-        // intelligence currently drives XP gain inside giveExperiencePoints; no attribute modifier needed
+        // intelligence currently drives XP gain inside giveExperiencePoints; no
+        // attribute modifier needed
     }
 
     private void applyStrengthModifiers() {
@@ -877,7 +1088,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         applyModifier(Attributes.ATTACK_SPEED, "rpg_dex_attack_speed", atkSpeed, AttributeModifier.Operation.ADD_VALUE);
 
         double kbResist = Math.max(0.0D, (getDexterity() - 10) * 0.01D); // slight dodge feel at high dex
-        applyModifier(Attributes.KNOCKBACK_RESISTANCE, "rpg_dex_kb_resist", kbResist, AttributeModifier.Operation.ADD_VALUE);
+        applyModifier(Attributes.KNOCKBACK_RESISTANCE, "rpg_dex_kb_resist", kbResist,
+                AttributeModifier.Operation.ADD_VALUE);
     }
 
     private void applyEnduranceModifiers() {
@@ -889,7 +1101,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         modifyMaxHealth(desiredBase - 20, "companion base health", true);
 
         double kbResist = Math.min(0.6D, (getEndurance() - 4) * 0.02D);
-        applyModifier(Attributes.KNOCKBACK_RESISTANCE, "rpg_end_kb_resist", kbResist, AttributeModifier.Operation.ADD_VALUE);
+        applyModifier(Attributes.KNOCKBACK_RESISTANCE, "rpg_end_kb_resist", kbResist,
+                AttributeModifier.Operation.ADD_VALUE);
     }
 
     private int getEnduranceBonusHealth() {
@@ -908,10 +1121,13 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         return amount * (1.0F - reduction);
     }
 
-    private void applyModifier(net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute, String idName, double value, AttributeModifier.Operation op) {
+    private void applyModifier(net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,
+            String idName, double value, AttributeModifier.Operation op) {
         AttributeInstance instance = this.getAttribute(attribute);
-        if (instance == null) return;
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, idName);
+        if (instance == null)
+            return;
+        ResourceLocation id = ResourceLocation
+                .fromNamespaceAndPath(com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, idName);
         instance.removeModifier(id);
         if (value != 0.0D) {
             AttributeModifier modifier = new AttributeModifier(id, value, op);
@@ -921,5 +1137,61 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     private float getExperienceGainMultiplier() {
         return 1.0F + (float) ((getIntelligence() - 4) * 0.03D);
+    }
+
+    private boolean shouldRequestFood() {
+        return this.isTame()
+                && this.getHealth() < this.getMaxHealth() - 0.5F
+                && !hasFoodInInventory()
+                && this.tickCount - lastFoodRequestTick > FOOD_REQUEST_COOLDOWN_TICKS;
+    }
+
+    private void requestFoodFromOwner() {
+        if (this.level().isClientSide())
+            return;
+        if (!this.isTame())
+            return;
+        lastFoodRequestTick = this.tickCount;
+        if (this.getOwner() instanceof ServerPlayer player) {
+            Component text = Component.literal(randomFoodRequestLine());
+            player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(), text));
+        }
+    }
+
+    private String randomFoodRequestLine() {
+        String[] lines = new String[] {
+                "I'm hurt—please give me some food!",
+                "Ouch. Could really use a snack right now.",
+                "Low on health here. Got anything edible?",
+                "One more hit might drop me. Food, please!",
+                "Feeling woozy—little food would help.",
+                "Bandages? Nah. Bread? Yes, please.",
+                "My stomach says 'ow'. Do you have rations?",
+                "If you feed me, I can keep fighting.",
+                "Let's trade: I keep you safe; you keep me fed.",
+                "Healing would be faster with a bite to eat.",
+                "Health bar's looking pretty red over here...",
+                "I can see the respawn screen from here. Food?",
+                "If I fall over, that's on you and your lack of snacks.",
+                "I fight better when I'm not dying of hunger, just saying.",
+                "This would be a great moment for a snack break.",
+                "I’m not saying I’m dramatic, but I might faint without food.",
+                "Ow. That hurt. Got anything tasty and healing?",
+                "Pretty sure a sandwich could fix at least half of this.",
+                "Food now, heroics later. Deal?",
+                "I’d complain more, but I’m too hungry.",
+                "If you feed me, I promise to stop yelling about it… for a bit.",
+                "We’re in the danger zone. Apply food directly to companion.",
+                "I think my HP fell out somewhere back there. Got food?",
+                "Your loyal companion requires immediate snacks.",
+                "I can tank hits, not starvation. Help.",
+                "I’m one bad decision away from dropping. Food might help.",
+                "I’d love to keep protecting you, but my health disagrees.",
+                "Everything hurts except my appetite.",
+                "I’m not mad, I’m just hungry and almost dead.",
+                "I can bite enemies or I can bite food. Your choice.",
+                "Pretty sure food is super effective against 'almost dead'."
+        };
+        return lines[rand.nextInt(lines.length)];
     }
 }

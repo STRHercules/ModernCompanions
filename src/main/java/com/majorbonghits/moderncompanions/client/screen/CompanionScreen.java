@@ -140,7 +140,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             gfx.fill(statsX + 1, y + 1, statsX + 1 + filledW, y + barH - 1, 0xFF55AA55);
             y += 10;
             gfx.drawString(this.font, Component.literal(xpHave + "/" + xpNeeded), statsX, y, 0x000000, false);
-            y += 12;
+            y += 20;
 
             gfx.drawString(this.font, Component.literal("Patrol Radius: " + companion.getPatrolRadius()), statsX, y, 0x000000, false);
             renderAttributes(gfx, companion);
@@ -290,7 +290,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         int foodX = FOOD_LEFT + 2;
         int foodY = FOOD_TOP + 2;
         int foodWidth = (FOOD_RIGHT - FOOD_LEFT) - 4;
-        String food = companion.getWantedFoodsCompact();
+        String food = companion.getFoodStatusForGui();
         if (food.isEmpty()) {
             food = "Not Hungry";
         }

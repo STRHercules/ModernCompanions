@@ -317,3 +317,57 @@
   - Bumped version to 0.1.19 and reran `./gradlew build -x test`.
 - Rationale: Aligns the wanted-food display with the newly requested location on the inventory texture while keeping text constrained.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (low-health food requests)
+- Prompt/task: "Companions at missing hearts say they're full—make them ask for food and show it in the GUI."
+- Steps:
+  - Added a low-health request check that pings the owner every 10s when the companion is hurt, tamed, and has no food, with a clear chat line.
+  - Exposed a new GUI status string: if hurt+tamed with no food it shows “Needs food to heal”, otherwise “Healing...” or empties when healthy; renderWantedFood now uses this status.
+  - Bumped version to 0.1.20 and reran `./gradlew build -x test`.
+- Rationale: Ensures injured companions proactively ask for food and that the inventory screen reflects their healing needs instead of staying silent/“full.”
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (food actually heals)
+- Prompt/task: "Eating animation plays and food is consumed, but health doesn’t restore."
+- Steps:
+  - Simplified EatGoal to heal immediately when food is available: consume one food, apply healing, mark eating state, and reset when healthy or out of food.
+  - Removed the unused hold/use animation that never completed the vanilla eating cycle for companions.
+  - Bumped version to 0.1.21 and reran `./gradlew build -x test`.
+- Rationale: Ensures companions regain health whenever they eat, instead of just burning inventory with no healing.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (healing to full + animation)
+- Prompt/task: "Companions eat but stop with 1 heart missing; need full heal and animation."
+- Steps:
+  - Reworked food selection to choose the smallest-overflow food so healing can occur even if missing health is less than the food’s nutrition.
+  - Clamped heal to the missing amount and kept consuming until fully healed; offhand swing restored for a visible eat animation.
+  - Version bumped to 0.1.22 and `./gradlew build -x test` passes.
+- Rationale: Prevents companions from getting stuck a heart short and shows a clear eat action while consuming appropriate food.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (eating VFX/SFX)
+- Prompt/task: "Food vanishes with no visible eating; show the animation."
+- Steps:
+  - Added explicit eat effects: plays the item’s eating sound and spawns item particles near the face each time a bite is taken.
+  - Restored off-hand use animation during eating while keeping instant healing behavior to avoid stalling.
+  - Bumped version to 0.1.23 and reran `./gradlew build -x test`.
+- Rationale: Makes companion eating noticeable (sound + particles) while preserving the reliable healing flow.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (vanilla-paced eating)
+- Prompt/task: "Food/healing are instant; make eating behave like vanilla timing."
+- Steps:
+  - Reworked EatGoal to respect item use duration: companions hold food in offhand, animate swings, and only heal when the use timer completes; they continue through multiple bites until full or out of food.
+  - Swapped instant heal helper for a targeted heal-from-stack method and updated LowHealthGoal to reuse it.
+  - Kept eating sounds/particles and bumped version to 0.1.24; build verified with `./gradlew build -x test`.
+- Rationale: Eating now follows vanilla pacing and visuals instead of instant consumption while still guaranteeing healing completion.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (food requests cooldown + variety)
+- Prompt/task: "Add more request lines and reduce frequency of food requests when hurt."
+- Steps:
+  - Added 11 varied food-request phrases for injured companions asking their owner.
+  - Increased the cooldown between requests to ~30s (600 ticks) to cut spam.
+  - Bumped version to 0.1.25 and reran `./gradlew build -x test`.
+- Rationale: Makes pleas for food feel more natural and less chat-spammy while still alerting the owner when healing is needed.
+- Build/Test: `./gradlew build -x test` ✔️
