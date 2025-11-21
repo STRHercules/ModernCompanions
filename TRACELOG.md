@@ -490,3 +490,101 @@
   - Version bumped to 0.1.39.
 - Rationale: Removes the "Entity ... has no attributes" spam/crash during loading by ensuring companions are initialized with attribute suppliers.
 - Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Creative tab, taming resource mix)
+- Prompt/task: "Modern Companions doesnt have a tab in the creative window" and "taming should allow larger counts + resource requests"
+- Steps:
+  - Added a dedicated Modern Companions creative tab listing all spawn eggs and every weapon variant; localized the tab title and bumped version to 0.1.44.
+  - Updated taming logic: companions now request one food (2–5) plus one resource (2–6) from a defined ingot/gem/dust list, and the interaction logic accepts any required item (not just FOOD-tagged). Counts decrement correctly until both reach zero.
+- Rationale: Improves discoverability in creative and restores more interesting taming demands without the “always 1 item” limitation.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Kill counter HUD)
+- Prompt/task: "Let's add a kill counter for each companion that will update in real-time on the GUI reflecting each mob/animal they kill. I would like the kill counter right between the exp and patrol radius here; ..."
+- Steps:
+  - Added a synced `KILL_COUNT` data parameter with NBT persistence plus helpers to read/increment it on both server and client.
+  - Increment kill count inside `LivingDeathEvent` when a companion is the killer, keeping the stat updated alongside XP rewards.
+  - Rendered the live kill total between the XP bar and patrol radius in `CompanionScreen`, bumping version to 0.1.47 and logging the work in suggestions/tracelog.
+- Rationale: Tracks each companion’s lifetime kills and surfaces it directly in the inventory stats panel, updating instantly as foes fall.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Beastmaster pet duplication)
+- Prompt/task: "Beastmaster Wolfs are duplicating after a save and re-load"
+- Steps:
+  - Reviewed AGENTS/TASK directives and inspected Beastmaster pet persistence, spotting immediate respawn when the stored pet UUID is missing during world load.
+  - Added an NBT-persisted grace/lookup window that repeatedly searches for an existing tamed wolf owned by the same player before treating the pet as lost, preventing duplicate spawns on reload.
+  - Bumped version to 0.1.48 and ran `./gradlew build -x test` to confirm the fix compiles.
+- Rationale: Prevents Beastmasters from spawning extra wolves when chunks load slowly or entities are still being attached after a save/reload.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet variety)
+- Prompt/task: "Can we randomize the animal in which a beastmaster starts with?"
+- Steps:
+  - Added weighted pet selection including Camel, Cat, Fox, Goat, Ocelot, Panda, Pig, Wolf, Spider, with very rare rolls for Hoglin and Polar Bear.
+  - Sanitized hostile target goals on spawned pets and drive them to attack the Beastmaster’s current target with a fallback melee "nudge" so passive mobs can contribute damage.
+  - Bumped version to 0.1.49, updated suggestions, and ran `./gradlew build -x test` successfully.
+- Rationale: Gives Beastmasters flavorful, varied companions while keeping pets friendly to the owner and capable of basic combat even if the vanilla mob lacks attacks.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet follow)
+- Prompt/task: "I recruited a beastmaster that has a panda, but the panda does not seem to be following them or me."
+- Steps:
+  - Added a generic FollowBeastmasterGoal applied to every spawned pet so non-tamable mobs (e.g., pandas) follow the Beastmaster like wolves do.
+  - Kept target sanitization and combat nudge, ensuring pets both follow and assist their master without going rogue.
+  - Bumped version to 0.1.50, updated suggestions, and ran `./gradlew build -x test` to verify.
+- Rationale: Ensures all Beastmaster pets, even passive mobs, stick to their master and participate in combat comparably to tamed wolves.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet defense)
+- Prompt/task: "We need to also make sure that any beastmaster pet will defend the beastmaster and the player if either are attacked. The beastmaster pet will never attack the player."
+- Steps:
+  - Added threat selection that prioritizes attackers of the Beastmaster, then the owner player, then the Beastmaster’s active target—while explicitly excluding the owner/player.
+  - Reused the combat drive to set pets onto the threat so all pet types defend their master and owner even if they lack native taming AI.
+  - Bumped version to 0.1.51, updated suggestions, and rebuilt with `./gradlew build -x test`.
+- Rationale: Guarantees Beastmaster pets protect both the companion and its owner without ever turning on the player.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet rubber-band fix)
+- Prompt/task: "The beastmaster pet is rubber banding back to the beastmaster while attacking."
+- Steps:
+  - Updated FollowBeastmasterGoal to pause following/teleporting whenever the pet has a live target and for a short post-combat cooldown, preventing warps mid-attack.
+  - Left combat driving intact so pets keep engaging threats, then resume following after ~1.5s of no target.
+  - Bumped version to 0.1.52, added a suggestion to make the grace configurable, and ran `./gradlew build -x test`.
+- Rationale: Stops pets from snapping back during fights, letting them land multiple attacks before returning to the master.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet crash fix)
+- Prompt/task: "Cat doesn't seem to attack; pig attack crashed client (missing attack_damage attribute)."
+- Steps:
+  - Added an attack-attribute safeguard for all Beastmaster pets, registering a base attack damage if absent and using a custom swing-and-damage path instead of Mob#doHurtTarget.
+  - Prevents missing-attribute crashes and lets passive pets (cat, pig, etc.) deal damage reliably.
+  - Bumped version to 0.1.53 and reran `./gradlew build -x test`.
+- Rationale: Avoids attribute lookup crashes and ensures every pet can land hits even if vanilla mobs lack built-in attack damage.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster melee goal guard)
+- Prompt/task: "Pig still causing crash (missing minecraft:generic.attack_damage via MeleeAttackGoal)."
+- Steps:
+  - Updated melee goal injection to skip and remove MeleeAttackGoal on pets without the attack_damage attribute, preventing the vanilla goal from ticking and crashing.
+  - Left manual swing-and-damage fallback intact for passive pets so they still contribute in combat.
+  - Bumped version to 0.1.54 and rebuilt with `./gradlew build -x test`.
+- Rationale: Stops attribute lookups inside MeleeAttackGoal for mobs that don't define attack damage while keeping custom damage handling.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster bow safety)
+- Prompt/task: "If a companion uses a bow and does not have a bow, they should not attempt to fire arrows."
+- Steps:
+  - Added guards in Beastmaster ranged attack to require a real bow and real arrows before firing; otherwise the attack is skipped.
+  - Prevents the invalid-weapon arrow crash seen when no bow was equipped.
+  - Bumped version to 0.1.55 and reran `./gradlew build -x test`.
+- Rationale: Avoids arrow creation with invalid weapons, stopping the crash while keeping normal ranged behavior when gear exists.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet follow persistence)
+- Prompt/task: "Pig does not appear to be following the beastmaster. Ensure all pets follow, including after save/load."
+- Steps:
+  - Added a reusable `setupPetGoalsIfNeeded` that re-sanitizes goals and reapplies the follow goal for any pet, invoked on spawn and whenever an existing pet is reattached after load.
+  - Broadened pet lookup on load to find any stored UUID or owner-tamed animal within range, not just wolves, so pigs/cats/etc. reattach and regain follow.
+  - Bumped version to 0.1.56 and ran `./gradlew build -x test`.
+- Rationale: Guarantees every Beastmaster pet keeps its follow behavior across sessions and after respawns.
+- Build/Test: `./gradlew build -x test` ✔️

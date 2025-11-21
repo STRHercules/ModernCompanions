@@ -11,6 +11,8 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import com.majorbonghits.moderncompanions.item.GlaiveItem;
+import com.majorbonghits.moderncompanions.item.SpearItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
@@ -57,7 +59,7 @@ public class Stormcaller extends AbstractHumanCompanionEntity {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (stack.is(Items.TRIDENT)) {
+            if (stack.is(Items.TRIDENT) || stack.getItem() instanceof SpearItem || stack.getItem() instanceof GlaiveItem) {
                 if (hand.isEmpty()) {
                     this.setItemSlot(EquipmentSlot.MAINHAND, stack);
                     hand = stack;

@@ -100,7 +100,12 @@ public class Berserker extends AbstractHumanCompanionEntity {
     }
 
     private boolean isPreferredWeapon(ItemStack stack) {
-        return stack.is(TagsInit.Items.AXES) || stack.is(TagsInit.Items.SWORDS) || stack.getItem() instanceof AxeItem || stack.getItem() instanceof SwordItem;
+        return stack.is(TagsInit.Items.AXES)
+                || stack.is(TagsInit.Items.SWORDS)
+                || stack.getItem() instanceof AxeItem
+                || stack.getItem() instanceof SwordItem
+                || stack.getItem() instanceof com.majorbonghits.moderncompanions.item.ClubItem
+                || stack.getItem() instanceof com.majorbonghits.moderncompanions.item.HammerItem;
     }
 
     private void updateRage() {

@@ -138,7 +138,10 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             gfx.fill(statsX + 1, y + 1, statsX + 1 + filledW, y + barH - 1, 0xFF55AA55);
             y += 10;
             gfx.drawString(this.font, Component.literal(xpHave + "/" + xpNeeded), statsX, y, 0x000000, false);
-            y += 20;
+            y += 12;
+
+            gfx.drawString(this.font, Component.literal("Kills: " + companion.getKillCount()), statsX, y, 0x000000, false);
+            y += 12;
 
             gfx.drawString(this.font, Component.literal("Patrol Radius: " + companion.getPatrolRadius()), statsX, y, 0x000000, false);
             renderAttributes(gfx, companion);

@@ -40,6 +40,21 @@ public class CompanionData {
             Items.COOKED_RABBIT
     };
 
+    /** Non-food resources companions might demand during taming. */
+    public static final Item[] RESOURCE_ITEMS = new Item[] {
+            Items.COAL,
+            Items.CHARCOAL,
+            Items.IRON_INGOT,
+            Items.GOLD_INGOT,
+            Items.COPPER_INGOT,
+            Items.DIAMOND,
+            Items.EMERALD,
+            Items.LAPIS_LAZULI,
+            Items.REDSTONE,
+            Items.QUARTZ,
+            Items.AMETHYST_SHARD
+    };
+
     private static final Set<Item> DISALLOWED_FOODS = Set.of(
             Items.SPIDER_EYE,
             Items.ROTTEN_FLESH,
@@ -304,13 +319,11 @@ public class CompanionData {
 
     public static Map<Item, Integer> getRandomFoodRequirement(Random random) {
         Map<Item, Integer> food = new HashMap<>();
-        Item food1 = pickAllowedFood(random);
-        Item food2 = pickAllowedFood(random);
-        while (food1.equals(food2)) {
-            food2 = pickAllowedFood(random);
-        }
-        food.put(food1, random.nextInt(5) + 1);
-        food.put(food2, random.nextInt(5) + 1);
+        Item foodItem = pickAllowedFood(random);
+        Item resourceItem = pickResource(random);
+        // 2–5 food, 2–6 resource
+        food.put(foodItem, random.nextInt(4) + 2);
+        food.put(resourceItem, random.nextInt(5) + 2);
         return food;
     }
 
@@ -328,6 +341,10 @@ public class CompanionData {
             candidate = ALL_FOODS[random.nextInt(ALL_FOODS.length)];
         } while (DISALLOWED_FOODS.contains(candidate));
         return candidate;
+    }
+
+    private static Item pickResource(Random random) {
+        return RESOURCE_ITEMS[random.nextInt(RESOURCE_ITEMS.length)];
     }
 
     private static ResourceLocation tex(String path) {

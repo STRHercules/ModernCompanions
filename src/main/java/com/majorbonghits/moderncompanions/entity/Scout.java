@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import com.majorbonghits.moderncompanions.item.DaggerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -80,7 +81,7 @@ public class Scout extends AbstractHumanCompanionEntity {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (stack.is(Items.STONE_SWORD) || stack.is(Items.IRON_SWORD)) {
+            if (stack.getItem() instanceof DaggerItem || stack.is(Items.STONE_SWORD) || stack.is(Items.IRON_SWORD)) {
                 if (hand.isEmpty()) {
                     this.setItemSlot(EquipmentSlot.MAINHAND, stack);
                     hand = stack;

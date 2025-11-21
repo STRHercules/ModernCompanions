@@ -5,6 +5,7 @@ import com.majorbonghits.moderncompanions.core.ModEntityTypes;
 import com.majorbonghits.moderncompanions.core.ModMenuTypes;
 import com.majorbonghits.moderncompanions.core.ModEntityAttributes;
 import com.majorbonghits.moderncompanions.core.ModConfig;
+import com.majorbonghits.moderncompanions.registry.ModCreativeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -20,6 +21,7 @@ public final class ModernCompanions {
 
         com.majorbonghits.moderncompanions.registry.ModItems.register(modBus); // weapons
         com.majorbonghits.moderncompanions.core.ModItems.ITEMS.register(modBus); // spawn eggs
+        ModCreativeTabs.register(modBus); // dedicated creative tab
         ModEntityTypes.ENTITY_TYPES.register(modBus);
         ModMenuTypes.MENU_TYPES.register(modBus);
         modBus.addListener(ModEntityAttributes::registerAttributes);

@@ -11,6 +11,7 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import com.majorbonghits.moderncompanions.item.QuarterstaffItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
@@ -61,7 +62,7 @@ public class Cleric extends AbstractHumanCompanionEntity {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (stack.is(Items.GOLDEN_SWORD) || stack.getItem() instanceof BowItem) { // keep totem visuals golden-themed
+            if (stack.is(Items.GOLDEN_SWORD) || stack.getItem() instanceof BowItem || stack.getItem() instanceof QuarterstaffItem) { // keep totem visuals golden-themed
                 if (hand.isEmpty()) {
                     this.setItemSlot(EquipmentSlot.MAINHAND, stack);
                     hand = stack;

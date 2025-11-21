@@ -66,6 +66,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> END = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> KILL_COUNT = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ALERT = SynchedEntityData
@@ -164,6 +166,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(INTL, 4);
         builder.define(END, 4);
         builder.define(SPECIALIST, -1);
+        builder.define(KILL_COUNT, 0);
     }
 
     @Override
@@ -378,6 +381,20 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         return this.totalExperience;
     }
 
+    public int getKillCount() {
+        return this.entityData.get(KILL_COUNT);
+    }
+
+    public void setKillCount(int kills) {
+        this.entityData.set(KILL_COUNT, Math.max(0, kills));
+    }
+
+    public void incrementKillCount() {
+        if (!this.level().isClientSide) {
+            setKillCount(getKillCount() + 1);
+        }
+    }
+
     public int getStrength() {
         return this.entityData.get(STR);
     }
@@ -507,48 +524,43 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         ItemStack held = player.getItemInHand(hand);
         if (hand == InteractionHand.MAIN_HAND) {
             if (!this.isTame() && !this.level().isClientSide()) {
-                if (held.has(DataComponents.FOOD)) {
-                    if (foodRequirements.isEmpty()) {
-                        assignFoodRequirements();
-                    }
-                    if (foodRequirements.containsKey(held.getItem())) {
-                        int remaining = foodRequirements.get(held.getItem());
-                        if (remaining > 0) {
-                            held.shrink(1);
-                            foodRequirements.put(held.getItem(), remaining - 1);
-                            syncFoodRequirements();
-                            if (foodRequirements.values().stream().allMatch(v -> v <= 0)) {
-                                this.tame(player);
-                                player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
-                                        Component.literal("Thanks!")));
-                                player.sendSystemMessage(Component.literal("Companion added"));
-                                setPatrolPos(null);
-                                setPatrolling(false);
-                                setFollowing(true);
-                                setPatrolRadius(4);
-                                if (patrolGoal != null)
-                                    patrolGoal.radius = 4;
-                                if (moveBackGoal != null)
-                                    moveBackGoal.radius = 4;
-                            } else if (foodRequirements.get(held.getItem()) == 0) {
-                                player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
-                                        CompanionData.ENOUGH_FOOD[this.random
-                                                .nextInt(CompanionData.ENOUGH_FOOD.length)]));
-                            } else {
-                                player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
-                                        CompanionData.tameFail[this.random.nextInt(CompanionData.tameFail.length)]));
-                            }
+                if (foodRequirements.isEmpty()) {
+                    assignFoodRequirements();
+                }
+                if (foodRequirements.containsKey(held.getItem())) {
+                    int remaining = foodRequirements.get(held.getItem());
+                    if (remaining > 0) {
+                        held.shrink(1);
+                        foodRequirements.put(held.getItem(), remaining - 1);
+                        syncFoodRequirements();
+                        if (foodRequirements.values().stream().allMatch(v -> v <= 0)) {
+                            this.tame(player);
+                            player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
+                                    Component.literal("Thanks!")));
+                            player.sendSystemMessage(Component.literal("Companion added"));
+                            setPatrolPos(null);
+                            setPatrolling(false);
+                            setFollowing(true);
+                            setPatrolRadius(4);
+                            if (patrolGoal != null)
+                                patrolGoal.radius = 4;
+                            if (moveBackGoal != null)
+                                moveBackGoal.radius = 4;
+                        } else if (foodRequirements.get(held.getItem()) == 0) {
+                            player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
+                                    CompanionData.ENOUGH_FOOD[this.random
+                                            .nextInt(CompanionData.ENOUGH_FOOD.length)]));
                         } else {
                             player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
-                                    CompanionData.ENOUGH_FOOD[this.random.nextInt(CompanionData.ENOUGH_FOOD.length)]));
+                                    CompanionData.tameFail[this.random.nextInt(CompanionData.tameFail.length)]));
                         }
                     } else {
                         player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
-                                CompanionData.WRONG_FOOD[this.random.nextInt(CompanionData.WRONG_FOOD.length)]));
+                                CompanionData.ENOUGH_FOOD[this.random.nextInt(CompanionData.ENOUGH_FOOD.length)]));
                     }
                 } else {
                     player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
-                            CompanionData.notTamed[this.random.nextInt(CompanionData.notTamed.length)]));
+                            CompanionData.WRONG_FOOD[this.random.nextInt(CompanionData.WRONG_FOOD.length)]));
                     player.sendSystemMessage(Component.literal(getFoodStatus()));
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -642,6 +654,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putFloat("XpP", this.experienceProgress);
         tag.putInt("XpLevel", this.getExpLvl());
         tag.putInt("XpTotal", this.totalExperience);
+        tag.putInt("KillCount", this.getKillCount());
         tag.putString("food1", entityData.get(FOOD1));
         tag.putString("food2", entityData.get(FOOD2));
         tag.putInt("food1_amt", entityData.get(FOOD1_AMT));
@@ -675,6 +688,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.experienceProgress = tag.getFloat("XpP");
         this.totalExperience = tag.getInt("XpTotal");
         this.setExpLvl(tag.getInt("XpLevel"));
+        setKillCount(tag.contains("KillCount") ? tag.getInt("KillCount") : 0);
         syncExpProgress();
         entityData.set(FOOD1, tag.getString("food1"));
         entityData.set(FOOD2, tag.getString("food2"));

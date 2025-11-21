@@ -17,6 +17,7 @@ public final class CompanionEvents {
     @SubscribeEvent
     public static void giveExperience(LivingDeathEvent event) {
         if (event.getSource().getEntity() instanceof AbstractHumanCompanionEntity companion && event.getEntity().level() instanceof ServerLevel serverLevel) {
+            companion.incrementKillCount(); // keep kill counter in sync for GUI/overlays
             companion.giveExperiencePoints(event.getEntity().getExperienceReward(serverLevel, companion));
         }
     }

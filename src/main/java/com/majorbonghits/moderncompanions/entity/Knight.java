@@ -13,6 +13,7 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import com.majorbonghits.moderncompanions.item.*;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -25,21 +26,42 @@ public class Knight extends AbstractHumanCompanionEntity {
         this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
     }
 
-    public boolean isSword(ItemStack stack) {
-        return stack.is(TagsInit.Items.SWORDS) || (!stack.is(TagsInit.Items.AXES) && stack.getItem() instanceof SwordItem);
+    private boolean isPreferredWeapon(ItemStack stack) {
+        return stack.getItem() instanceof SwordItem
+                || stack.getItem() instanceof DaggerItem
+                || stack.getItem() instanceof ClubItem
+                || stack.getItem() instanceof SpearItem
+                || stack.getItem() instanceof GlaiveItem
+                || stack.getItem() instanceof QuarterstaffItem
+                || stack.getItem() instanceof HammerItem
+                || stack.is(TagsInit.Items.SWORDS); // allow legacy tag fallback
     }
 
     public void checkSword() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
+        // If the held item is no longer preferred or no longer in inventory, clear it to allow re-equip.
+        if (!hand.isEmpty() && (!isPreferredWeapon(hand) || !inventoryContains(hand.getItem()))) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            hand = ItemStack.EMPTY;
+        }
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack itemstack = this.inventory.getItem(i);
-            if (isSword(itemstack)) {
+            if (isPreferredWeapon(itemstack)) {
                 if (hand.isEmpty()) {
                     this.setItemSlot(EquipmentSlot.MAINHAND, itemstack);
                     hand = itemstack;
                 }
             }
         }
+    }
+
+    private boolean inventoryContains(net.minecraft.world.item.Item item) {
+        for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
+            if (this.inventory.getItem(i).getItem() == item) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
