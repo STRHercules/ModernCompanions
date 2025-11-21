@@ -45,13 +45,24 @@ public class CompanionData {
             Items.COOKED_RABBIT
     };
 
-    public static final MutableComponent[] tameFail = new MutableComponent[]{
+     public static final MutableComponent[] tameFail = new MutableComponent[]{
             Component.literal("I need more food."),
             Component.literal("Is that all you got?"),
             Component.literal("I'm still hungry."),
             Component.literal("Can I have some more?"),
             Component.literal("I'm going to need a bit more."),
             Component.literal("That's not enough."),
+            // extra lines
+            Component.literal("You call that a meal?"),
+            Component.literal("My stomach didn't even notice that."),
+            Component.literal("Nope. Still hungry."),
+            Component.literal("I'm going to pretend that never happened. Try again."),
+            Component.literal("Nice start. Now add about ten more of those."),
+            Component.literal("I appreciate the effort, not the portion size."),
+            Component.literal("You're going to have to commit harder than that."),
+            Component.literal("That was a snack, not a meal."),
+            Component.literal("I'm going to need a lot more if you want my loyalty."),
+            Component.literal("My hunger bar barely moved.")
     };
 
     public static final MutableComponent[] notTamed = new MutableComponent[]{
@@ -61,6 +72,17 @@ public class CompanionData {
             Component.literal("I could use some food."),
             Component.literal("I wish I had some food."),
             Component.literal("I'm starving."),
+            // extra lines
+            Component.literal("Got any snacks on you? Asking for a friend. I'm the friend."),
+            Component.literal("We could be best friends... if you had food."),
+            Component.literal("I'll listen when the food starts talking."),
+            Component.literal("You look like someone who carries snacks. Prove me right."),
+            Component.literal("No food, no deal."),
+            Component.literal("We can talk taming after we talk feeding."),
+            Component.literal("Is there a delivery service around here? Preferably you."),
+            Component.literal("I'm interviewing humans. Requirement: must bring food."),
+            Component.literal("If you had food, this conversation would be going better."),
+            Component.literal("Step one: food. Step two: maybe I'll like you.")
     };
 
     public static final MutableComponent[] WRONG_FOOD = new MutableComponent[]{
@@ -68,13 +90,35 @@ public class CompanionData {
             Component.literal("I didn't ask for that."),
             Component.literal("Looks like you didn't understand my request."),
             Component.literal("Did you forget what I asked for?"),
-            Component.literal("I don't remember asking for that")
+            Component.literal("I don't remember asking for that"),
+            // extra lines
+            Component.literal("That's… boldly incorrect."),
+            Component.literal("Are you even listening to me?"),
+            Component.literal("Points for effort, not for accuracy."),
+            Component.literal("Close. But also not close at all."),
+            Component.literal("This is the opposite of what I wanted."),
+            Component.literal("Creative choice. Still wrong, though."),
+            Component.literal("Did your inventory slip or was that on purpose?"),
+            Component.literal("I'm picky, not desperate."),
+            Component.literal("I asked for food, not whatever that is."),
+            Component.literal("Try again, but this time use your memory.")
     };
 
     public static final MutableComponent[] ENOUGH_FOOD = new MutableComponent[]{
             Component.literal("I have enough of that."),
             Component.literal("I don't want that anymore."),
             Component.literal("I want something else now."),
+            // extra lines
+            Component.literal("If I eat one more of those, I'll explode."),
+            Component.literal("Variety would be nice, you know."),
+            Component.literal("I am officially bored of that flavor."),
+            Component.literal("No more of that, please. My taste buds are on strike."),
+            Component.literal("I'm full on that. Emotionally and physically."),
+            Component.literal("Do you have literally anything else?"),
+            Component.literal("Thanks, but I'm good on those for the next century."),
+            Component.literal("My stomach says no. My soul also says no."),
+            Component.literal("I get it, you like that item. I don't anymore."),
+            Component.literal("Try something new. Surprise me—in a good way.")
     };
 
     public static final Class<?>[] alertMobs = new Class<?>[]{
