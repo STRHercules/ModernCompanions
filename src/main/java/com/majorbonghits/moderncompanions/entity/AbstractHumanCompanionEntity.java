@@ -65,8 +65,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private static final EntityDataAccessor<String> FOOD2 = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> FOOD1_AMT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> FOOD2_AMT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> EXP_PROGRESS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.FLOAT);
 
-    protected final SimpleContainer inventory = new SimpleContainer(27);
+    protected final SimpleContainer inventory = new SimpleContainer(54);
     protected final Map<Item, Integer> foodRequirements = new HashMap<>();
     protected final Random rand = new Random();
 
@@ -117,6 +118,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(FOOD2, "");
         builder.define(FOOD1_AMT, 0);
         builder.define(FOOD2_AMT, 0);
+        builder.define(EXP_PROGRESS, 0.0F);
     }
 
     @Override
@@ -185,6 +187,17 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         String f2 = entityData.get(FOOD2_AMT) > 0 ? entityData.get(FOOD2_AMT) + "x " + entityData.get(FOOD2) : "done";
         return "Wants: " + f1 + " and " + f2;
     }
+    public String getWantedFoodsCompact() {
+        int amt1 = entityData.get(FOOD1_AMT);
+        int amt2 = entityData.get(FOOD2_AMT);
+        String id1 = entityData.get(FOOD1);
+        String id2 = entityData.get(FOOD2);
+        String first = amt1 > 0 ? amt1 + "x " + prettyItemName(id1) : "";
+        String second = amt2 > 0 ? amt2 + "x " + prettyItemName(id2) : "";
+        if (first.isEmpty() && second.isEmpty()) return "";
+        if (!first.isEmpty() && !second.isEmpty()) return first + ", " + second;
+        return first + second;
+    }
 
     public SimpleContainer getInventory() { return inventory; }
     public Map<Item, Integer> getFoodRequirements() { return foodRequirements; }
@@ -206,7 +219,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public int getExpLvl() { return this.entityData.get(EXP_LVL); }
     public void setExpLvl(int lvl) { this.entityData.set(EXP_LVL, Math.max(lvl, 0)); }
-    public float getExperienceProgress() { return this.experienceProgress; }
+    public float getExperienceProgress() { return this.level().isClientSide ? this.entityData.get(EXP_PROGRESS) : this.experienceProgress; }
     public int getTotalExperience() { return this.totalExperience; }
 
     public ResourceLocation getSkinTexture() {
@@ -355,6 +368,13 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         });
     }
 
+    private String prettyItemName(String id) {
+        ResourceLocation rl = ResourceLocation.tryParse(id);
+        if (rl == null) return id;
+        Item item = BuiltInRegistries.ITEM.get(rl);
+        return item.getDescription().getString();
+    }
+
     /* ---------- Breeding / persistence ---------- */
 
     @Override
@@ -401,6 +421,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.experienceProgress = tag.getFloat("XpP");
         this.totalExperience = tag.getInt("XpTotal");
         this.setExpLvl(tag.getInt("XpLevel"));
+        syncExpProgress();
         entityData.set(FOOD1, tag.getString("food1"));
         entityData.set(FOOD2, tag.getString("food2"));
         entityData.set(FOOD1_AMT, tag.getInt("food1_amt"));
@@ -555,6 +576,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public void giveExperiencePoints(int points) {
         this.experienceProgress += (float) points / (float) this.getXpNeededForNextLevel();
         this.totalExperience = Mth.clamp(this.totalExperience + points, 0, Integer.MAX_VALUE);
+        syncExpProgress();
 
         while (this.experienceProgress < 0.0F) {
             float f = this.experienceProgress * (float) this.getXpNeededForNextLevel();
@@ -572,6 +594,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             this.giveExperienceLevels(1);
             this.experienceProgress /= (float) this.getXpNeededForNextLevel();
         }
+        syncExpProgress();
     }
 
     public void giveExperienceLevels(int levels) {
@@ -581,6 +604,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             this.experienceProgress = 0.0F;
             this.totalExperience = 0;
         }
+        syncExpProgress();
         if (levels > 0 && this.getExpLvl() % 5 == 0 && (float) this.lastLevelUpTime < (float) this.tickCount - 100.0F) {
             this.lastLevelUpTime = this.tickCount;
         }
@@ -612,6 +636,12 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             if (getExpLvl() / 3 != 0) {
                 modifyMaxHealth(getExpLvl() / 3, "companion level health", false);
             }
+        }
+    }
+
+    private void syncExpProgress() {
+        if (!this.level().isClientSide) {
+            this.entityData.set(EXP_PROGRESS, this.experienceProgress);
         }
     }
 

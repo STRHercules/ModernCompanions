@@ -11,10 +11,10 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Simple 3x9 inventory for companions (placeholder until full GUI is ported).
+ * Companion inventory menu (6x9 slots) plus player inventory/hotbar.
  */
 public class CompanionMenu extends AbstractContainerMenu {
-    private static final int COMPANION_ROWS = 3;
+    private static final int COMPANION_ROWS = 6;
     private final Container container;
     private final int companionId;
     private final AbstractHumanCompanionEntity companion;
@@ -94,7 +94,7 @@ public class CompanionMenu extends AbstractContainerMenu {
 
     private static Container resolveContainer(Inventory inv, int id) {
         AbstractHumanCompanionEntity c = resolveEntity(inv, id);
-        return c != null ? c.getInventory() : new SimpleContainer(27);
+        return c != null ? c.getInventory() : new SimpleContainer(COMPANION_ROWS * 9);
     }
 
     private static AbstractHumanCompanionEntity resolveEntity(Inventory inv, int id) {

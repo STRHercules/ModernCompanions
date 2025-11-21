@@ -13,3 +13,9 @@
 - 2025-11-20 (future polish): Add a slider/text field to choose patrol radius directly and expose a "reset to default" button. Consider adding XP bar + next-level preview in the UI, and a toggle to enable/disable creeper warning per companion.
 - 2025-11-20 (following): Now that XP percentage is shown, add a small progress bar graphic and the exact XP needed for next level; also allow exporting/importing companion data via commands for testing.
 - 2025-11-20 (later): Consider recoloring the XP bar to match companion class (melee vs ranged) and add tooltip showing total XP and kills; optional toggle to hide the bar for minimal UI.
+- 2025-11-20 (inventory stats panel): Fine-tune the new stats panel by adding compact icons/labels for armor, damage, and resistances, and align the sidebar buttons visually with any callouts baked into `inventory_stats.png`; if space allows, add hover tooltips for each stat line.
+- 2025-11-21: If the inventory texture ever exceeds 256px in height/width again, centralize texture size constants and add a tiny helper to blit GUIs with explicit atlas dimensions to avoid future wrap issues.
+- 2025-11-21 (stats alignment): Add a small helper to render stats with padding derived from the texture so any future layout tweaks only touch constants; consider centering the text block vertically within the stats panel for balance.
+- 2025-11-21 (XP sync): If we add more client-side displays (kills, total XP), consider syncing a small stats packet on open to avoid relying on data parameters for everything and to reduce bandwidth.
+- 2025-11-21 (inventory growth): Consider adding slot-locking or equipment-only rows to preserve balance now that inventory doubled; or gate extra rows behind higher levels/config to keep early-game companions modest.
+- 2025-11-21 (UI polish): If we tweak the background again, consider driving the 1px offsets from constants so different texture revisions can be tested quickly without changing logic.

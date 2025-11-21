@@ -217,3 +217,57 @@
   - Kept stats panel on the right with darker text and ensured companion lookup each frame. Version bumped to 0.1.09 and build confirmed.
 - Rationale: Aligns radius controls with provided art and restores consistent button behavior; keeps stats visible when companion entity is available client-side.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-20 (inventory stats panel)
+- Prompt/task: "Let's swap the companion inventory gui to: `assets/.../inventory_stats.png` and use the new right-hand stats area."
+- Steps:
+  - Swapped the CompanionScreen background to `inventory_stats.png`, widening the canvas to 345px to expose the added right-hand panel.
+  - Anchored stat rendering within the new panel bounds (229,7)-(326,106) with margins plus dynamic bar sizing to avoid overflow.
+  - Kept the existing sidebar buttons in place and trimmed food/status text to fit the new panel width.
+  - Bumped version to 0.1.10 per policy and reran `./gradlew build -x test` successfully.
+- Rationale: Aligns the companion GUI with the newly provided texture while keeping stats confined to the dedicated panel and maintaining version/build hygiene.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (inventory texture wrap fix)
+- Prompt/task: "The inventory screen is being squished/wrapped; display inventory_stats 1:1."
+- Steps:
+  - Locked CompanionScreen to the exact texture dimensions (345x256) and used the explicit-sized blit call to prevent GL wrapping of widths >256.
+  - Kept slot/button layout unchanged so the new texture draws 1:1 without stretching or tiling.
+  - Bumped version to 0.1.11 and reran `./gradlew build -x test`, which passed.
+- Rationale: Ensures the new inventory_stats background renders at native resolution without squashing or repeat artifacts.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (stats panel alignment)
+- Prompt/task: "Stat info is too far away; keep it inside (229,7)-(327,107) on inventory_stats."
+- Steps:
+  - Corrected stat text anchoring to use GUI-relative coordinates (renderLabels already offsets by left/top), eliminating the double-offset that pushed text off the panel.
+  - Updated panel bounds to 327px max X per the texture and kept the stats width clamped inside that region.
+  - Bumped version to 0.1.12 and reran `./gradlew build -x test`, which passed.
+- Rationale: Places the stat block precisely in the intended texture panel without overflow.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (live XP + food strip)
+- Prompt/task: "XP bar/count not updating live; move wanted food to the lower strip and drop the 'Wants:' label."
+- Steps:
+  - Synced companion XP progress via a new data parameter so clients see real-time bar/needed XP updates while the GUI is open.
+  - Added a compact wanted-food formatter and rendered it in the dedicated strip at (228,135)-(328,157) without the 'Wants:' prefix; overflow is wrapped and clamped to the strip.
+  - Kept the rest of the stats panel intact and bumped version to 0.1.13; `./gradlew build -x test` passes.
+- Rationale: Restores live feedback for leveling and aligns the requested food display with the provided texture layout.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (companion inventory size)
+- Prompt/task: "Companion inventory too small; player inventory is sitting too high."
+- Steps:
+  - Doubled companion storage from 27 to 54 slots (6x9) by enlarging the entity SimpleContainer and menu row count, which naturally lowers the player inventory to the correct Y offset.
+  - Bumped version to 0.1.14 and verified build with `./gradlew build -x test`.
+- Rationale: Matches GUI layout expectations and keeps player slots aligned with the background texture while giving companions more carry capacity. Updated fallback menu container to the new size for safety.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (1px nudge + class title)
+- Prompt/task: "Shift the GUI down 1px and capitalize the displayed class name."
+- Steps:
+  - Offset the screen anchor by 1px and render the background at `leftPos/topPos` so all slots/buttons move together.
+  - Capitalized the class label readout (axeguard -> Axeguard, etc.).
+  - Bumped version to 0.1.15; build verified with `./gradlew build -x test`.
+- Rationale: Aligns the inventory art with its shadow and improves label readability.
+- Build/Test: `./gradlew build -x test` ✔️

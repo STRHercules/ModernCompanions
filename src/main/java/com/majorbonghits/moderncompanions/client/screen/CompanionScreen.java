@@ -16,6 +16,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -25,13 +26,24 @@ import java.util.Optional;
  * Companion inventory screen styled like the original mod, including sidebar buttons and right-hand stats.
  */
 public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
-    private static final ResourceLocation BG = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/inventory.png");
+    private static final ResourceLocation BG = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/inventory_stats.png");
+    private static final int BG_WIDTH = 345;
+    private static final int BG_HEIGHT = 256;
     private static final ResourceLocation ALERT_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/alertbutton.png");
     private static final ResourceLocation HUNT_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/huntingbutton.png");
     private static final ResourceLocation PATROL_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/patrolbutton.png");
     private static final ResourceLocation CLEAR_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/clearbutton.png");
     private static final ResourceLocation STATIONARY_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/stationerybutton.png");
     private static final ResourceLocation RELEASE_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/releasebutton.png");
+    // Right-hand stats panel on inventory_stats.png runs from (229,7) to (327,107)
+    private static final int STATS_LEFT = 229;
+    private static final int STATS_TOP = 7;
+    private static final int STATS_RIGHT = 327;
+    // Wanted food strip sits lower on the texture (228,135) to (328,157)
+    private static final int FOOD_LEFT = 228;
+    private static final int FOOD_TOP = 135;
+    private static final int FOOD_RIGHT = 328;
+    private static final int FOOD_BOTTOM = 157;
 
     private CompanionButton alertButton;
     private CompanionButton huntButton;
@@ -46,8 +58,8 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
 
     public CompanionScreen(CompanionMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
-        this.imageWidth = 226;
-        this.imageHeight = 222; // match original layout height
+        this.imageWidth = BG_WIDTH;
+        this.imageHeight = BG_HEIGHT; // draw full texture 1:1; prevents GL wrapping
         this.inventoryLabelY = this.imageHeight - 94;
         this.sidebarX = 174;
     }
@@ -55,6 +67,8 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     @Override
     protected void init() {
         super.init();
+        // Nudge whole GUI down by 1px to align with texture shadow
+        this.topPos += 1;
         int rowHeight = 15;
         int row1 = topPos + 66;
         int row2 = row1 + rowHeight;
@@ -80,22 +94,24 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
 
     @Override
     protected void renderBg(GuiGraphics gfx, float partialTick, int mouseX, int mouseY) {
-        int x = (this.width - this.imageWidth) / 2;
-        int y = (this.height - this.imageHeight) / 2;
-        gfx.blit(BG, x, y, 0, 0, this.imageWidth, this.imageHeight);
+        int x = this.leftPos;
+        int y = this.topPos;
+        gfx.blit(BG, x, y, 0, 0, this.imageWidth, this.imageHeight, BG_WIDTH, BG_HEIGHT);
     }
 
     @Override
     protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) {
         // vanilla labels suppressed; we draw custom stats at right
         safeCompanion().ifPresent(companion -> {
-            int statsX = this.leftPos + this.sidebarX + 4;
-            int y = this.titleLabelY + 3;
+            // renderLabels already translates to (leftPos, topPos); use texture-relative coords
+            int statsX = STATS_LEFT + 4;
+            int statsWidth = (STATS_RIGHT - STATS_LEFT) - 8;
+            int y = STATS_TOP + 2;
 
             gfx.drawString(this.font, Component.literal("Class").withStyle(ChatFormatting.UNDERLINE), statsX, y, 0x000000, false);
             y += 10;
             String cls = companion instanceof Arbalist ? "Arbalist" : companion instanceof Archer ? "Archer" : companion.getType().toShortString();
-            gfx.drawString(this.font, Component.literal(cls), statsX, y, 0x000000, false);
+            gfx.drawString(this.font, Component.literal(capitalize(cls)), statsX, y, 0x000000, false);
             y += 12;
 
             gfx.drawString(this.font, Component.literal("Health").withStyle(ChatFormatting.UNDERLINE), statsX, y, 0x000000, false);
@@ -108,7 +124,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             int xpHave = Math.round(xpFrac * xpNeeded);
             gfx.drawString(this.font, Component.literal("Level " + companion.getExpLvl()), statsX, y, 0x000000, false);
             y += 10;
-            int barW = 80;
+            int barW = Math.max(60, Math.min(90, statsWidth));
             int barH = 6;
             int filledW = (int) (barW * xpFrac);
             gfx.fill(statsX, y, statsX + barW, y + barH, 0xFF777777);
@@ -118,8 +134,19 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             y += 12;
 
             gfx.drawString(this.font, Component.literal("Patrol Radius: " + companion.getPatrolRadius()), statsX, y, 0x000000, false);
-            y += 10;
-            gfx.drawString(this.font, Component.literal(companion.getFoodStatus()), statsX, y, 0x000000, false);
+            // Wanted food block anchored to dedicated strip on the texture
+            int foodX = FOOD_LEFT + 2;
+            int foodY = FOOD_TOP + 2;
+            int foodWidth = (FOOD_RIGHT - FOOD_LEFT) - 4;
+            String food = companion.getWantedFoodsCompact();
+            if (food.isEmpty()) {
+                food = "All set";
+            }
+            for (FormattedCharSequence line : this.font.split(Component.literal(food), foodWidth)) {
+                gfx.drawString(this.font, line, foodX, foodY, 0x000000, false);
+                foodY += 10;
+                if (foodY > FOOD_BOTTOM) break; // stay inside strip
+            }
         });
     }
 
@@ -221,5 +248,11 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         private int flag(boolean value, int on, int off) {
             return value ? on : off;
         }
+    }
+
+    private String capitalize(String name) {
+        if (name == null || name.isEmpty()) return "";
+        if (name.length() == 1) return name.toUpperCase();
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 }
