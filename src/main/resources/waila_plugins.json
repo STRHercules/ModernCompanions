@@ -1,0 +1,10 @@
+{
+  "modern_companions:attributes": {
+    "entrypoints": {
+      "common": "com.majorbonghits.moderncompanions.compat.wthit.CompanionWthitCommonPlugin",
+      "client": "com.majorbonghits.moderncompanions.compat.wthit.CompanionWthitClientPlugin"
+    },
+    "side": "*",
+    "required": ["modern_companions"]
+  }
+}

@@ -16,6 +16,10 @@ java {
 repositories {
     maven { url = "https://maven.neoforged.net/releases" }
     maven { url = "https://maven.parchmentmc.org" }
+    maven {
+        url = "https://api.modrinth.com/maven"
+        content { includeGroup("maven.modrinth") }
+    }
     mavenCentral()
 }
 
@@ -45,6 +49,10 @@ neoForge {
 dependencies {
     // Mod runtime + compile dep; resolved via the NeoForge maven above.
     implementation "net.neoforged:neoforge:${project.findProperty("neo_version")}"
+
+    // Optional HUD integrations (Jade / WTHIT). Kept compileOnly so the mod remains optional; runtimeOnly enables local dev runs.
+    compileOnly "maven.modrinth:jade:${project.findProperty("jade_version")}" 
+    compileOnly "maven.modrinth:wthit:${project.findProperty("wthit_version")}" 
 }
 
 java {

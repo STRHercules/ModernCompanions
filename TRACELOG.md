@@ -380,3 +380,28 @@
   - Bumped version to 0.1.26 and reran `./gradlew build -x test`.
 - Rationale: Visually calls out specialist companions and which attribute received the bonus.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Jade/WTHIT attributes)
+- Prompt/task: "Expose Companion Attributes in WTHIT/Jade"
+- Steps:
+  - Added optional Modrinth deps for Jade 15.10.3+neoforge and WTHIT neo-12.8.2; bumped version to 0.1.27.
+  - Implemented shared tooltip formatter plus Jade and WTHIT plugins/providers to send STR/DEX/INT/END and render a compact "S:x | D:x | I:x | E:x" line on companion HUD entries; registered WTHIT entrypoint via `waila_plugins.json` and added optional mod deps in `neoforge.mods.toml`.
+  - Ran `./gradlew build -x test` to confirm the integration compiles and builds cleanly.
+- Rationale: Surfaces RPG attributes at a glance in both popular HUD overlays without requiring either mod as a dependency.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (HUD deps optional)
+- Prompt/task: "Jade/WTHIT are OPTIONAL, we do not want them to be hard dependancies"
+- Steps:
+  - Removed runtimeOnly pulls for Jade/WTHIT so they remain purely compileOnly (no bundled/required jars) while keeping optional dependency flags in mod metadata; bumped version to 0.1.28.
+  - Rebuilt to verify the project still compiles without the overlays present.
+- Rationale: Ensures both overlays stay optional add-ons and are not brought in transitively by Modern Companions.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (No Jade requirement)
+- Prompt/task: "Still being told I need Jade installed. We should oinly be loading Jad support IF Jade is installed"
+- Steps:
+  - Removed Jade/WTHIT dependency entries from `neoforge.mods.toml` so the mod no longer advertises/requests those mods at load time while keeping compileOnly hooks available.
+  - Bumped version to 0.1.29 and rebuilt successfully.
+- Rationale: Prevents NeoForge from surfacing Jade as a suggested/required dependency; integrations now stay dormant unless the overlays are actually present.
+- Build/Test: `./gradlew build -x test` ✔️
