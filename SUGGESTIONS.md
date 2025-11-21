@@ -22,3 +22,7 @@
 - 2025-11-21 (pickup toggle): Expose pickup radius/behavior in config (owner-only vs global, magnet strength) and add a quick visual indicator near the button so players know when auto-loot is active.
 - 2025-11-21 (RPG stats UI): Surface STR/DEX/INT/END in the companion screen with icons + tooltips, and show any rolled “specialist” bonus so players can see their companion’s build.
 - 2025-11-21 (HUD overlays): Add configurable toggle and color-coding for the Jade/WTHIT attribute line (e.g., specialist color), and consider exposing health/XP alongside stats for parity with the inventory panel.
+- 2025-11-21 (new classes): Playtest the seven new roles to tune numbers—e.g., cap Vanguard projectile DR, scale Berserker cleave with weapon tier, give Beastmaster pet sit/unsit commands, and add cooldown HUD hints for Stormcaller/Alchemist effects so players can anticipate bursts.
+- 2025-11-21 (spawn eggs): Now that eggs are registered for the new roles, validate they show in the Spawn Eggs tab and consider a dedicated “Companions” creative tab for easier discovery.
+- 2025-11-21 (egg art): If we keep gem-style eggs, consider theming colors to match class UI tinting (e.g., tank blues, healer golds) or swap to class weapon icons later; add a simple glow/outline variant for higher-tier spawn items if desired.
+- 2025-11-21 (legacy egg gems): Confirm the four original classes render with their new Gem_7–Gem_10 icons and adjust hues if they clash with the new roles; a single palette map in docs would help keep future assignments consistent.

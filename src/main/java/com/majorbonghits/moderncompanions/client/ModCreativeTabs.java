@@ -22,6 +22,13 @@ public final class ModCreativeTabs {
             event.accept(ModItems.KNIGHT_SPAWN_EGG.get());
             event.accept(ModItems.ARCHER_SPAWN_EGG.get());
             event.accept(ModItems.AXEGUARD_SPAWN_EGG.get());
+            event.accept(ModItems.VANGUARD_SPAWN_EGG.get());
+            event.accept(ModItems.BERSERKER_SPAWN_EGG.get());
+            event.accept(ModItems.BEASTMASTER_SPAWN_EGG.get());
+            event.accept(ModItems.CLERIC_SPAWN_EGG.get());
+            event.accept(ModItems.ALCHEMIST_SPAWN_EGG.get());
+            event.accept(ModItems.SCOUT_SPAWN_EGG.get());
+            event.accept(ModItems.STORMCALLER_SPAWN_EGG.get());
         }
     }
 }

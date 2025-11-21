@@ -2,8 +2,6 @@ package com.majorbonghits.moderncompanions.client.screen;
 
 import com.majorbonghits.moderncompanions.ModernCompanions;
 import com.majorbonghits.moderncompanions.entity.AbstractHumanCompanionEntity;
-import com.majorbonghits.moderncompanions.entity.Arbalist;
-import com.majorbonghits.moderncompanions.entity.Archer;
 import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import com.majorbonghits.moderncompanions.network.CompanionActionPayload;
 import com.majorbonghits.moderncompanions.network.SetPatrolRadiusPayload;
@@ -119,8 +117,8 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
 
             gfx.drawString(this.font, Component.literal("Class").withStyle(ChatFormatting.UNDERLINE), statsX, y, 0x000000, false);
             y += 10;
-            String cls = companion instanceof Arbalist ? "Arbalist" : companion instanceof Archer ? "Archer" : companion.getType().toShortString();
-            gfx.drawString(this.font, Component.literal(capitalize(cls)), statsX, y, 0x000000, false);
+            String cls = companion.getClassDisplayName();
+            gfx.drawString(this.font, Component.literal(cls), statsX, y, 0x000000, false);
             y += 12;
 
             gfx.drawString(this.font, Component.literal("Health").withStyle(ChatFormatting.UNDERLINE), statsX, y, 0x000000, false);
@@ -254,12 +252,6 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         private int flag(boolean value, int on, int off) {
             return value ? on : off;
         }
-    }
-
-    private String capitalize(String name) {
-        if (name == null || name.isEmpty()) return "";
-        if (name.length() == 1) return name.toUpperCase();
-        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 
     private void renderAttributes(GuiGraphics gfx, AbstractHumanCompanionEntity companion) {

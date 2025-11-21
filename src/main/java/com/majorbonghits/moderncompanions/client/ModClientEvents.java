@@ -27,5 +27,12 @@ public final class ModClientEvents {
         event.registerEntityRenderer(ModEntityTypes.ARCHER.get(), CompanionRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.ARBALIST.get(), CompanionRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.AXEGUARD.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.VANGUARD.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.BERSERKER.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.BEASTMASTER.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.CLERIC.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.ALCHEMIST.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.SCOUT.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.STORMCALLER.get(), CompanionRenderer::new);
     }
 }

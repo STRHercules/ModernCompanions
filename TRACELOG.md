@@ -405,3 +405,44 @@
   - Bumped version to 0.1.29 and rebuilt successfully.
 - Rationale: Prevents NeoForge from surfacing Jade as a suggested/required dependency; integrations now stay dormant unless the overlays are actually present.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (New companion classes)
+- Prompt/task: "Let's extend the amount of 'classes' these companions can be" (add Vanguard, Berserker, Beastmaster, Cleric, Alchemist, Scout, Stormcaller).
+- Steps:
+  - Implemented seven new companion entity classes with role-flavored passives (e.g., Vanguard taunt + projectile DR aura, Berserker rage + cleave, Beastmaster pet respawn and animal buffs, Cleric heals vs undead, Alchemist support/debuff potions, Scout mobility/backstab, Stormcaller lightning burst).
+  - Registered entity types, spawn eggs, renderer bindings, and updated the GUI to show class names generically from registry paths; added helper for class display text.
+  - Bumped version to 0.1.30 and ran `./gradlew compileJava` to confirm the code compiles cleanly.
+- Rationale: Expands the roster with themed combat/support roles while keeping registrations/UI in sync for immediate playtesting.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Spawn eggs for new roles)
+- Prompt/task: "I dont see any spawn eggs for the new classes using the 1.30 build"
+- Steps:
+  - Added the seven new companion spawn eggs to the vanilla Spawn Eggs creative tab in `ModCreativeTabs` and bumped version to 0.1.31.
+  - Re-ran `./gradlew compileJava` to verify registration builds.
+- Rationale: Ensures all new roles are discoverable in creative without commands.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Spawn egg textures)
+- Prompt/task: "All 7 new class spawn eggs have broken textures ... assign Gem_0–Gem_13 textures as spawn eggs"
+- Steps:
+  - Added custom item models for each new spawn egg pointing to Gem_0–Gem_6 textures and bumped version to 0.1.32.
+  - Recompiled with `./gradlew compileJava` to confirm resource/model registration.
+- Rationale: Fixes missing textures for the new eggs and gives each role a distinct gem token.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Original class egg art)
+- Prompt/task: "Now swap the og classes spawn eggs with unique Gems"
+- Steps:
+  - Replaced Knight/Archer/Arbalist/Axeguard spawn egg models to use Gem_7–Gem_10 textures and bumped version to 0.1.33.
+  - Verified resources compile with `./gradlew compileJava`.
+- Rationale: Gives legacy classes distinctive gem icons to match the new roster style.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (New class localization)
+- Prompt/task: "The new classes are not displayed properly, they are raw strings"
+- Steps:
+  - Added English localization entries for all new entities and spawn eggs, fixed Axeguard egg typo, and bumped version to 0.1.34 so tooltips/hotbar names render properly.
+  - Left existing non-English locales untouched (fallback will use the English entries until translations are provided).
+- Rationale: Ensures new roles show proper names in tooltips, WTHIT/Jade overlays, and hotbar items instead of raw translation keys.
+- Build/Test: `./gradlew compileJava` ✔️

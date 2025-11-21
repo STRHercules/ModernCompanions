@@ -1,0 +1,113 @@
+package com.majorbonghits.moderncompanions.entity;
+
+import com.majorbonghits.moderncompanions.core.ModConfig;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * Supportive healer built to counter undead and keep allies standing.
+ */
+public class Cleric extends AbstractHumanCompanionEntity {
+    private int healTicker;
+
+    public Cleric(EntityType<? extends TamableAnimal> type, Level level) {
+        super(type, level);
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
+    }
+
+    @Override
+    public void tick() {
+        if (!this.level().isClientSide()) {
+            checkStaff();
+            tickHealing();
+            tickBlessings();
+        }
+        super.tick();
+    }
+
+    @Override
+    public boolean doHurtTarget(Entity entity) {
+        boolean hit = super.doHurtTarget(entity);
+        if (!this.level().isClientSide() && entity instanceof Mob mob) {
+            if (mob.getType().is(EntityTypeTags.UNDEAD) || mob instanceof Zombie) {
+                mob.hurt(this.damageSources().mobAttack(this), 3.0F);
+            }
+        }
+        return hit;
+    }
+
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
+        if (ModConfig.safeGet(ModConfig.SPAWN_WEAPON)) {
+            this.inventory.setItem(4, Items.GOLDEN_SWORD.getDefaultInstance());
+            this.inventory.setItem(5, Items.TOTEM_OF_UNDYING.getDefaultInstance());
+            checkStaff();
+        }
+        return super.finalizeSpawn(level, difficulty, reason, data);
+    }
+
+    private void checkStaff() {
+        ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
+        for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
+            ItemStack stack = this.inventory.getItem(i);
+            if (stack.is(Items.GOLDEN_SWORD) || stack.getItem() instanceof BowItem) { // keep totem visuals golden-themed
+                if (hand.isEmpty()) {
+                    this.setItemSlot(EquipmentSlot.MAINHAND, stack);
+                    hand = stack;
+                }
+            }
+        }
+        ItemStack offhand = this.getItemBySlot(EquipmentSlot.OFFHAND);
+        for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
+            ItemStack stack = this.inventory.getItem(i);
+            if (stack.is(Items.TOTEM_OF_UNDYING) && offhand.isEmpty()) {
+                this.setItemSlot(EquipmentSlot.OFFHAND, stack);
+                offhand = stack;
+            }
+        }
+    }
+
+    private void tickHealing() {
+        if (++healTicker % 30 != 0) return;
+        this.level().getEntities(this, this.getBoundingBox().inflate(6.0D), this::isAlly)
+                .forEach(e -> {
+                    if (e instanceof LivingEntity living && living.getHealth() / living.getMaxHealth() < 0.65F) {
+                        living.heal(2.5F);
+                        living.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0, true, true));
+                    }
+                });
+    }
+
+    private void tickBlessings() {
+        if (this.random.nextInt(120) != 0) return;
+        this.level().getEntities(this, this.getBoundingBox().inflate(6.0D), this::isAlly)
+                .forEach(e -> {
+                    if (e instanceof LivingEntity living) {
+                        living.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 100, 0, true, true));
+                        living.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0, true, true));
+                    }
+                });
+    }
+
+    private boolean isAlly(Entity entity) {
+        if (entity == this) return false;
+        if (entity instanceof AbstractHumanCompanionEntity comp) {
+            return comp.getOwner() != null && this.getOwner() != null && comp.getOwner() == this.getOwner();
+        }
+        if (entity instanceof TamableAnimal tamable) {
+            return tamable.isTame() && this.getOwner() != null && this.getOwner().equals(tamable.getOwner());
+        }
+        return entity == this.getOwner();
+    }
+}

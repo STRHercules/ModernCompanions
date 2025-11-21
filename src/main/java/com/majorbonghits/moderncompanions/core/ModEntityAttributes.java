@@ -15,5 +15,12 @@ public final class ModEntityAttributes {
         event.put(ModEntityTypes.ARCHER.get(), attrs);
         event.put(ModEntityTypes.ARBALIST.get(), attrs);
         event.put(ModEntityTypes.AXEGUARD.get(), attrs);
+        event.put(ModEntityTypes.VANGUARD.get(), attrs);
+        event.put(ModEntityTypes.BERSERKER.get(), attrs);
+        event.put(ModEntityTypes.BEASTMASTER.get(), attrs);
+        event.put(ModEntityTypes.CLERIC.get(), attrs);
+        event.put(ModEntityTypes.ALCHEMIST.get(), attrs);
+        event.put(ModEntityTypes.SCOUT.get(), attrs);
+        event.put(ModEntityTypes.STORMCALLER.get(), attrs);
     }
 }

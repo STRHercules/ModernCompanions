@@ -261,6 +261,21 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         return this.entityData.get(PATROL_RADIUS);
     }
 
+    /**
+     * Human-readable class label derived from the entity registry name.
+     */
+    public String getClassDisplayName() {
+        var key = BuiltInRegistries.ENTITY_TYPE.getKey(this.getType());
+        if (key == null) return "Companion";
+        String path = key.getPath().replace('_', ' ');
+        StringBuilder builder = new StringBuilder();
+        for (String part : path.split(" ")) {
+            if (part.isEmpty()) continue;
+            builder.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
+        }
+        return builder.toString().trim();
+    }
+
     public void setPatrolRadius(int radius) {
         this.entityData.set(PATROL_RADIUS, Mth.clamp(radius, 1, 64));
         if (patrolGoal != null)
