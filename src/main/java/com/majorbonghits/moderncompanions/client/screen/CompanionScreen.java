@@ -268,22 +268,27 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         int width = (ATTR_RIGHT - ATTR_LEFT) - 6;
         //gfx.drawString(this.font, Component.literal("Attributes").withStyle(ChatFormatting.UNDERLINE), x, y, 0x000000, false);
         //y += 10;
-        drawStatLine(gfx, x, y, width, "Strength", companion.getStrength());
+        drawStatLine(gfx, x, y, width, "Strength", companion.getStrength(), isSpecialist(companion, 0));
         y += 10;
-        drawStatLine(gfx, x, y, width, "Dexterity", companion.getDexterity());
+        drawStatLine(gfx, x, y, width, "Dexterity", companion.getDexterity(), isSpecialist(companion, 1));
         y += 10;
-        drawStatLine(gfx, x, y, width, "Intelligence", companion.getIntelligence());
+        drawStatLine(gfx, x, y, width, "Intelligence", companion.getIntelligence(), isSpecialist(companion, 2));
         y += 10;
-        drawStatLine(gfx, x, y, width, "Endurance", companion.getEndurance());
+        drawStatLine(gfx, x, y, width, "Endurance", companion.getEndurance(), isSpecialist(companion, 3));
     }
 
-    private void drawStatLine(GuiGraphics gfx, int x, int y, int width, String name, int value) {
-        String line = name + ": " + value;
+    private void drawStatLine(GuiGraphics gfx, int x, int y, int width, String name, int value, boolean highlight) {
+        String line = name + ": " + value + (highlight ? " ★" : "");
+        int color = highlight ? 0xFFD54F : 0x000000;
         for (FormattedCharSequence seq : this.font.split(Component.literal(line), width)) {
-            gfx.drawString(this.font, seq, x, y, 0x000000, false);
+            gfx.drawString(this.font, seq, x, y, color, false);
             y += 10;
             if (y > ATTR_BOTTOM) break;
         }
+    }
+
+    private boolean isSpecialist(AbstractHumanCompanionEntity companion, int idx) {
+        return companion.getSpecialistAttributeIndex() == idx;
     }
 
     private void renderWantedFood(GuiGraphics gfx, AbstractHumanCompanionEntity companion) {

@@ -371,3 +371,12 @@
   - Bumped version to 0.1.25 and reran `./gradlew build -x test`.
 - Rationale: Makes pleas for food feel more natural and less chat-spammy while still alerting the owner when healing is needed.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (specialist highlight)
+- Prompt/task: "Highlight specialist attributes in the GUI."
+- Steps:
+  - Added a synced specialist attribute index (-1 when none), saved/loaded via NBT and set during stat roll when the +5 specialist bonus applies.
+  - Companion GUI now renders the specialist stat in yellow with a star marker.
+  - Bumped version to 0.1.26 and reran `./gradlew build -x test`.
+- Rationale: Visually calls out specialist companions and which attribute received the bonus.
+- Build/Test: `./gradlew build -x test` ✔️

@@ -96,6 +96,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> EXP_PROGRESS = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> SPECIALIST = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final int FOOD_REQUEST_COOLDOWN_TICKS = 600; // ~30s between requests
 
     protected final SimpleContainer inventory = new SimpleContainer(54);
@@ -105,6 +107,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public PatrolGoal patrolGoal;
     public MoveBackToPatrolGoal moveBackGoal;
     private int lastFoodRequestTick = -200;
+    private int specialistAttr = -1; // 0=STR,1=DEX,2=INT,3=END; -1 none
 
     private int totalExperience;
     private float experienceProgress;
@@ -160,6 +163,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(DEX, 4);
         builder.define(INTL, 4);
         builder.define(END, 4);
+        builder.define(SPECIALIST, -1);
     }
 
     @Override
@@ -375,6 +379,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         return this.entityData.get(END);
     }
 
+    public int getSpecialistAttributeIndex() {
+        return this.entityData.get(SPECIALIST);
+    }
+
     public void setStrength(int value) {
         this.entityData.set(STR, Math.max(1, value));
     }
@@ -389,6 +397,11 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public void setEndurance(int value) {
         this.entityData.set(END, Math.max(1, value));
+    }
+
+    public void setSpecialistAttributeIndex(int idx) {
+        this.entityData.set(SPECIALIST, idx);
+        this.specialistAttr = idx;
     }
 
     public ResourceLocation getSkinTexture() {
@@ -622,6 +635,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putInt("Dexterity", getDexterity());
         tag.putInt("Intelligence", getIntelligence());
         tag.putInt("Endurance", getEndurance());
+        tag.putInt("SpecialistAttr", getSpecialistAttributeIndex());
         if (this.getPatrolPos().isPresent()) {
             int[] patrolPos = { this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(),
                     this.getPatrolPos().get().getZ() };
@@ -661,6 +675,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         } else {
             this.setBaseHealth(tag.getInt("baseHealth"));
         }
+        setSpecialistAttributeIndex(tag.contains("SpecialistAttr") ? tag.getInt("SpecialistAttr") : -1);
         if (tag.contains("Inventory", 9)) {
             this.inventory.fromTag(tag.getList("Inventory", 10), this.registryAccess());
         }
@@ -1056,7 +1071,11 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         }
         double specialistChance = 0.02D + (this.random.nextDouble() * 0.04D); // 2–6%
         if (this.random.nextDouble() < specialistChance) {
-            stats[this.random.nextInt(stats.length)] += 5;
+            int pick = this.random.nextInt(stats.length);
+            stats[pick] += 5;
+            setSpecialistAttributeIndex(pick);
+        } else {
+            setSpecialistAttributeIndex(-1);
         }
         setStrength(stats[0]);
         setDexterity(stats[1]);
