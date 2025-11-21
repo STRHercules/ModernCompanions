@@ -290,3 +290,30 @@
   - Bumped version to 0.1.17 and rebuilt with `./gradlew build -x test`.
 - Rationale: Prevents companions from consuming unsafe/raw items while keeping taming and auto-heal behavior intact.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (RPG attribute spread)
+- Prompt/task: "Add STR/DEX/INT/END attributes to companions with varied effectiveness."
+- Steps:
+  - Added synced STR/DEX/INT/END data with NBT save/load and random generation: base 4 in each, 23 free points spread, plus a 2–6% specialist roll granting +5 to one stat.
+  - Applied stat effects: STR boosts attack damage/knockback; DEX raises move/attack speed and small knockback resistance; END grants extra health, toughness-based physical damage reduction, and higher knockback resistance; INT increases XP gain rate.
+  - Wired spawn/load flows to generate stats, adjust base health from END, and reapply attribute modifiers safely; ensured stats influence XP gain and damage handling.
+  - Bumped version to 0.1.18 and ran `./gradlew build -x test`.
+- Rationale: Gives companions a traditional RPG-style stat spread so each spawn feels distinct in combat, mobility, survivability, and progression.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (GUI attributes + wanted food move)
+- Prompt/task: "Display companion stats on the inventory GUI; move wanted food to 227,225-328,248; place attributes at 228,137-326,194."
+- Steps:
+  - Added an Attributes block on the right panel showing STR/DEX/INT/END with underline header, confined to the new bounds.
+  - Shifted the wanted food readout to the lower strip (227,225)-(328,248) with wrapping and fallback text when fulfilled.
+  - Kept class/health/xp/patrol info in the top stats area and reran `./gradlew build -x test`.
+- Rationale: Surfaces RPG stats directly in the companion inventory while relocating the food section to the requested area without overlapping other UI elements.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (wanted food strip adjust)
+- Prompt/task: "Relocate the wanted food section to 228,215-327,236."
+- Steps:
+  - Updated CompanionScreen texture bounds for the food strip to match the new coordinates and preserved wrapping within the tighter height.
+  - Bumped version to 0.1.19 and reran `./gradlew build -x test`.
+- Rationale: Aligns the wanted-food display with the newly requested location on the inventory texture while keeping text constrained.
+- Build/Test: `./gradlew build -x test` ✔️

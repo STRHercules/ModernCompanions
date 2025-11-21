@@ -36,15 +36,20 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private static final ResourceLocation PICKUP_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/pickupbutton.png");
     private static final ResourceLocation STATIONARY_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/stationerybutton.png");
     private static final ResourceLocation RELEASE_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/releasebutton.png");
-    // Right-hand stats panel on inventory_stats.png runs from (229,7) to (327,107)
-    private static final int STATS_LEFT = 229;
-    private static final int STATS_TOP = 7;
-    private static final int STATS_RIGHT = 327;
-    // Wanted food strip sits lower on the texture (228,135) to (328,157)
+    // Right-hand info panel on inventory_stats.png
+    private static final int TOP_STATS_LEFT = 229;
+    private static final int TOP_STATS_TOP = 7;
+    private static final int TOP_STATS_RIGHT = 327;
+    // Attribute block lives in 228,137 to 326,194
+    private static final int ATTR_LEFT = 228;
+    private static final int ATTR_TOP = 137;
+    private static final int ATTR_RIGHT = 326;
+    private static final int ATTR_BOTTOM = 194;
+    // Wanted food strip shifted down to 228,215 to 327,236
     private static final int FOOD_LEFT = 228;
-    private static final int FOOD_TOP = 135;
-    private static final int FOOD_RIGHT = 328;
-    private static final int FOOD_BOTTOM = 157;
+    private static final int FOOD_TOP = 215;
+    private static final int FOOD_RIGHT = 327;
+    private static final int FOOD_BOTTOM = 236;
 
     private CompanionButton alertButton;
     private CompanionButton huntButton;
@@ -108,9 +113,9 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         // vanilla labels suppressed; we draw custom stats at right
         safeCompanion().ifPresent(companion -> {
             // renderLabels already translates to (leftPos, topPos); use texture-relative coords
-            int statsX = STATS_LEFT + 4;
-            int statsWidth = (STATS_RIGHT - STATS_LEFT) - 8;
-            int y = STATS_TOP + 2;
+            int statsX = TOP_STATS_LEFT + 4;
+            int statsWidth = (TOP_STATS_RIGHT - TOP_STATS_LEFT) - 8;
+            int y = TOP_STATS_TOP + 2;
 
             gfx.drawString(this.font, Component.literal("Class").withStyle(ChatFormatting.UNDERLINE), statsX, y, 0x000000, false);
             y += 10;
@@ -138,19 +143,8 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             y += 12;
 
             gfx.drawString(this.font, Component.literal("Patrol Radius: " + companion.getPatrolRadius()), statsX, y, 0x000000, false);
-            // Wanted food block anchored to dedicated strip on the texture
-            int foodX = FOOD_LEFT + 2;
-            int foodY = FOOD_TOP + 2;
-            int foodWidth = (FOOD_RIGHT - FOOD_LEFT) - 4;
-            String food = companion.getWantedFoodsCompact();
-            if (food.isEmpty()) {
-                food = "All set";
-            }
-            for (FormattedCharSequence line : this.font.split(Component.literal(food), foodWidth)) {
-                gfx.drawString(this.font, line, foodX, foodY, 0x000000, false);
-                foodY += 10;
-                if (foodY > FOOD_BOTTOM) break; // stay inside strip
-            }
+            renderAttributes(gfx, companion);
+            renderWantedFood(gfx, companion);
         });
     }
 
@@ -266,5 +260,44 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         if (name == null || name.isEmpty()) return "";
         if (name.length() == 1) return name.toUpperCase();
         return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    }
+
+    private void renderAttributes(GuiGraphics gfx, AbstractHumanCompanionEntity companion) {
+        int x = ATTR_LEFT + 3;
+        int y = ATTR_TOP + 3;
+        int width = (ATTR_RIGHT - ATTR_LEFT) - 6;
+        //gfx.drawString(this.font, Component.literal("Attributes").withStyle(ChatFormatting.UNDERLINE), x, y, 0x000000, false);
+        //y += 10;
+        drawStatLine(gfx, x, y, width, "Strength", companion.getStrength());
+        y += 10;
+        drawStatLine(gfx, x, y, width, "Dexterity", companion.getDexterity());
+        y += 10;
+        drawStatLine(gfx, x, y, width, "Intelligence", companion.getIntelligence());
+        y += 10;
+        drawStatLine(gfx, x, y, width, "Endurance", companion.getEndurance());
+    }
+
+    private void drawStatLine(GuiGraphics gfx, int x, int y, int width, String name, int value) {
+        String line = name + ": " + value;
+        for (FormattedCharSequence seq : this.font.split(Component.literal(line), width)) {
+            gfx.drawString(this.font, seq, x, y, 0x000000, false);
+            y += 10;
+            if (y > ATTR_BOTTOM) break;
+        }
+    }
+
+    private void renderWantedFood(GuiGraphics gfx, AbstractHumanCompanionEntity companion) {
+        int foodX = FOOD_LEFT + 2;
+        int foodY = FOOD_TOP + 2;
+        int foodWidth = (FOOD_RIGHT - FOOD_LEFT) - 4;
+        String food = companion.getWantedFoodsCompact();
+        if (food.isEmpty()) {
+            food = "Not Hungry";
+        }
+        for (FormattedCharSequence line : this.font.split(Component.literal(food), foodWidth)) {
+            gfx.drawString(this.font, line, foodX, foodY, 0x000000, false);
+            foodY += 10;
+            if (foodY > FOOD_BOTTOM) break; // stay inside strip
+        }
     }
 }

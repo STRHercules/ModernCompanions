@@ -53,6 +53,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private static final EntityDataAccessor<Integer> SEX = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> BASE_HEALTH = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> EXP_LVL = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> STR = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DEX = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> INTL = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> END = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ALERT = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> HUNTING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
@@ -97,7 +101,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 .add(Attributes.FOLLOW_RANGE, 20.0D)
                 .add(Attributes.MAX_HEALTH, baseHealth)
                 .add(Attributes.ATTACK_DAMAGE, 1.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.32D);
+                .add(Attributes.MOVEMENT_SPEED, 0.32D)
+                .add(Attributes.ATTACK_SPEED, 1.6D)
+                .add(Attributes.ATTACK_KNOCKBACK, 0.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.0D);
     }
 
     @Override
@@ -122,6 +129,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(FOOD1_AMT, 0);
         builder.define(FOOD2_AMT, 0);
         builder.define(EXP_PROGRESS, 0.0F);
+        builder.define(STR, 4);
+        builder.define(DEX, 4);
+        builder.define(INTL, 4);
+        builder.define(END, 4);
     }
 
     @Override
@@ -227,6 +238,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public void setExpLvl(int lvl) { this.entityData.set(EXP_LVL, Math.max(lvl, 0)); }
     public float getExperienceProgress() { return this.level().isClientSide ? this.entityData.get(EXP_PROGRESS) : this.experienceProgress; }
     public int getTotalExperience() { return this.totalExperience; }
+    public int getStrength() { return this.entityData.get(STR); }
+    public int getDexterity() { return this.entityData.get(DEX); }
+    public int getIntelligence() { return this.entityData.get(INTL); }
+    public int getEndurance() { return this.entityData.get(END); }
+    public void setStrength(int value) { this.entityData.set(STR, Math.max(1, value)); }
+    public void setDexterity(int value) { this.entityData.set(DEX, Math.max(1, value)); }
+    public void setIntelligence(int value) { this.entityData.set(INTL, Math.max(1, value)); }
+    public void setEndurance(int value) { this.entityData.set(END, Math.max(1, value)); }
 
     public ResourceLocation getSkinTexture() {
         int sex = Mth.clamp(getSex(), 0, CompanionData.skins.length - 1);
@@ -408,6 +427,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putString("food2", entityData.get(FOOD2));
         tag.putInt("food1_amt", entityData.get(FOOD1_AMT));
         tag.putInt("food2_amt", entityData.get(FOOD2_AMT));
+        tag.putInt("Strength", getStrength());
+        tag.putInt("Dexterity", getDexterity());
+        tag.putInt("Intelligence", getIntelligence());
+        tag.putInt("Endurance", getEndurance());
         if (this.getPatrolPos().isPresent()) {
             int[] patrolPos = {this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(), this.getPatrolPos().get().getZ()};
             tag.putIntArray("patrol_pos", patrolPos);
@@ -465,6 +488,15 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
         this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         checkArmor();
+        if (tag.contains("Strength")) {
+            setStrength(tag.getInt("Strength"));
+            setDexterity(tag.getInt("Dexterity"));
+            setIntelligence(tag.getInt("Intelligence"));
+            setEndurance(tag.getInt("Endurance"));
+        } else {
+            assignRpgAttributes();
+        }
+        applyRpgAttributeModifiers();
     }
 
     /* ---------- Spawning ---------- */
@@ -504,10 +536,12 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnDataIn) {
-        int baseHealth = ModConfig.safeGet(ModConfig.BASE_HEALTH) + CompanionData.getHealthModifier();
+        assignRpgAttributes();
+        int baseHealth = ModConfig.safeGet(ModConfig.BASE_HEALTH) + CompanionData.getHealthModifier() + getEnduranceBonusHealth();
         modifyMaxHealth(baseHealth - 20, "companion base health", true);
         this.setHealth(this.getMaxHealth());
         setBaseHealth(baseHealth);
+        applyRpgAttributeModifiers();
         setSex(this.random.nextInt(2));
         setSkinIndex(this.random.nextInt(CompanionData.skins[getSex()].length));
         setCustomName(Component.literal(CompanionData.getRandomName(getSex())));
@@ -587,8 +621,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     /* ---------- Experience ---------- */
 
     public void giveExperiencePoints(int points) {
-        this.experienceProgress += (float) points / (float) this.getXpNeededForNextLevel();
-        this.totalExperience = Mth.clamp(this.totalExperience + points, 0, Integer.MAX_VALUE);
+        int adjusted = Math.max(1, Math.round(points * getExperienceGainMultiplier()));
+        this.experienceProgress += (float) adjusted / (float) this.getXpNeededForNextLevel();
+        this.totalExperience = Mth.clamp(this.totalExperience + adjusted, 0, Integer.MAX_VALUE);
         syncExpProgress();
 
         while (this.experienceProgress < 0.0F) {
@@ -668,8 +703,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         if (source.is(net.minecraft.tags.DamageTypeTags.IS_FALL) && !ModConfig.safeGet(ModConfig.FALL_DAMAGE)) {
             return false;
         }
-        hurtArmor(source, amount);
-        return super.hurt(source, amount);
+        float adjusted = applyEnduranceResistance(source, amount);
+        hurtArmor(source, adjusted);
+        return super.hurt(source, adjusted);
     }
 
     public void hurtArmor(DamageSource source, float amount) {
@@ -799,5 +835,91 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 }
             }
         }
+    }
+
+    /* ---------- RPG attribute generation & effects ---------- */
+
+    private void assignRpgAttributes() {
+        int[] stats = {4, 4, 4, 4}; // STR, DEX, INT, END base
+        for (int i = 0; i < 23; i++) {
+            stats[this.random.nextInt(stats.length)]++;
+        }
+        double specialistChance = 0.02D + (this.random.nextDouble() * 0.04D); // 2–6%
+        if (this.random.nextDouble() < specialistChance) {
+            stats[this.random.nextInt(stats.length)] += 5;
+        }
+        setStrength(stats[0]);
+        setDexterity(stats[1]);
+        setIntelligence(stats[2]);
+        setEndurance(stats[3]);
+    }
+
+    private void applyRpgAttributeModifiers() {
+        applyStrengthModifiers();
+        applyDexterityModifiers();
+        applyEnduranceModifiers();
+        // intelligence currently drives XP gain inside giveExperiencePoints; no attribute modifier needed
+    }
+
+    private void applyStrengthModifiers() {
+        double delta = (getStrength() - 4) * 0.25D; // +0.25 damage per point over base
+        applyModifier(Attributes.ATTACK_DAMAGE, "rpg_strength_damage", delta, AttributeModifier.Operation.ADD_VALUE);
+
+        double kb = (getStrength() - 4) * 0.03D;
+        applyModifier(Attributes.ATTACK_KNOCKBACK, "rpg_strength_knockback", kb, AttributeModifier.Operation.ADD_VALUE);
+    }
+
+    private void applyDexterityModifiers() {
+        double speed = (getDexterity() - 4) * 0.003D;
+        applyModifier(Attributes.MOVEMENT_SPEED, "rpg_dex_speed", speed, AttributeModifier.Operation.ADD_VALUE);
+
+        double atkSpeed = (getDexterity() - 4) * 0.04D;
+        applyModifier(Attributes.ATTACK_SPEED, "rpg_dex_attack_speed", atkSpeed, AttributeModifier.Operation.ADD_VALUE);
+
+        double kbResist = Math.max(0.0D, (getDexterity() - 10) * 0.01D); // slight dodge feel at high dex
+        applyModifier(Attributes.KNOCKBACK_RESISTANCE, "rpg_dex_kb_resist", kbResist, AttributeModifier.Operation.ADD_VALUE);
+    }
+
+    private void applyEnduranceModifiers() {
+        int bonusHealth = getEnduranceBonusHealth();
+        // Apply on top of base health modifier so baseHealth tracks the END effect.
+        int baseline = ModConfig.BASE_HEALTH != null ? ModConfig.safeGet(ModConfig.BASE_HEALTH) : 20;
+        int desiredBase = Math.max(getBaseHealth(), baseline + bonusHealth);
+        setBaseHealth(desiredBase);
+        modifyMaxHealth(desiredBase - 20, "companion base health", true);
+
+        double kbResist = Math.min(0.6D, (getEndurance() - 4) * 0.02D);
+        applyModifier(Attributes.KNOCKBACK_RESISTANCE, "rpg_end_kb_resist", kbResist, AttributeModifier.Operation.ADD_VALUE);
+    }
+
+    private int getEnduranceBonusHealth() {
+        return Math.max(0, getEndurance() - 4); // +1 hp per END over base (0.5 hearts)
+    }
+
+    private float applyEnduranceResistance(DamageSource source, float amount) {
+        boolean physical = !source.is(net.minecraft.tags.DamageTypeTags.IS_FIRE)
+                && !source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)
+                && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ARMOR)
+                && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
+        if (!physical) {
+            return amount;
+        }
+        float reduction = (float) Math.min(0.35D, Math.max(0.0D, (getEndurance() - 4) * 0.015D));
+        return amount * (1.0F - reduction);
+    }
+
+    private void applyModifier(net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute, String idName, double value, AttributeModifier.Operation op) {
+        AttributeInstance instance = this.getAttribute(attribute);
+        if (instance == null) return;
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, idName);
+        instance.removeModifier(id);
+        if (value != 0.0D) {
+            AttributeModifier modifier = new AttributeModifier(id, value, op);
+            instance.addPermanentModifier(modifier);
+        }
+    }
+
+    private float getExperienceGainMultiplier() {
+        return 1.0F + (float) ((getIntelligence() - 4) * 0.03D);
     }
 }

@@ -20,3 +20,4 @@
 - 2025-11-21 (inventory growth): Consider adding slot-locking or equipment-only rows to preserve balance now that inventory doubled; or gate extra rows behind higher levels/config to keep early-game companions modest.
 - 2025-11-21 (UI polish): If we tweak the background again, consider driving the 1px offsets from constants so different texture revisions can be tested quickly without changing logic.
 - 2025-11-21 (pickup toggle): Expose pickup radius/behavior in config (owner-only vs global, magnet strength) and add a quick visual indicator near the button so players know when auto-loot is active.
+- 2025-11-21 (RPG stats UI): Surface STR/DEX/INT/END in the companion screen with icons + tooltips, and show any rolled “specialist” bonus so players can see their companion’s build.
