@@ -1,0 +1,6 @@
+{
+  "parent": "modern_companions:item/handheld_big_glaive",
+  "textures": {
+    "layer0": "modern_companions:item/glaive/diamond_glaive_held"
+  }
+}

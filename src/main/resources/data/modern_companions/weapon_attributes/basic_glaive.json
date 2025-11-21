@@ -1,0 +1,6 @@
+{
+  "parent": "bettercombat:glaive",
+  "attributes": {
+    "range_bonus": 0.75
+  }
+}

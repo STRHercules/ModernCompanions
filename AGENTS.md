@@ -53,7 +53,6 @@ Follow these guidelines to ensure stable builds, prevent accidental corruption o
 
 ## Commit Checklist
 - [ ] Project builds with no errors
-- [ ] No binary files included
 - [ ] Changes limited to allowed directories
 - [ ] Clear comments added for all new/modified code
 - [ ] `TRACELOG.md` updated with new entry including prompt + detailing steps

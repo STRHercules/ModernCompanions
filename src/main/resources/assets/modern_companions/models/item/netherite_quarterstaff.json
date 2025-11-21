@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "modern_companions:item/quarterstaff/netherite_quarterstaff"
+  }
+}

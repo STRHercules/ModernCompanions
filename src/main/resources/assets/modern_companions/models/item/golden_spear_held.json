@@ -1,0 +1,6 @@
+{
+  "parent": "modern_companions:item/handheld_big_spear",
+  "textures": {
+    "layer0": "modern_companions:item/spear/golden_spear_held"
+  }
+}

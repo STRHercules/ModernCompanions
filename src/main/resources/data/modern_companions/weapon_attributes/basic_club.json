@@ -1,0 +1,6 @@
+{
+  "parent": "bettercombat:mace",
+  "attributes": {
+    "range_bonus": 0
+  }
+}

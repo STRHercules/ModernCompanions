@@ -1,10 +1,6 @@
 {
   "pack": {
     "description": "Resources for Modern Companions (port of Human Companions)",
-    "pack_format": 34,
-    "supported_formats": {
-      "resource": [34],
-      "data": [48]
-    }
+    "pack_format": 34
   }
 }

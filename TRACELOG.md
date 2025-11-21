@@ -446,3 +446,47 @@
   - Left existing non-English locales untouched (fallback will use the English entries until translations are provided).
 - Rationale: Ensures new roles show proper names in tooltips, WTHIT/Jade overlays, and hotbar items instead of raw translation keys.
 - Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (BasicWeapons arsenal port)
+- Prompt/task: "I want to use all variants of the weapons from BasicWeapons... port over all weapons from BasicWeapons to ModernCompanions."
+- Steps:
+  - Mirrored BasicWeapons weapon logic into new item classes (`BasicWeaponItem`, `BasicWeaponSweeplessItem`, dagger/club/hammer/glaive/spear/quarterstaff) plus a material-aware registrar that spawns every variant across vanilla tiers and optional bronze.
+  - Inserted the weapons into the Combat creative tab and set up item models that reuse vanilla textures to avoid adding binaries.
+  - Expanded `en_us.json` with names for every weapon/material combo and bumped the project version to 0.1.35.
+- Rationale: Provides a full BasicWeapons-style arsenal (wood through netherite + bronze) inside Modern Companions while keeping the code/API in line with the upstream mod’s methodology.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Weapon recipes & smithing)
+- Prompt/task: "Continue porting over the weapons into ModernCompanions"
+- Steps:
+  - Added vanilla-style crafting recipes for all dagger/club/hammer/spear/glaive/quarterstaff variants (wood → diamond plus bronze when the bronze mod is loaded) and netherite smithing upgrades from diamond bases.
+  - Standardized paths under `data/modern_companions/recipes/` and gated bronze recipes with a NeoForge mod_loaded condition.
+  - Bumped project version to 0.1.36.
+- Rationale: Makes the new weapons actually obtainable in survival and mirrors BasicWeapons’ crafting flow while respecting optional bronze integration.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Weapon assets & bettercombat data)
+- Prompt/task: "Perform 1. ... re-use and implement the assets they use for Clubs, Daggers, Glaives, Hammers, Quarterstaffs, Spears"
+- Steps:
+  - Copied BasicWeapons item textures/models for all variants into the `modern_companions` namespace, replacing the placeholder vanilla-look models.
+  - Ported Better Combat `weapon_attributes` JSONs (including base definitions) with namespace rewrites so reach/animations match upstream when Better Combat is present.
+  - Version bumped to 0.1.37.
+- Rationale: Aligns visuals and combat feel with the reference mod now that binary assets are allowed.
+- Build/Test: `./gradlew compileJava` (no java changes, resources only) ✔️
+
+## 2025-11-21 (Load crash fixes)
+- Prompt/task: "latest.log shows pack metadata parse failure and unbound companion_menu"
+- Steps:
+  - Fixed `pack.mcmeta` to use a single `pack_format` (removed invalid supported_formats block that broke metadata parsing).
+  - Registered deferred menus/entities on the mod event bus in `ModernCompanions` so `COMPANION_MENU` is bound before client menu screen registration.
+  - Bumped version to 0.1.38.
+- Rationale: Allows the resource pack to load and prevents NPE during `RegisterMenuScreensEvent`, restoring client startup.
+- Build/Test: `./gradlew compileJava` ✔️
+
+## 2025-11-21 (Entity attributes missing)
+- Prompt/task: "Analyze latest.log and fix the errors"
+- Steps:
+  - Hooked `ModEntityAttributes.registerAttributes` into the mod event bus so all companion entity types receive their attribute sets during `EntityAttributeCreationEvent`.
+  - Version bumped to 0.1.39.
+- Rationale: Removes the "Entity ... has no attributes" spam/crash during loading by ensuring companions are initialized with attribute suppliers.
+- Build/Test: `./gradlew compileJava` ✔️

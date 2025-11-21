@@ -1,0 +1,6 @@
+{
+  "parent": "modern_companions:item/handheld_big_quarterstaff",
+  "textures": {
+    "layer0": "modern_companions:item/quarterstaff/stone_quarterstaff_held"
+  }
+}

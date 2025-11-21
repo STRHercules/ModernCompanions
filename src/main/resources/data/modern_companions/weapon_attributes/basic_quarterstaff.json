@@ -1,0 +1,6 @@
+{
+  "parent": "bettercombat:battlestaff",
+  "attributes": {
+    "range_bonus": 0.75
+  }
+}
