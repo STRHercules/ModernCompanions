@@ -33,6 +33,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private static final ResourceLocation HUNT_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/huntingbutton.png");
     private static final ResourceLocation PATROL_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/patrolbutton.png");
     private static final ResourceLocation CLEAR_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/clearbutton.png");
+    private static final ResourceLocation PICKUP_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/pickupbutton.png");
     private static final ResourceLocation STATIONARY_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/stationerybutton.png");
     private static final ResourceLocation RELEASE_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/releasebutton.png");
     // Right-hand stats panel on inventory_stats.png runs from (229,7) to (327,107)
@@ -50,6 +51,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private CompanionButton patrolButton;
     private CompanionButton stationaryButton;
     private CompanionButton clearButton;
+    private CompanionButton pickupButton;
     private CompanionButton releaseButton;
     private CompanionButton radiusMinus;
     private CompanionButton radiusPlus;
@@ -81,6 +83,8 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         patrolButton = addRenderableWidget(new CompanionButton("patrolling", col1, row2, 16, 12, 0, 0, 13, PATROL_BTN, () -> sendAction("cycle_orders"), true));
         stationaryButton = addRenderableWidget(new CompanionButton("stationery", col2, row2, 16, 12, 0, 0, 13, STATIONARY_BTN, () -> sendToggle("stationery"), true));
         clearButton = addRenderableWidget(new CompanionButton("clear", leftPos + sidebarX + 5, row3, 31, 12, 0, 0, 13, CLEAR_BTN, () -> sendAction("clear_target"), false));
+        int row4 = row3 + rowHeight;
+        pickupButton = addRenderableWidget(new CompanionButton("pickup", leftPos + sidebarX + 3, row4, 34, 12, 0, 0, 0, PICKUP_BTN, () -> sendToggle("pickup"), true));
         releaseButton = addRenderableWidget(new CompanionButton("release", leftPos + sidebarX + 3, topPos + 148, 34, 12, 0, 0, 13, RELEASE_BTN, () -> {
             sendAction("release");
             this.onClose();
@@ -196,10 +200,11 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
 
     private class CompanionButton extends Button {
         private final String name;
-        private final int yTexStart;
+        private int yTexStart;
         private final int yDiffTex;
         private final ResourceLocation texture;
         private final boolean toggleFlag;
+        private final int baseY;
         private int xTexStart;
 
         CompanionButton(String name, int x, int y, int w, int h, int xTexStart, int yTexStart, int yDiffTex, ResourceLocation texture, Runnable onClick, boolean toggleFlag) {
@@ -207,6 +212,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             this.name = name;
             this.xTexStart = xTexStart;
             this.yTexStart = yTexStart;
+            this.baseY = yTexStart;
             this.yDiffTex = yDiffTex;
             this.texture = texture;
             this.toggleFlag = toggleFlag;
@@ -229,10 +235,16 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
 
         private void updateTex() {
             AbstractHumanCompanionEntity c = safeCompanion().orElse(null);
+            this.yTexStart = this.baseY;
             switch (name) {
                 case "alert" -> this.xTexStart = flag(c != null && c.isAlert(), 0, 17);
                 case "hunting" -> this.xTexStart = flag(c != null && c.isHunting(), 0, 17);
                 case "stationery" -> this.xTexStart = flag(c != null && c.isStationery(), 0, 17);
+                case "pickup" -> {
+                    boolean on = c != null && c.isPickupEnabled();
+                    this.xTexStart = 0;
+                    this.yTexStart = on ? this.baseY + 13 : this.baseY;
+                }
                 case "patrolling" -> {
                     if (c == null) { this.xTexStart = 0; break; }
                     if (c.isFollowing()) this.xTexStart = 0;

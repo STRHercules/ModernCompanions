@@ -271,3 +271,22 @@
   - Bumped version to 0.1.15; build verified with `./gradlew build -x test`.
 - Rationale: Aligns the inventory art with its shadow and improves label readability.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (pickup toggle + auto-loot)
+- Prompt/task: "I want companions to pick up items with a toggleable button and small magnet effect."
+- Steps:
+  - Added a synced `pickup` flag with save/load support on companions, defaulting to enabled and reset on release.
+  - Implemented a gentle 3-block magnet sweep in server ticks that pulls nearby item entities and funnels them into the companion inventory when pickup is on.
+  - Wired a new pickup toggle button beneath CLEAR using `pickupbutton.png`, updating button logic to handle vertical toggle textures and sending the existing ToggleFlag payload.
+  - Bumped version to 0.1.16 and ran `./gradlew build -x test` successfully.
+- Rationale: Gives companions player-like item collection with a clear on/off control so loot from their kills reliably lands in the companion inventory.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (safe foods)
+- Prompt/task: "Make sure companions do NOT eat raw foods, or spider eyes, rotten flesh."
+- Steps:
+  - Added an explicit disallow list (raw meats/fish, spider eyes, rotten flesh) and removed raw fish from the companion food pool; food checks now reject blacklisted items for taming and self-healing.
+  - Ensured inventory eating routines skip non-approved foods; random food requirements only pick from allowed foods.
+  - Bumped version to 0.1.17 and rebuilt with `./gradlew build -x test`.
+- Rationale: Prevents companions from consuming unsafe/raw items while keeping taming and auto-heal behavior intact.
+- Build/Test: `./gradlew build -x test` ✔️

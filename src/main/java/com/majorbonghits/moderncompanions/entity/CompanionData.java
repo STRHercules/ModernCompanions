@@ -15,9 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Shared data tables (names, skins, foods) brought forward from the original Companions mod.
@@ -32,18 +30,27 @@ public class CompanionData {
             Items.APPLE,
             Items.SWEET_BERRIES,
             Items.CARROT,
-            Items.POTATO,
             Items.BAKED_POTATO,
             Items.COOKED_SALMON,
             Items.COOKED_COD,
-            Items.SALMON,
-            Items.COD,
             Items.COOKED_MUTTON,
             Items.COOKED_PORKCHOP,
             Items.COOKED_BEEF,
             Items.COOKED_CHICKEN,
             Items.COOKED_RABBIT
     };
+
+    private static final Set<Item> DISALLOWED_FOODS = Set.of(
+            Items.SPIDER_EYE,
+            Items.ROTTEN_FLESH,
+            Items.BEEF,
+            Items.PORKCHOP,
+            Items.CHICKEN,
+            Items.MUTTON,
+            Items.RABBIT,
+            Items.COD,
+            Items.SALMON
+    );
 
      public static final MutableComponent[] tameFail = new MutableComponent[]{
             Component.literal("I need more food."),
@@ -297,10 +304,10 @@ public class CompanionData {
 
     public static Map<Item, Integer> getRandomFoodRequirement(Random random) {
         Map<Item, Integer> food = new HashMap<>();
-        Item food1 = ALL_FOODS[random.nextInt(ALL_FOODS.length)];
-        Item food2 = ALL_FOODS[random.nextInt(ALL_FOODS.length)];
+        Item food1 = pickAllowedFood(random);
+        Item food2 = pickAllowedFood(random);
         while (food1.equals(food2)) {
-            food2 = ALL_FOODS[random.nextInt(ALL_FOODS.length)];
+            food2 = pickAllowedFood(random);
         }
         food.put(food1, random.nextInt(5) + 1);
         food.put(food2, random.nextInt(5) + 1);
@@ -308,12 +315,19 @@ public class CompanionData {
     }
 
     public static boolean isFood(Item item) {
+        if (DISALLOWED_FOODS.contains(item)) return false;
         for (Item food : ALL_FOODS) {
-            if (food.equals(item)) {
-                return true;
-            }
+            if (food.equals(item)) return true;
         }
         return false;
+    }
+
+    private static Item pickAllowedFood(Random random) {
+        Item candidate;
+        do {
+            candidate = ALL_FOODS[random.nextInt(ALL_FOODS.length)];
+        } while (DISALLOWED_FOODS.contains(candidate));
+        return candidate;
     }
 
     private static ResourceLocation tex(String path) {

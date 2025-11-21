@@ -40,6 +40,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.entity.item.ItemEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -59,6 +60,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private static final EntityDataAccessor<Boolean> FOLLOWING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> GUARDING = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> STATIONERY = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> PICKUP_ITEMS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Optional<BlockPos>> PATROL_POS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
     private static final EntityDataAccessor<Integer> PATROL_RADIUS = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> FOOD1 = SynchedEntityData.defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
@@ -112,6 +114,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(FOLLOWING, false);
         builder.define(GUARDING, false);
         builder.define(STATIONERY, false);
+        builder.define(PICKUP_ITEMS, true);
         builder.define(PATROL_POS, Optional.empty());
         builder.define(PATROL_RADIUS, 10);
         builder.define(FOOD1, "");
@@ -156,6 +159,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public boolean isGuarding() { return this.entityData.get(GUARDING); }
     public void setGuarding(boolean value) { this.entityData.set(GUARDING, value); }
+
+    public boolean isPickupEnabled() { return this.entityData.get(PICKUP_ITEMS); }
+    public void setPickupEnabled(boolean value) { this.entityData.set(PICKUP_ITEMS, value); }
 
     public boolean isStationery() { return this.entityData.get(STATIONERY); }
     public void setStationery(boolean value) { this.entityData.set(STATIONERY, value); }
@@ -239,6 +245,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public ItemStack checkFood() {
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack itemstack = this.inventory.getItem(i);
+            if (!CompanionData.isFood(itemstack.getItem())) continue;
             FoodProperties food = itemstack.get(DataComponents.FOOD);
             if (food != null && food.nutrition() + this.getHealth() <= this.getMaxHealth()) {
                 return itemstack;
@@ -250,6 +257,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public void eatOneFood() {
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.getItem(i);
+            if (!CompanionData.isFood(stack.getItem())) continue;
             FoodProperties food = stack.get(DataComponents.FOOD);
             if (food != null) {
                 stack.shrink(1);
@@ -389,6 +397,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putBoolean("Following", this.isFollowing());
         tag.putBoolean("Guarding", this.isGuarding());
         tag.putBoolean("Stationery", this.isStationery());
+        tag.putBoolean("Pickup", this.isPickupEnabled());
         tag.putInt("radius", this.getPatrolRadius());
         tag.putInt("sex", this.getSex());
         tag.putInt("baseHealth", this.getBaseHealth());
@@ -416,6 +425,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.setFollowing(tag.getBoolean("Following"));
         this.setGuarding(tag.getBoolean("Guarding"));
         this.setStationery(tag.getBoolean("Stationery"));
+        this.setPickupEnabled(tag.contains("Pickup") ? tag.getBoolean("Pickup") : true);
         this.setPatrolRadius(tag.getInt("radius"));
         this.setSex(tag.getInt("sex"));
         this.experienceProgress = tag.getFloat("XpP");
@@ -478,6 +488,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public void tick() {
         if (!this.level().isClientSide()) {
             checkArmor();
+            if (this.tickCount % 2 == 0 && isPickupEnabled() && this.isTame()) {
+                collectNearbyItems();
+            }
             if (this.tickCount % 10 == 0) {
                     checkStats();
                     LivingEntity target = this.getTarget();
@@ -745,6 +758,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             case "hunt" -> setHunting(value);
             case "alert" -> setAlert(value);
             case "stationery" -> setStationery(value);
+            case "pickup" -> setPickupEnabled(value);
             default -> {}
         }
     }
@@ -757,7 +771,33 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             case "hunt" -> isHunting();
             case "alert" -> isAlert();
             case "stationery" -> isStationery();
+            case "pickup" -> isPickupEnabled();
             default -> false;
         };
+    }
+
+    /**
+     * Gently attract and collect nearby item entities into the companion's inventory to emulate player pickup.
+     */
+    private void collectNearbyItems() {
+        double range = 3.0D;
+        var box = this.getBoundingBox().inflate(range);
+        for (ItemEntity item : this.level().getEntitiesOfClass(ItemEntity.class, box, e -> e.isAlive() && !e.hasPickUpDelay())) {
+            if (item.getItem().isEmpty()) continue;
+            var pull = this.position().subtract(item.position());
+            if (pull.lengthSqr() > 0.01) {
+                item.setDeltaMovement(item.getDeltaMovement().scale(0.9).add(pull.normalize().scale(0.08)));
+            }
+            if (this.distanceToSqr(item) <= 2.25D) {
+                ItemStack stack = item.getItem();
+                ItemStack leftover = this.inventory.addItem(stack);
+                this.inventory.setChanged();
+                if (leftover.isEmpty()) {
+                    item.discard();
+                } else {
+                    item.setItem(leftover);
+                }
+            }
+        }
     }
 }

@@ -43,6 +43,7 @@ public final class ModNetwork {
                         companion.setPatrolPos(companion.blockPosition());
                     }
                     case "follow" -> companion.setFollowing(payload.value());
+                    case "pickup" -> companion.setPickupEnabled(payload.value());
                     default -> {}
                 }
             }
