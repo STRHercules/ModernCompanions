@@ -36,3 +36,21 @@
 - 2025-11-21 (pet defense): Add a brief on-hit VFX/SFX when a pet switches to defend the Beastmaster/owner, and expose a config toggle for whether pets may retaliate against neutral mobs the player accidentally hits.
 - 2025-11-21 (pet anti-rubberband): Make the follow/teleport grace configurable (hold time + start distance) so pack makers can tune how long pets stay engaged before snapping back.
 - 2025-11-21 (pet damage): Consider scaling pet damage by Beastmaster level or weapon tier and surfacing a small damage number/crit indicator to confirm hits from passive mobs.
+- 2025-11-21 (pet ownership UI): Add a compact owner/pet status widget with a manual "Bind/Recall Pet" button so players can reattach or retame a Beastmaster pet without waiting for automatic respawn.
+- 2025-11-21 (pet spawn FX): Add a brief summon particle/SFX when the Beastmaster’s starting pet appears so players notice the companion instantly and can confirm it spawned correctly.
+- 2025-11-21 (pet roster config): Expose a data/config toggle to adjust Beastmaster pet weights (or disable specific mobs) so pack makers can curate allowed pets without code edits.
+- 2025-11-21 (pet type UI): Show the locked-in pet type in the Beastmaster’s UI/Jade line and add a manual “respec” token/config gate in case players want to reroll a companion’s pet species.
+- 2025-11-21 (respawn diagnostics): Add a small debug/config toggle to log pet respawn failures and the chosen type id to help catch future edge cases without needing code changes.
+- 2025-11-21 (pet-specific tuning): Add per-pet-type movement/attack tuning (config or data-driven) so pandas/camels/etc. can be balanced independently without hardcoding values.
+- 2025-11-21 (pet lifecycle polish): Consider a small VFX/SFX on Beastmaster death pet-despawn and pet-respawn to signal the lifecycle changes to players.
+- 2025-11-21 (spawn init auditing): Add a small helper/log to confirm finalizeSpawn results per pet type (genes/attributes) to quickly diagnose any future mob-specific spawn quirks.
+- 2025-11-21 (lost pet UX): After the grace period, consider showing a brief "recalling pet" toast so players know a new pet is on the way instead of assuming it is gone forever.
+- 2025-11-21 (untamed handling): Add a config toggle to allow/disable pet spawning for untamed companions in case some packs prefer pets only after hiring.
+- 2025-11-21 (camel tuning): Consider a small stamina/step-height tweak for camels so their larger model doesn’t snag on terrain when keeping pace.
+- 2025-11-21 (camel pacing): If camels still feel fast/slow, expose their speed multiplier in config alongside pandas to let pack makers tune individually.
+- 2025-11-21 (wander tuning): Consider a small configurable idle-wander radius per pet type instead of fully removing wander, to keep them lively without rubber-banding.
+- 2025-11-21 (friendly fire config): If desired, expose a toggle allowing friendly-fire for specific pet types (for pack scenarios where shared damage interactions are needed).
+- 2025-11-21 (name pool config): Consider moving pet name list to JSON/config so pack makers can theme names or localize more easily.
+- 2025-11-21 (nameplate toggle): Add a config to choose always-visible vs hover-only pet nameplates for players who prefer constant labels.
+- 2025-11-21 (kill credit UX): Surface pet-kill contributions in the GUI/Jade overlay so players can see which kills came from their beasts.
+- 2025-11-21 (scaling tuning): Expose per-attribute multipliers (attack/health/speed) in config so pack makers can tune how strongly pets scale with STR/DEX/END.

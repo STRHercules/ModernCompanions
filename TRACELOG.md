@@ -588,3 +588,164 @@
   - Bumped version to 0.1.56 and ran `./gradlew build -x test`.
 - Rationale: Guarantees every Beastmaster pet keeps its follow behavior across sessions and after respawns.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet ownership)
+- Prompt/task: "Beastmaster pets, including Wolves should have their owners be the Beastmaster, not the player. When I look at a wolf it shows the owner is ME, not the companion."
+- Steps:
+  - Set spawned pets to be tamed to the Beastmaster entity and added a reusable ownership fixer that retargets any preexisting pets to the Beastmaster when they are found or reattached.
+  - Updated pet lookup to search for pets owned by the Beastmaster (not the player) and kept follow/combat goals applied after reattachment.
+  - Expanded Beastmaster pet buffs to include both Beastmaster-owned pets and the owner player’s tamed animals, then reran `./gradlew build -x test`.
+- Rationale: Ensures Beastmaster pets correctly display the companion as their owner, preventing wolves from showing the player as the tamer while keeping buffs and behaviors aligned.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet spawn regression)
+- Prompt/task: "Beastmasters are no longer spawning with their pets spawned along with them"
+- Steps:
+  - Spawn a pet immediately during Beastmaster finalizeSpawn so every Beastmaster enters the world with a companion, independent of later taming/ownership sync.
+  - Preserved new Beastmaster-as-owner logic so freshly spawned pets are owned by the Beastmaster and tracked via petId from tick 0.
+  - Bumped version to 0.1.58 and ran `./gradlew build -x test`.
+- Rationale: Restores the expected behavior that Beastmasters never appear without their pet while keeping owner attribution on the companion instead of the player.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet pool tweak)
+- Prompt/task: "Remove camel as an option for beastmaster pets"
+- Steps:
+  - Removed camel from the common pet roll table in `createRandomPet` so Beastmasters will no longer spawn with camels.
+  - Kept existing rare rolls (hoglin/polar bear) and other common options intact.
+  - Bumped version to 0.1.59 and ran `./gradlew build -x test`.
+- Rationale: Aligns Beastmaster pet options with desired roster while preserving current probabilities for remaining pets.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet type persistence)
+- Prompt/task: "Every beastmaster should have a 'type' assigned to them at birth/creation so when their pet respawns, it respawns the same 'type' every time. This type will directly dictate which pet the respective beastmaster will have"
+- Steps:
+  - Added a persisted pet type id to Beastmaster; it is chosen on first spawn (or inferred from an existing pet) and written to NBT.
+  - Pet spawning now resolves this stored type so every respawn uses the same mob instead of rerolling; ownership fixups still run when finding existing pets.
+  - Bumped version to 0.1.60 and reran `./gradlew build -x test`.
+- Rationale: Locks each Beastmaster to a consistent pet species across deaths/respawns, matching the design request.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster panda respawn safety)
+- Prompt/task: "The panda does not seem to respawn for the beastmaster like other pets are."
+- Steps:
+  - Ensure pet type is captured before clearing pet references on death and reinforce registry resolution, syncing the stored pet type id if it differs.
+  - Added a creation fallback so if the stored type fails to instantiate, a wolf is spawned instead, preventing empty Beastmasters; kept pet type id stable when resolved.
+  - Bumped version to 0.1.61 and ran `./gradlew build -x test`.
+- Rationale: Prevents rare creation/registry mismatches (notably seen with pandas) from blocking pet respawns, guaranteeing every Beastmaster always regains a pet.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster panda speed)
+- Prompt/task: "The panda follows the beastmaster way too slow, we need to increase the movement speed of beastmaster pandas"
+- Steps:
+  - Boosted Panda movement speed to 0.30 when they are assigned as Beastmaster pets so they can keep pace with follow goals.
+  - Left other pet types unchanged to avoid balance shifts.
+  - Bumped version to 0.1.62 and reran `./gradlew build -x test`.
+- Rationale: Pandas have a very low base speed (0.12); raising it for Beastmaster-owned pandas prevents lagging behind while following.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet death/despawn & panda respawn)
+- Prompt/task: "Beastmaster pandas are still not respawning after death. Also, after the beastmaster dies - their pet should despawn."
+- Steps:
+  - Added a pet despawn on Beastmaster death to prevent orphaned pets lingering after their master dies.
+  - Strengthened pet creation: resolve stored pet type, use a direct Panda constructor fallback, and finally default to a wolf if creation still fails—ensuring a pet always respawns.
+  - Bumped version to 0.1.63 and ran `./gradlew build -x test`.
+- Rationale: Guarantees pet cleanup when the Beastmaster dies and fixes rare Panda instantiation failures so Panda-type Beastmasters reliably respawn their pet.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster panda spawn init)
+- Prompt/task: "Pandas are still not respawning for the beastmasters."
+- Steps:
+  - Call `finalizeSpawn` with `MobSpawnType.MOB_SUMMONED` on all newly created Beastmaster pets (including pandas) to ensure attributes/genes/goals are initialized before adding to the world.
+  - Bumped version to 0.1.64 and reran `./gradlew build -x test`.
+- Rationale: Panda instantiation can fail silently without full spawn initialization; invoking finalizeSpawn mirrors natural spawning and stabilizes respawns.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster lost-pet respawn timer)
+- Prompt/task: "Pandas are still not respawning for the beastmaster after death"
+- Steps:
+  - When a pet fails to be found after the load-grace window, immediately start the pet respawn timer so despawned/dead pets (including pandas) actually reappear.
+  - Kept prior finalizeSpawn/init fixes to ensure pandas instantiate correctly once the timer triggers.
+  - Bumped version to 0.1.65 and reran `./gradlew build -x test`.
+- Rationale: Previously, if the pet was missing but not explicitly marked dead, the respawn timer never started; this guarantees a new pet spawns after the grace period.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster respawn for untamed companions)
+- Prompt/task: "No pet appears to be respawning for the beastmasters when their pet dies; I am killing UNTAMED Beastmaster pets."
+- Steps:
+  - Removed the `isTame()` gate from `managePet` so Beastmasters manage/spawn/respawn pets even before the player tames the companion.
+  - Kept prior type-locking and spawn initialization, so any Beastmaster always respawns its assigned pet type regardless of player taming state.
+  - Bumped version to 0.1.66 and reran `./gradlew build -x test`.
+- Rationale: Respawn logic was skipped for untamed companions, preventing pets from returning; now every Beastmaster always maintains its pet lifecycle.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster camel return & speed)
+- Prompt/task: "Let's re-enable the Camel pet as an option, and increase its speed just like we did with the pandas"
+- Steps:
+  - Restored camel to the common pet pool for Beastmasters and matched its movement speed boost to 0.30 like pandas so it can keep up while following.
+  - Left other pet weights unchanged; speed boost applied during pet goal setup.
+  - Bumped version to 0.1.67 and reran `./gradlew build -x test`.
+- Rationale: Reintroduces camels as a valid Beastmaster pet while ensuring they move quickly enough to follow their master.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster camel speed trim)
+- Prompt/task: "Camel is a little too fast, lets half the bonus we gave it"
+- Steps:
+  - Reduced the camel movement speed boost to 0.20 (half of the prior 0.30 boost) while keeping pandas at 0.30.
+  - Left spawn pool unchanged; only the camel follow speed was tuned down.
+  - Bumped version to 0.1.68 and reran `./gradlew build -x test`.
+- Rationale: Camels were outpacing their Beastmasters; a smaller boost keeps them mobile without overshooting.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet wander clamp)
+- Prompt/task: "Can we make the beastmaster pets wander a bit less? This is causing a lot of rubber banding behavior."
+- Steps:
+  - Removed random stroll goals from Beastmaster pets during setup, leaving follow/float behavior intact so pets stay close and reduce teleport rubber-banding.
+  - Kept speed boosts and follow goal as-is; only idle wandering was pruned.
+  - Bumped version to 0.1.69 and reran `./gradlew build -x test`.
+- Rationale: Pets drifting via vanilla wander goals caused excess distance/teleports; pruning wander keeps them near their master.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet friendly-fire guard)
+- Prompt/task: "We need to make it so Beastmasters can never damage their own pets."
+- Steps:
+  - Added pet ownership checks to Beastmaster melee, ranged attack, and `canAttack` logic so targets matching their pet UUID are never attacked or damaged.
+  - Left threat/pet combat driving intact; only friendly-fire from the Beastmaster is blocked.
+  - Bumped version to 0.1.70 and reran `./gradlew build -x test`.
+- Rationale: Prevents accidental friendly fire from Beastmasters against their own pets in both melee and ranged attacks.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet names)
+- Prompt/task: "Beastmaster Beasts should have randomized names, visible over their entity just like the beastmaster themselves. Build an array with a lot of pet names to use"
+- Steps:
+  - Added a 50-name pool and assign a random, visible custom name to pets on spawn if they don’t already have one.
+  - Kept names persistent via entity NBT; naming occurs before the pet is added to the world.
+  - Bumped version to 0.1.71 and reran `./gradlew build -x test`.
+- Rationale: Gives each Beastmaster pet a unique, visible identity matching the companion naming style.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet nameplate visibility)
+- Prompt/task: "Let's make it so the beastmaster pet nameplates are only visible when looking at the pet, just like the companions"
+- Steps:
+  - Set pet custom names to be non-always-visible and enforce that visibility flag whenever ownership is ensured, so nameplates only show on hover/look like companions.
+  - Left randomized naming intact.
+  - Bumped version to 0.1.72 and reran `./gradlew build -x test`.
+- Rationale: Avoids always-on pet nameplates cluttering the screen while keeping names available on inspection.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet kill credit)
+- Prompt/task: "When a Beastmaster's Beast kills, it should count towards master's killcount."
+- Steps:
+  - Tagged pets with their Beastmaster UUID and added an event handler to credit the Beastmaster’s kill count whenever their pet secures a kill.
+  - Keeps pet ownership tags in sync on spawn/reattach and leaves other behaviors unchanged.
+  - Bumped version to 0.1.73 and reran `./gradlew build -x test`.
+- Rationale: Ensures Beastmasters gain kill credit from their pets’ kills for stats/GUI consistency.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-21 (Beastmaster pet stat scaling)
+- Prompt/task: "Vary beast stats according to its beastmaster's"
+- Steps:
+  - Added per-pet attribute scaling driven by the Beastmaster’s STR/DEX/END: attack (+0.15 per STR), health (+0.4 per END), and speed (+0.003 per DEX) applied via permanent modifiers on pet setup.
+  - Prevented stacking by using fixed modifier UUIDs; health re-syncs current HP to the new max.
+  - Bumped version to 0.1.74 and reran `./gradlew build -x test`.
+- Rationale: Makes pets mirror their master’s prowess so stronger Beastmasters field stronger, faster beasts.
+- Build/Test: `./gradlew build -x test` ✔️
