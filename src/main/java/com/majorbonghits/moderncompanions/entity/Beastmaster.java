@@ -51,7 +51,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Ranged companion that always fights with a loyal pet and buffs nearby tamed animals.
+ * Ranged companion that always fights with a loyal pet and buffs nearby tamed
+ * animals.
  */
 public class Beastmaster extends AbstractHumanCompanionEntity implements RangedAttackMob {
     public static final String BEASTMASTER_OWNER_TAG = "BeastmasterOwner";
@@ -65,12 +66,27 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
             "Rogue", "Echo", "Nova", "Willow", "Koda", "Storm", "Maple", "Onyx", "Bramble", "Tango",
             "Sable", "Cinder", "Aspen", "Mango", "Hazel", "Riven", "Basil", "Skye", "Thistle", "Hollow",
             "Marble", "Sparrow", "Juniper", "Clover", "Garnet", "Jasper", "Quartz", "Slate", "Nimbus", "Pip",
-            "Pixel", "Atlas", "Soot", "Dusk", "Rumble", "Velvet", "Glint", "Cobb", "Indigo", "Taffy"
+            "Pixel", "Atlas", "Soot", "Dusk", "Rumble", "Velvet", "Glint", "Cobb", "Indigo", "Taffy",
+            "Poppy", "Rust", "Zephyr", "Comet", "Drift", "Puddle", "Mochi", "Ivy", "Thyme", "Cricket",
+            "Freckle", "Pepper", "Kumo", "Moss", "Berry", "Twix", "Gizmo", "Fable", "Rook", "Draco",
+            "Smudge", "Jinx", "Sunny", "Aurora", "Cosmo", "Sprout", "Nugget", "Biscuit", "Noodle", "Chai",
+            "Pumpkin", "Glacier", "Frost", "Whisper", "Galaxy", "Mocha", "Sprinkle", "Truffle", "Phoenix", "Rune",
+            "Tinsel", "Fidget", "Button", "Havoc", "Flint", "Blossom", "Dottie", "Ziggy", "Lyric", "Miso",
+            "Rascal", "Quill", "Misty", "Clove", "Curry", "River", "Stormy", "Indy", "Loaf", "Pickle",
+            "Sushi", "Bean", "Mellow",
+            "Raven", "Cobalt", "Violet", "Nyx", "Cypress", "Lotus", "Opal", "Topaz", "Brick", "Sprite",
+            "Parker", "Indie", "Bubbles", "Rafa", "Rhea", "Finn", "Rory", "Sora", "Loki", "Opie",
+            "Pepita", "Rolo", "Ritz", "Cocoa", "Churro", "Frito", "Tempo", "Rhythm", "Melody", "Aria",
+            "Jelly", "Peanut", "Sesame", "Waffle", "Pancake", "Taco", "Nacho", "Salsa", "Kiwi", "Fig",
+            "Plum", "Cherry", "Petal", "Mulberry", "Drizzle", "Marshmallow", "Pebbles", "Cinnamon", "Saffron", "Nebula"
     };
 
-    private static final ResourceLocation PET_ATTACK_MOD = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "pet_attack_bonus");
-    private static final ResourceLocation PET_HEALTH_MOD = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "pet_health_bonus");
-    private static final ResourceLocation PET_SPEED_MOD = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "pet_speed_bonus");
+    private static final ResourceLocation PET_ATTACK_MOD = ResourceLocation
+            .fromNamespaceAndPath(ModernCompanions.MOD_ID, "pet_attack_bonus");
+    private static final ResourceLocation PET_HEALTH_MOD = ResourceLocation
+            .fromNamespaceAndPath(ModernCompanions.MOD_ID, "pet_health_bonus");
+    private static final ResourceLocation PET_SPEED_MOD = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID,
+            "pet_speed_bonus");
 
     private UUID petId;
     private int petRespawnTimer;
@@ -102,7 +118,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
 
     @Override
     public boolean doHurtTarget(Entity entity) {
-        if (isOwnPet(entity)) return false;
+        if (isOwnPet(entity))
+            return false;
         boolean hit = super.doHurtTarget(entity);
         if (entity instanceof LivingEntity living && !this.level().isClientSide()) {
             if (isBeast(living)) {
@@ -114,7 +131,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
 
     @Override
     public void performRangedAttack(LivingEntity target, float distanceFactor) {
-        if (isOwnPet(target)) return; // never shoot our own pet
+        if (isOwnPet(target))
+            return; // never shoot our own pet
         ItemStack bow = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, item -> item instanceof BowItem));
         if (bow.isEmpty() || !(bow.getItem() instanceof BowItem)) {
             return; // no valid bow, skip shot
@@ -136,14 +154,16 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData data) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason,
+            @Nullable SpawnGroupData data) {
         if (ModConfig.safeGet(ModConfig.SPAWN_WEAPON)) {
             this.inventory.setItem(4, Items.BOW.getDefaultInstance());
             checkBow();
         }
         SpawnGroupData spawnData = super.finalizeSpawn(level, difficulty, reason, data);
 
-        // Guarantee a starting pet immediately on spawn so Beastmasters never appear alone.
+        // Guarantee a starting pet immediately on spawn so Beastmasters never appear
+        // alone.
         if (level instanceof ServerLevel serverLevel && this.petId == null) {
             spawnPet(serverLevel);
         }
@@ -154,26 +174,31 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        if (petId != null) tag.putUUID(PET_TAG, petId);
+        if (petId != null)
+            tag.putUUID(PET_TAG, petId);
         tag.putInt(PET_RESPAWN_TAG, petRespawnTimer);
         tag.putInt(PET_LOOKUP_TAG, missingPetGrace);
-        if (petTypeId != null) tag.putString(PET_TYPE_TAG, petTypeId.toString());
+        if (petTypeId != null)
+            tag.putString(PET_TYPE_TAG, petTypeId.toString());
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.hasUUID(PET_TAG)) petId = tag.getUUID(PET_TAG);
+        if (tag.hasUUID(PET_TAG))
+            petId = tag.getUUID(PET_TAG);
         petRespawnTimer = tag.getInt(PET_RESPAWN_TAG);
         missingPetGrace = tag.getInt(PET_LOOKUP_TAG);
-        if (tag.contains(PET_TYPE_TAG)) petTypeId = ResourceLocation.tryParse(tag.getString(PET_TYPE_TAG));
+        if (tag.contains(PET_TYPE_TAG))
+            petTypeId = ResourceLocation.tryParse(tag.getString(PET_TYPE_TAG));
         checkBow();
     }
 
     private void checkBow() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
 
-        // If the current weapon is not preferred or no longer present, clear it to allow reassignment.
+        // If the current weapon is not preferred or no longer present, clear it to
+        // allow reassignment.
         if (!hand.isEmpty() && (!isPreferredWeapon(hand) || !inventoryContains(hand.getItem()))) {
             this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
             hand = ItemStack.EMPTY;
@@ -208,21 +233,26 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
 
     private boolean inventoryContains(net.minecraft.world.item.Item item) {
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
-            if (this.inventory.getItem(i).getItem() == item) return true;
+            if (this.inventory.getItem(i).getItem() == item)
+                return true;
         }
         return false;
     }
 
     private boolean isBeast(LivingEntity target) {
-        return target instanceof Wolf || target instanceof Hoglin || target.getType().getCategory() == MobCategory.CREATURE;
+        return target instanceof Wolf || target instanceof Hoglin
+                || target.getType().getCategory() == MobCategory.CREATURE;
     }
 
     private void managePet() {
-        if (!(this.level() instanceof ServerLevel server)) return;
+        if (!(this.level() instanceof ServerLevel server))
+            return;
         LivingEntity pet = petId != null ? (LivingEntity) server.getEntity(petId) : null;
 
-        // If we know about a pet but the chunk has not finished loading, give it time to appear
-        // and attempt to reattach to an already-existing tamed wolf before spawning a new one.
+        // If we know about a pet but the chunk has not finished loading, give it time
+        // to appear
+        // and attempt to reattach to an already-existing tamed wolf before spawning a
+        // new one.
         if (petId != null && pet == null) {
             pet = findExistingPet(server);
             if (pet != null) {
@@ -268,13 +298,16 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     /**
-     * Pushes simple combat orders to passive pets so they help the Beastmaster by closing distance
+     * Pushes simple combat orders to passive pets so they help the Beastmaster by
+     * closing distance
      * and attempting vanilla melee hits, even if they do not naturally attack.
      */
     private void drivePetCombat(LivingEntity pet) {
         LivingEntity target = pickThreat();
-        if (target == null || target == this || target == this.getOwner()) return;
-        if (!(pet instanceof Mob mob)) return;
+        if (target == null || target == this || target == this.getOwner())
+            return;
+        if (!(pet instanceof Mob mob))
+            return;
 
         // Add a basic melee goal if the mob normally has no attack behavior.
         maybeAddMeleeGoal(mob);
@@ -296,7 +329,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
 
     @Override
     public boolean canAttack(LivingEntity target) {
-        if (isOwnPet(target)) return false;
+        if (isOwnPet(target))
+            return false;
         return super.canAttack(target);
     }
 
@@ -318,24 +352,28 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     private LivingEntity pickThreat() {
         // Highest priority: whoever is attacking the Beastmaster.
         LivingEntity attacker = this.getLastHurtByMob();
-        if (attacker != null && attacker.isAlive()) return attacker;
+        if (attacker != null && attacker.isAlive())
+            return attacker;
 
         // Next: whoever is attacking the owner player.
         if (this.getOwner() instanceof Player player) {
             LivingEntity playerAttacker = player.getLastHurtByMob();
-            if (playerAttacker != null && playerAttacker.isAlive()) return playerAttacker;
+            if (playerAttacker != null && playerAttacker.isAlive())
+                return playerAttacker;
         }
 
         // Otherwise, help with Beastmaster's active target.
         LivingEntity target = this.getTarget();
-        if (target != null && target.isAlive()) return target;
+        if (target != null && target.isAlive())
+            return target;
         return null;
     }
 
     private void maybeAddMeleeGoal(Mob mob) {
         boolean hasAttackAttribute = mob.getAttributes().hasAttribute(Attributes.ATTACK_DAMAGE);
 
-        // If the mob lacks attack damage, remove any melee goals we may have injected to avoid attribute lookups.
+        // If the mob lacks attack damage, remove any melee goals we may have injected
+        // to avoid attribute lookups.
         if (!hasAttackAttribute) {
             mob.goalSelector.getAvailableGoals().stream()
                     .filter(w -> w.getGoal() instanceof MeleeAttackGoal)
@@ -354,7 +392,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
 
     @Nullable
     private LivingEntity findExistingPet(ServerLevel server) {
-        // Try any nearby living entity matching the stored UUID or already owned by this Beastmaster.
+        // Try any nearby living entity matching the stored UUID or already owned by
+        // this Beastmaster.
         if (petId != null) {
             LivingEntity byId = (LivingEntity) server.getEntity(petId);
             if (byId != null) {
@@ -363,8 +402,9 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
             }
         }
         return server.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(32.0D),
-                        e -> (petId != null && e.getUUID().equals(petId))
-                                || (e instanceof TamableAnimal tam && tam.isTame() && this.getUUID().equals(tam.getOwnerUUID())))
+                e -> (petId != null && e.getUUID().equals(petId))
+                        || (e instanceof TamableAnimal tam && tam.isTame()
+                                && this.getUUID().equals(tam.getOwnerUUID())))
                 .stream().findFirst().map(e -> {
                     ensurePetTypeFromEntity(e);
                     return e;
@@ -373,7 +413,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
 
     private void spawnPet(ServerLevel server) {
         LivingEntity pet = createPet(server);
-        if (pet == null) return;
+        if (pet == null)
+            return;
         pet.moveTo(this.getX() + (this.random.nextDouble() - 0.5D) * 2.0D, this.getY(),
                 this.getZ() + (this.random.nextDouble() - 0.5D) * 2.0D, this.getYRot(), this.getXRot());
 
@@ -384,7 +425,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
         }
 
         if (pet instanceof Mob mob) {
-            // Initialize mob stats/attributes properly for summoned pets (important for pandas/others).
+            // Initialize mob stats/attributes properly for summoned pets (important for
+            // pandas/others).
             mob.finalizeSpawn(server, server.getCurrentDifficultyAt(this.blockPosition()),
                     MobSpawnType.MOB_SUMMONED, null);
             setupPetGoalsIfNeeded(mob);
@@ -405,7 +447,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     private void despawnPet() {
-        if (this.level().isClientSide() || !(this.level() instanceof ServerLevel server) || petId == null) return;
+        if (this.level().isClientSide() || !(this.level() instanceof ServerLevel server) || petId == null)
+            return;
         Entity pet = server.getEntity(petId);
         if (pet != null) {
             pet.discard();
@@ -485,7 +528,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     private void setupPetGoalsIfNeeded(LivingEntity pet) {
-        if (!(pet instanceof Mob mob)) return;
+        if (!(pet instanceof Mob mob))
+            return;
         sanitizePetGoals(mob);
         pruneWanderGoals(mob);
         boostPandaSpeedIfNeeded(mob);
@@ -494,7 +538,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     /**
-     * Strip idle wander goals so pets don't drift far and cause follow/teleport rubber-banding.
+     * Strip idle wander goals so pets don't drift far and cause follow/teleport
+     * rubber-banding.
      */
     private void pruneWanderGoals(Mob mob) {
         mob.goalSelector.getAvailableGoals().stream()
@@ -506,7 +551,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     /**
-     * Scale pet core stats based on the Beastmaster's attributes so stronger masters yield stronger pets.
+     * Scale pet core stats based on the Beastmaster's attributes so stronger
+     * masters yield stronger pets.
      */
     private void applyPetScaling(Mob mob) {
         double str = Math.max(0, this.getStrength());
@@ -518,7 +564,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
             removeModifier(attack, PET_ATTACK_MOD);
             double bonus = 0.15D * str; // ~1.5 extra damage at STR 10
             if (bonus > 0) {
-                attack.addPermanentModifier(new AttributeModifier(PET_ATTACK_MOD, bonus, AttributeModifier.Operation.ADD_VALUE));
+                attack.addPermanentModifier(
+                        new AttributeModifier(PET_ATTACK_MOD, bonus, AttributeModifier.Operation.ADD_VALUE));
             }
         }
 
@@ -527,7 +574,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
             removeModifier(health, PET_HEALTH_MOD);
             double bonus = 0.4D * end; // +4 HP at END 10
             if (bonus > 0) {
-                health.addPermanentModifier(new AttributeModifier(PET_HEALTH_MOD, bonus, AttributeModifier.Operation.ADD_VALUE));
+                health.addPermanentModifier(
+                        new AttributeModifier(PET_HEALTH_MOD, bonus, AttributeModifier.Operation.ADD_VALUE));
                 mob.setHealth((float) health.getValue());
             }
         }
@@ -537,7 +585,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
             removeModifier(speed, PET_SPEED_MOD);
             double bonus = 0.003D * dex; // modest speed bump tied to DEX
             if (bonus > 0) {
-                speed.addPermanentModifier(new AttributeModifier(PET_SPEED_MOD, bonus, AttributeModifier.Operation.ADD_VALUE));
+                speed.addPermanentModifier(
+                        new AttributeModifier(PET_SPEED_MOD, bonus, AttributeModifier.Operation.ADD_VALUE));
             }
         }
     }
@@ -547,7 +596,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     /**
-     * Pandas are extremely slow by default; boost their movement speed so they can keep up with the Beastmaster.
+     * Pandas are extremely slow by default; boost their movement speed so they can
+     * keep up with the Beastmaster.
      */
     private void boostPandaSpeedIfNeeded(Mob mob) {
         if (mob instanceof Panda) {
@@ -579,7 +629,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     private void assignRandomPetName(LivingEntity pet) {
-        if (pet.hasCustomName()) return;
+        if (pet.hasCustomName())
+            return;
         String name = PET_NAMES[this.random.nextInt(PET_NAMES.length)];
         pet.setCustomName(Component.literal(name));
         pet.setCustomNameVisible(false);
@@ -592,7 +643,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     private void applyAnimalBuffs() {
-        if (this.level().random.nextInt(80) != 0 || !(this.level() instanceof ServerLevel)) return;
+        if (this.level().random.nextInt(80) != 0 || !(this.level() instanceof ServerLevel))
+            return;
         this.level().getEntitiesOfClass(TamableAnimal.class, this.getBoundingBox().inflate(10.0D),
                 tamable -> tamable.isTame() && tamable.getOwner() != null
                         && (tamable.getOwner().equals(this) || tamable.getOwner().equals(this.getOwner())))
