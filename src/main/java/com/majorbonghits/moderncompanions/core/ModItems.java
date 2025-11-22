@@ -1,8 +1,10 @@
 package com.majorbonghits.moderncompanions.core;
 
 import com.majorbonghits.moderncompanions.ModernCompanions;
+import com.majorbonghits.moderncompanions.item.ResurrectionScrollItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -15,6 +17,9 @@ public final class ModItems {
 
     public static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(Registries.ITEM, ModernCompanions.MOD_ID);
+
+    public static final DeferredHolder<Item, Item> RESURRECTION_SCROLL = ITEMS.register("resurrection_scroll",
+            () -> new ResurrectionScrollItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
 
     public static final DeferredHolder<Item, Item> ARBALIST_SPAWN_EGG = ITEMS.register("arbalist_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntityTypes.ARBALIST, 0xE8AF5A, 0xFF0000, new Item.Properties()));
@@ -48,4 +53,5 @@ public final class ModItems {
 
     public static final DeferredHolder<Item, Item> STORMCALLER_SPAWN_EGG = ITEMS.register("stormcaller_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntityTypes.STORMCALLER, 0xB0E0FF, 0xFFD166, new Item.Properties()));
+
 }

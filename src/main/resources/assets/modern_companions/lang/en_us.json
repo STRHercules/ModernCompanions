@@ -22,6 +22,8 @@
   "item.modern_companions.alchemist_spawn_egg": "Alchemist Summon Gem",
   "item.modern_companions.scout_spawn_egg": "Scout Summon Gem",
   "item.modern_companions.stormcaller_spawn_egg": "Stormcaller Summon Gem",
+  "item.modern_companions.resurrection_scroll": "Resurrection Scroll",
+  "item.modern_companions.resurrection_scroll.named": "%s's Resurrection Scroll",
   "item.modern_companions.wooden_dagger": "Wooden Dagger",
   "item.modern_companions.wooden_hammer": "Wooden Hammer",
   "item.modern_companions.wooden_club": "Wooden Club",
@@ -64,5 +66,13 @@
   "item.modern_companions.netherite_spear": "Netherite Spear",
   "item.modern_companions.netherite_quarterstaff": "Netherite Quarterstaff",
   "item.modern_companions.netherite_glaive": "Netherite Glaive",
+  "tooltip.modern_companions.resurrection_scroll.inactive": "Inactive: hold a Nether Star in off-hand and right-click to infuse.",
+  "tooltip.modern_companions.resurrection_scroll.empty": "This scroll is missing companion data.",
+  "tooltip.modern_companions.resurrection_scroll.active": "Activated: Right-click to resurrect the bound companion.",
+  "tooltip.modern_companions.resurrection_scroll.bound": "Bound to: %s",
+  "tooltip.modern_companions.resurrection_scroll.needs_nether_star": "Needs a Nether Star in off-hand to activate.",
+  "tooltip.modern_companions.resurrection_scroll.activated": "The scroll hums with power.",
+  //"message.modern_companions.resurrection_scroll.spawned": "Resurrected companion at (%s, %s, %s)",
+  "message.modern_companions.resurrection_scroll.spawned": "Resurrected companion!",
   "itemGroup.modern_companions": "Modern Companions"
 }

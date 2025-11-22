@@ -758,3 +758,148 @@
   - Ran `./gradlew build -x test` to verify the change compiles cleanly.
 - Rationale: A superlinear curve better matches RPG expectations where higher levels demand significantly more XP.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-22
+- Prompt/task: "Change how companions die to drop a Resurrection Scroll that preserves their NBT/UUID and can be activated in a smithing table with a nether star to respawn them."
+- Steps:
+  - Added `ResurrectionScrollItem` to capture full companion NBT on death, mark activation state, and respawn the entity with preserved UUID/attributes via right-click; wired hover text and glint state for clarity.
+  - Registered the scroll item and a custom smithing recipe serializer, created the activation recipe (scroll + nether star, empty template slot), and exposed the item in the mod creative tab; added model/texture/lang entries and bumped `gradle.properties` version to 0.1.76.
+  - Updated `AbstractHumanCompanionEntity` death flow to drop only the resurrection scroll (no equipment drops) and ensured Beastmaster pet cleanup still happens; build verified with `./gradlew build`.
+- Rationale: Implements the requested resurrection loop so companions persist through death with full data stored in a single activatable item, preventing gear duplication while enabling controlled revival.
+- Build: `./gradlew build` (success).
+
+## 2025-11-22 (follow-up)
+- Prompt/task: "Fix smithing activation not accepting scroll/nether star, ensure Beastmaster pets despawn on death, and correct resurrection scroll texture."
+- Steps:
+  - Switched activation to a vanilla smithing transform recipe (any Smithing Template + scroll + nether star) that carries over the stored entity data and marks the scroll activated via components; removed the unused custom smithing serializer.
+  - Forced Beastmaster pets to despawn whenever the master dies (even if other death hooks run) to avoid lingering pets after scroll drop.
+  - Normalized the scroll texture path to lowercase and updated the item model to reference it so the icon renders correctly.
+- Rationale: Leverages the standard smithing pipeline for reliable slot acceptance, guarantees pets don’t persist without a living Beastmaster, and fixes the missing texture reference so the scroll appears as intended.
+- Build: `./gradlew build` (success).
+
+## 2025-11-22 (template + activation)
+- Prompt/task: "Do we need a smithing template item to make the recipe work? Add Resurrection Template item with provided texture and craft recipe." 
+- Steps:
+  - Added a dedicated `Resurrection Template` smithing template item using the provided texture/model, registered it in `ModItems`, and placed it on the Modern Companions creative tab; bumped version to 0.1.77.
+  - Crafted via shaped recipe (ghast tears + totem of undying + shulker shells) and updated the smithing transform recipe so activation now specifically requires this template with the scroll + nether star.
+  - Kept scroll activation data intact (NBT/glint) and ensured build passes (`./gradlew build`).
+- Rationale: Removes reliance on generic templates, gives a themed path to activate scrolls, and matches the requested asset.
+- Build: `./gradlew build` (success).
+
+## 2025-11-22 (recipe load fix)
+- Prompt/task: "Still can't craft/see the smithing activation recipe."
+- Steps:
+  - Corrected smithing recipe ingredient format and ensured our template also sits in the vanilla `minecraft:smithing_templates` tag; bumped version to 0.1.78 and rebuilt.
+- Rationale: Guarantees servers recognize the activation recipe and pick up the custom template.
+- Build: `./gradlew build` (success).
+
+## 2025-11-22 (recipe path fix)
+- Prompt/task: "Smithing table still not accepting template/scroll/star." 
+- Steps:
+  - Moved both Resurrection recipes into the standard `data/modern_companions/recipes/` folder so the RecipeManager can find them: smithing transform for activation and shaped craft for the template. Removed the old `recipe/...` copies.
+  - Rebuilt to confirm resources compile cleanly (`./gradlew build`).
+- Rationale: Vanilla looks under `recipes/`; previous placement under `recipe/` kept the smithing inputs from being recognized.
+- Build: `./gradlew build` (success).
+
+## 2025-11-22 (bastion drops)
+- Prompt/task: "Let's remove the smithing template crafting recipe and instead ensure that they can drop in various locations - same locations that the player can get the netherite smithing template. One guaranteed in the treasure room, and a chance at more in bastion chests."
+- Steps:
+  - Removed the shaped crafting recipe for the Resurrection Template so it can no longer be player-crafted.
+  - Added overrides for vanilla bastion loot tables to mirror netherite upgrade distribution: guaranteed Resurrection Template in `bastion_treasure` chests and a 10% chance in `bastion_bridge`, `bastion_hoglin_stable`, and `bastion_other` chests.
+  - Bumped version to 0.1.80 and verified the data pack/build pipeline with `./gradlew build -x test`.
+- Rationale: Aligns Resurrection Template acquisition with vanilla netherite templates—loot-driven with a guaranteed treasure-room copy plus rare extras—while keeping activation recipe intact.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (loot modifier)
+- Prompt/task: "Work on converting that to a global loot modifier instead of full-table overrides so it meshes with other mods."
+- Steps:
+  - Replaced bastion chest JSON overrides with a single global loot modifier codec and datapack entry that injects Resurrection Templates: 100% chance in `bastion_treasure` and 10% in `bastion_bridge`, `bastion_hoglin_stable`, and `bastion_other`.
+  - Registered the modifier under `modern_companions:add_resurrection_template` and wired the serializer via `ModLootModifiers`; removed the override files to avoid conflicts.
+  - Bumped version to 0.1.81 and confirmed build success with `./gradlew build -x test`.
+- Rationale: Uses NeoForge global loot modifiers so our drops stack cleanly with other mods/datapacks instead of clobbering vanilla loot tables.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (smithing template tag load)
+- Prompt/task: "The resurrection template is still not being accepted in the template slot of the smithing table."
+- Steps:
+  - Updated `pack.mcmeta` to pack_format 48 (Minecraft 1.21 data pack format) so data assets—including the `minecraft:smithing_templates` tag entry for our template—load correctly in-game.
+  - Bumped version to 0.1.82 and rebuilt to ensure the tag ships with the jar.
+- Rationale: If the data pack format is too old, Minecraft ignores the data portion of the mod jar, preventing the smithing template tag from loading and blocking the template slot.
+- Build: `./gradlew clean build -x test` (success).
+
+## 2025-11-22 (scroll activation rework)
+- Prompt/task: "Scrap the resurrection template/loot/recipe; activation should consume an off-hand nether star on right-click."
+- Steps:
+  - Removed the Resurrection Template item, recipes, smithing/loot tags, loot modifier, and assets; deleted the smithing-based activation recipe.
+  - Added off-hand activation flow to `ResurrectionScrollItem`: if unactivated and the player holds a nether star in off-hand, right-click consumes the star, toggles activation (glint), and allows summoning afterward.
+  - Bumped version to 0.1.83; cleaned up template-related suggestions/logs and rebuilt.
+- Rationale: Simplifies activation to an in-hand consume mechanic without custom templates or loot injections, improving compatibility with other mods/datapacks.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (spawn positioning fix)
+- Prompt/task: "Companions still fall to their death when revived."
+- Steps:
+  - Reworked resurrection spawn placement to stick with the clicked column/face and only climb upward if the target space is solid; removed heightmap snap that was pulling spawns down to ground level.
+  - On revive, zeroed velocity and forced on-ground to reduce any initial falling impulse.
+  - Bumped version to 0.1.84 and rebuilt.
+- Rationale: Ensures revived companions appear where the player clicked (e.g., elevated platforms) instead of teleporting to lower terrain and dying from fall damage.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (exact spawn point)
+- Prompt/task: "Companions still fall from a high place / spawn randomly—must spawn exactly where the scroll is used."
+- Steps:
+  - Spawn now uses the precise click location plus a tiny outward nudge along the clicked face; no column/heightmap adjustment occurs.
+  - Revived companions spawn at that exact X/Y/Z (clamped only to world min height), with zero velocity and on-ground set to avoid falling impulses.
+  - Rebuilt successfully after the change.
+- Rationale: Eliminates any repositioning so companions appear exactly where the player uses the scroll, preventing distant or underground spawns.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (face-adjacent spawn, solid skip)
+- Prompt/task: "Companions are still falling; likely spawning high/elsewhere."
+- Steps:
+  - Spawn position now anchors to the clicked face’s adjacent block center, then walks upward only if that specific space is solid (max 8 steps). Heightmap snap is fully removed.
+  - Added a tiny outward nudge from the clicked face, clamped Y within world bounds, and kept zero-velocity/on-ground on spawn.
+  - Bumped version to 0.1.85 and rebuilt.
+- Rationale: Forces resurrection to occur exactly at the clicked face column, only lifting enough to clear immediate collision—eliminating random distant/high spawns.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (spawn debug chat)
+- Prompt/task: "Still not seeing companions; add debug showing where they spawn."
+- Steps:
+  - Added a client chat message after revival that reports the exact XYZ where the companion was placed.
+  - Bumped version to 0.1.86 and rebuilt.
+- Rationale: Surfaces spawn coordinates in chat so we can confirm placement (or spot unexpected offsets) during testing.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (pickup blacklist)
+- Prompt/task: "Companions sometimes grab their own resurrection scroll before despawning."
+- Steps:
+  - Added a pickup blacklist in `AbstractHumanCompanionEntity.collectNearbyItems` to ignore `Resurrection Scroll` item entities.
+  - Bumped version to 0.1.88 and rebuilt.
+- Rationale: Prevents companions from auto-looting their scroll on death, ensuring the player can recover it.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (beastmaster pet cleanup)
+- Prompt/task: "Beastmaster pets are not despawning when the Beastmaster dies/turns into a scroll."
+- Steps:
+  - Updated `Beastmaster.despawnPet` to always clear respawn timers, discard the tracked pet if present, and as a fallback sweep for any nearby pet carrying the Beastmaster owner tag to force-discard.
+  - Bumped version to 0.1.89 and rebuilt.
+- Rationale: Guarantees the Beastmaster’s pet is fully removed on death so it can’t linger after conversion to a resurrection scroll.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (pet respawn lockout on death)
+- Prompt/task: "Beastmaster pet is respawning as the Beastmaster dies."
+- Steps:
+  - Added a `suppressPetRespawn` flag set during death and pet despawn; `managePet` now skips when suppression is active.
+  - Cleared respawn timers on death and when despawning pets to prevent immediate respawn attempts; ensured the suppress flag is set in those paths.
+  - Bumped version to 0.1.90 and rebuilt.
+- Rationale: Prevents the pet from respawning during the same tick/frame that the Beastmaster dies and drops their resurrection scroll.
+- Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (tamed-only scrolls)
+- Prompt/task: "Resurrection scrolls should only drop from tamed companions."
+- Steps:
+  - Guarded scroll drops in `AbstractHumanCompanionEntity.dropResurrectionScroll` so only tamed companions (isTame()) spawn a scroll.
+  - Bumped version to 0.1.91 and rebuilt.
+- Rationale: Prevents wild companions from generating resurrection scrolls on death, matching the intended reward gating.
+- Build: `./gradlew build -x test` (success).

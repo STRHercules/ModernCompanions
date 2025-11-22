@@ -92,6 +92,7 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     private int petRespawnTimer;
     private int missingPetGrace;
     private ResourceLocation petTypeId;
+    private boolean suppressPetRespawn;
 
     public Beastmaster(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
@@ -111,6 +112,9 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     @Override
     public void die(DamageSource source) {
         if (!this.level().isClientSide()) {
+            suppressPetRespawn = true; // lock out any respawn attempts during death
+            petRespawnTimer = 0;
+            missingPetGrace = 0;
             despawnPet();
         }
         super.die(source);
@@ -246,6 +250,8 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
 
     private void managePet() {
         if (!(this.level() instanceof ServerLevel server))
+            return;
+        if (!shouldAllowPetRespawn())
             return;
         LivingEntity pet = petId != null ? (LivingEntity) server.getEntity(petId) : null;
 
@@ -447,13 +453,47 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     }
 
     private void despawnPet() {
-        if (this.level().isClientSide() || !(this.level() instanceof ServerLevel server) || petId == null)
+        if (this.level().isClientSide() || !(this.level() instanceof ServerLevel server))
             return;
-        Entity pet = server.getEntity(petId);
-        if (pet != null) {
-            pet.discard();
+
+        // Stop any pending respawn attempts.
+        petRespawnTimer = 0;
+        missingPetGrace = 0;
+        suppressPetRespawn = true;
+
+        boolean removed = false;
+
+        if (petId != null) {
+            Entity pet = server.getEntity(petId);
+            if (pet != null) {
+                pet.discard();
+                removed = true;
+            }
+            petId = null;
         }
-        petId = null;
+
+        // Fallback: sweep nearby for any pet still marked with this beastmaster's owner tag.
+        if (!removed) {
+            for (LivingEntity candidate : server.getEntitiesOfClass(LivingEntity.class,
+                    this.getBoundingBox().inflate(64))) {
+                if (candidate.getPersistentData().hasUUID(BEASTMASTER_OWNER_TAG)
+                        && candidate.getPersistentData().getUUID(BEASTMASTER_OWNER_TAG).equals(this.getUUID())) {
+                    candidate.discard();
+                    removed = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * External trigger to forcibly despawn the current pet (used when the Beastmaster dies).
+     */
+    public void forceDespawnPet() {
+        despawnPet();
+    }
+
+    private boolean shouldAllowPetRespawn() {
+        return !suppressPetRespawn && this.isAlive() && !this.isRemoved();
     }
 
     @Nullable

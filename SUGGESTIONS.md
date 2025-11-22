@@ -55,3 +55,6 @@
 - 2025-11-21 (kill credit UX): Surface pet-kill contributions in the GUI/Jade overlay so players can see which kills came from their beasts.
 - 2025-11-21 (scaling tuning): Expose per-attribute multipliers (attack/health/speed) in config so pack makers can tune how strongly pets scale with STR/DEX/END.
 - 2025-11-22 (XP tuning): Expose the new MMO-style XP curve constants (base, scale, exponent) in config and surface next-level XP + total XP earned in the companion UI so pack makers can rebalance progression without code edits.
+- 2025-11-22 (resurrection flow): Gate activated scrolls behind an advancement/recipe unlock, add an owner-check when reviving to prevent griefing, and make the activation cost configurable (extra reagents, durability loss, or cooldown) while keeping inventory retention opt-in.
+- 2025-11-22 (smithing UX): Add a custom smithing template item so players aren’t forced to burn any template for scroll activation, and expose a recipe unlock advancement to teach the template requirement in-game.
+- 2025-11-22 (pack format guard): Add a small build check to keep `pack.mcmeta` pack_format aligned with the target Minecraft version so data tags can’t silently be ignored.

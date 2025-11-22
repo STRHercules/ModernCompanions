@@ -4,6 +4,8 @@ import com.majorbonghits.moderncompanions.core.ModConfig;
 import com.majorbonghits.moderncompanions.core.ModMenuTypes;
 import com.majorbonghits.moderncompanions.entity.ai.*;
 import com.majorbonghits.moderncompanions.menu.CompanionMenu;
+import com.majorbonghits.moderncompanions.core.ModItems;
+import com.majorbonghits.moderncompanions.item.ResurrectionScrollItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -950,6 +952,17 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         return super.hurt(source, adjusted);
     }
 
+    @Override
+    public void die(DamageSource source) {
+        if (!this.level().isClientSide()) {
+            if (this instanceof Beastmaster beastmaster) {
+                beastmaster.forceDespawnPet();
+            }
+            dropResurrectionScroll();
+        }
+        super.die(source);
+    }
+
     public void hurtArmor(DamageSource source, float amount) {
         if (!(amount <= 0.0F)) {
             amount /= 4.0F;
@@ -966,12 +979,18 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     @Override
     protected void dropEquipment() {
-        super.dropEquipment();
-        for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
-            ItemStack itemstack = this.inventory.getItem(i);
-            if (!itemstack.isEmpty()) {
-                this.spawnAtLocation(itemstack);
-            }
+        // Override to prevent duplicating the stored inventory when a scroll drops.
+    }
+
+    private void dropResurrectionScroll() {
+        if (!this.isTame()) {
+            return; // only tamed companions drop scrolls
+        }
+        ItemStack scroll = ResurrectionScrollItem.createFromCompanion(this,
+                ModItems.RESURRECTION_SCROLL.get());
+        ItemEntity item = this.spawnAtLocation(scroll);
+        if (item != null) {
+            item.setUnlimitedLifetime();
         }
     }
 
@@ -1073,6 +1092,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         for (ItemEntity item : this.level().getEntitiesOfClass(ItemEntity.class, box,
                 e -> e.isAlive() && !e.hasPickUpDelay())) {
             if (item.getItem().isEmpty())
+                continue;
+            // Blacklist certain items from being auto-picked up (e.g., resurrection scrolls).
+            if (item.getItem().is(com.majorbonghits.moderncompanions.core.ModItems.RESURRECTION_SCROLL.get()))
                 continue;
             var pull = this.position().subtract(item.position());
             if (pull.lengthSqr() > 0.01) {

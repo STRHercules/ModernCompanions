@@ -21,6 +21,7 @@ public final class ModernCompanions {
 
         com.majorbonghits.moderncompanions.registry.ModItems.register(modBus); // weapons
         com.majorbonghits.moderncompanions.core.ModItems.ITEMS.register(modBus); // spawn eggs
+        com.majorbonghits.moderncompanions.core.ModRecipeSerializers.SERIALIZERS.register(modBus);
         ModCreativeTabs.register(modBus); // dedicated creative tab
         ModEntityTypes.ENTITY_TYPES.register(modBus);
         ModMenuTypes.MENU_TYPES.register(modBus);
