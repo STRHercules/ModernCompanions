@@ -899,11 +899,11 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public int getXpNeededForNextLevel() {
-        if (this.getExpLvl() >= 30) {
-            return 112 + (this.getExpLvl() - 30) * 9;
-        } else {
-            return this.getExpLvl() >= 15 ? 37 + (this.getExpLvl() - 15) * 5 : 7 + this.getExpLvl() * 2;
-        }
+        int level = this.getExpLvl();
+        // MMO-style curve: gentle start, then superlinear growth so each level costs meaningfully more XP
+        double curve = Math.pow(level + 1, 1.35D);
+        int required = (int) Math.round(20 + (curve * 10));
+        return Math.max(20, required);
     }
 
     public void modifyMaxHealth(int change, String name, boolean permanent) {

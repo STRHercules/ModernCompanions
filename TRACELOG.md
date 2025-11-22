@@ -749,3 +749,12 @@
   - Bumped version to 0.1.74 and reran `./gradlew build -x test`.
 - Rationale: Makes pets mirror their master’s prowess so stronger Beastmasters field stronger, faster beasts.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-22 (Companion XP curve)
+- Prompt/task: "Alter EXP Curve for Companions, higher level = more exp required (MMPORPG Style)"
+- Steps:
+  - Replaced the vanilla-like XP thresholds with an MMO-style power curve (level+1)^1.35 scaled to start at 20 XP, making each level require progressively more experience.
+  - Left existing progress syncing/UI intact while bumping the mod version to 0.1.75.
+  - Ran `./gradlew build -x test` to verify the change compiles cleanly.
+- Rationale: A superlinear curve better matches RPG expectations where higher levels demand significantly more XP.
+- Build/Test: `./gradlew build -x test` ✔️
