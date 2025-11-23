@@ -3,7 +3,12 @@
   "start_pool": "modern_companions:birch_pool",
   "size": 2,
   "max_distance_from_center": 80,
-  "biomes": "#modern_companions:has_structure/birch_house",
+  "biomes": [
+    "birch_forest",
+    "old_growth_birch_forest",
+    "meadow",
+    "plains"
+  ],
   "step": "surface_structures",
   "terrain_adaptation": "beard_thin",
   "start_height": {

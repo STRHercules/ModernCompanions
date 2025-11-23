@@ -31,14 +31,86 @@
     {
       "structure": "modern_companions:terracotta_house",
       "weight": 1
+    },
+    {
+      "structure": "modern_companions:church",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:largehouse",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:largehouse2",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:largehouse3",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:lumber",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:smith",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:tower1",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:tower2",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:watermill",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:windmill",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:berserker_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:stormcaller_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:beastmaster_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:alchemist_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:cleric_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:vanguard_house",
+      "weight": 1
+    },
+    {
+      "structure": "modern_companions:scout_house",
+      "weight": 1
     }
   ],
   "placement": {
     "salt": 1234567890,
 
-    "spacing": 15,
+    "spacing": 30,
 
-    "separation": 10,
+    "separation": 20,
 
     "type": "minecraft:random_spread"
   }

@@ -1,0 +1,30 @@
+{
+  "values": [
+    "modern_companions:oak_house",
+    "modern_companions:oak_birch_house",
+    "modern_companions:birch_house",
+    "modern_companions:sandstone_house",
+    "modern_companions:acacia_house",
+    "modern_companions:spruce_house",
+    "modern_companions:dark_oak_house",
+    "modern_companions:terracotta_house",
+    "modern_companions:church",
+    "modern_companions:house",
+    "modern_companions:largehouse",
+    "modern_companions:largehouse2",
+    "modern_companions:largehouse3",
+    "modern_companions:lumber",
+    "modern_companions:smith",
+    "modern_companions:tower1",
+    "modern_companions:tower2",
+    "modern_companions:watermill",
+    "modern_companions:windmill",
+    "modern_companions:berserker_house",
+    "modern_companions:stormcaller_house",
+    "modern_companions:beastmaster_house",
+    "modern_companions:alchemist_house",
+    "modern_companions:cleric_house",
+    "modern_companions:vanguard_house",
+    "modern_companions:scout_house"
+  ]
+}

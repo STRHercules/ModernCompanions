@@ -3,7 +3,15 @@
   "start_pool": "modern_companions:spruce_pool",
   "size": 2,
   "max_distance_from_center": 80,
-  "biomes": "#modern_companions:has_structure/spruce_house",
+  "biomes": [
+    "taiga",
+    "old_growth_spruce_taiga",
+    "old_growth_pine_taiga",
+    "snowy_taiga",
+    "grove",
+    "snowy_slopes",
+    "meadow"
+  ],
   "step": "surface_structures",
   "terrain_adaptation": "beard_thin",
   "start_height": {

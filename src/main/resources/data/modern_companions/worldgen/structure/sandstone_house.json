@@ -3,7 +3,15 @@
   "start_pool": "modern_companions:sandstone_pool",
   "size": 2,
   "max_distance_from_center": 80,
-  "biomes": "#modern_companions:has_structure/sandstone_house",
+  "biomes": [
+    "desert",
+    "badlands",
+    "eroded_badlands",
+    "wooded_badlands",
+    "savanna",
+    "savanna_plateau",
+    "windswept_savanna"
+  ],
   "step": "surface_structures",
   "terrain_adaptation": "beard_thin",
   "start_height": {

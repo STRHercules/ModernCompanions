@@ -3,7 +3,13 @@
   "start_pool": "modern_companions:acacia_pool",
   "size": 2,
   "max_distance_from_center": 80,
-  "biomes": "#modern_companions:has_structure/acacia_house",
+  "biomes": [
+    "savanna",
+    "savanna_plateau",
+    "windswept_savanna",
+    "plains",
+    "sunflower_plains"
+  ],
   "step": "surface_structures",
   "terrain_adaptation": "beard_thin",
   "start_height": {

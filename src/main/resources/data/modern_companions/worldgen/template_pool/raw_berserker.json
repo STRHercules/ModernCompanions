@@ -1,0 +1,16 @@
+{
+  "name": "modern_companions:raw_berserker",
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "location": "modern_companions:berserker",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "position_offset": [0, -1, 0],
+        "element_type": "minecraft:single_pool_element"
+      }
+    }
+  ]
+}

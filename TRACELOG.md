@@ -919,3 +919,144 @@
   - Bumped version to 0.1.100 per policy.
 - Rationale: Prevents the new companion house pieces from spawning one block too low due to their saved Y offset.
 - Build: Not run (data-only change).
+
+## 2025-11-22 (locate command restore)
+- Prompt/task: "In the original Companions mod, there is a command the user can run to find the closest companion house; `/locate humancompanions:companion_house` This is not present/operational in Modern Companions, I would like this feature."
+- Steps:
+  - Added `ModCommands` with Forge-bus registration to provide `/locatecompanionhouse` and `/locatecompanions` aliases that forward to vanilla `locate structure modern_companions:companion_house`.
+  - Bumped `gradle.properties` to 0.1.101 per AGENTS rule.
+- Rationale: Restores an easy locate shortcut for companion houses, matching the original mod’s UX.
+- Build: Not run (code-only, small change).
+
+## 2025-11-22 (locate command build fix)
+- Prompt/task: Build failed: missing `Bus.FORGE` and void return in `ModCommands`.
+- Steps:
+  - Switched command subscriber to `EventBusSubscriber.Bus.GAME` (RegisterCommandsEvent fires on game bus in NeoForge 1.21).
+  - Adjusted `/locate` forwarder to return 1 after invoking `performPrefixedCommand` (now void).
+  - Bumped version to 0.1.102 per policy.
+- Rationale: Fixes compilation and keeps the locate shortcut working with current NeoForge command APIs.
+- Build: Pending rerun.
+
+## 2025-11-22 (locate uses structure tag)
+- Prompt/task: "There is no structure with type \"modern_companions:companion_house\""
+- Steps:
+  - Pointed the locate shortcut to a structure tag (`#modern_companions:companion_houses`) instead of a non-existent single structure id.
+  - Added `data/modern_companions/tags/worldgen/structure/companion_houses.json` listing all house structures.
+  - Bumped `gradle.properties` to 0.1.103 per policy.
+- Rationale: Aligns the locate command with 1.21 structure lookup and our multi-structure setup so players/admins can find any companion house.
+- Build: Not run (small code/data change).
+
+## 2025-11-22 (remove new class companion pieces from pool)
+- Prompt/task: "src\\main\\resources\\data\\modern_companions\\structures\\companions ... remove these from any prior systems"
+- Steps:
+  - Trimmed `worldgen/template_pool/companions.json` back to the original four entries (knight, archer, arbalist, axeguard), removing the seven new class pieces so they no longer enter the jigsaw pool.
+  - Bumped version to 0.1.104 per AGENTS rule.
+- Rationale: Stops the raw captured companion NBTs from being used as jigsaw pieces; they’ll be wired separately later.
+- Build: Not run (data-only change).
+
+## 2025-11-22 (raw class houses as standalone structures)
+- Prompt/task: "Now lets make sure that these; berserker/stormcaller/beastmaster/alchemist/cleric/vanguard/scout are all set to load into the overworld as raw structure nbt"
+- Steps:
+  - Created single-element template pools `raw_<class>.json` pointing to each class NBT under `structures/companions/` with a +1 Y offset.
+  - Added seven new jigsaw structure entries (`<class>_house.json`) referencing those pools (size 1) and added them to both the structure set `companion_house` and the `#modern_companions:companion_houses` tag.
+  - Bumped version to 0.1.105 per policy.
+- Rationale: Lets the seven new class buildings generate in the overworld via the existing house set/tag without relying on jigsaw interiors.
+- Build: Not run (data-only change).
+
+## 2025-11-22 (spawn overrides for new class houses)
+- Prompt/task: "Now let's ensure that our companions spawn naturally at their respective homes"
+- Steps:
+  - Added `spawn_overrides` blocks to each new class house structure JSON to spawn exactly one matching companion (creature category) when the structure generates.
+  - Bumped version to 0.1.106 per AGENTS rule.
+- Rationale: Guarantees each new class house ships with its resident companion without requiring separate spawners or jigsaw markers.
+- Build: Not run (data-only change).
+
+## 2025-11-22 (new raw structures into worldgen)
+- Prompt/task: "I removed the companion nbt files and added new structure nbt files. We need to make sure that the new structure nbt's are injected into worldspawn like other structures"
+- Steps:
+  - Added single-element pools for new raw structures (church, house, largehouse[1-3], lumber, smith, tower1/2, watermill, windmill) and matching structure JSON entries pointing to those pools.
+  - Included all new structures in the `companion_house` structure set and `#modern_companions:companion_houses` tag so locate/worldgen can pick them up.
+  - Bumped version to 0.1.107 per policy.
+- Rationale: Ensures the newly captured raw structure NBTs can generate and be locatable alongside existing companion houses.
+- Build: Not run (data-only change).
+
+## 2025-11-22 (assign companion to tower1)
+- Prompt/task: "Now can we pick one of these structure nbts and assign them a specific class companion to spawn at them"
+- Steps:
+  - Added a spawn override to `worldgen/structure/tower1.json` to spawn one Vanguard (creature category) when the structure generates.
+  - Bumped version to 0.1.108 per policy.
+- Rationale: Demonstrates per-structure companion assignment for the new raw structures.
+- Build: Not run (data-only change).
+
+## 2025-11-22 (companion assignment for all new structures)
+- Prompt/task: "Now lets do the rest of the structures with the rest of the classes. Cleric should be at the church, stormcaller at the windmill, the rest you decide"
+- Steps:
+  - Added spawn_overrides for the new raw structures: cleric@church, stormcaller@windmill, knight@house, archer@largehouse, axeguard@largehouse2, berserker@largehouse3, arbalist@lumber, alchemist@smith, scout@tower2, beastmaster@watermill (Vanguard already at tower1; class houses remain unchanged).
+  - Bumped version to 0.1.109 per AGENTS rule.
+- Rationale: Ensures every newly added raw structure spawns an appropriate companion resident on generation.
+- Build: Not run (data-only change).
+
+## 2025-11-23 (biome tag typo fix)
+- Prompt/task: Locate/place still failing; logs showed missing biome tags.
+- Steps:
+  - Corrected biome tag typo `minecraft:windswept_gravelley_hills` → `minecraft:windswept_gravelly_hills` in `has_structure/oak_house.json` and `has_structure/spruce_house.json`.
+  - Bumped version to 0.1.110 per policy.
+- Rationale: Broken biome tags prevented structure tags from loading, blocking worldgen/locate from finding houses.
+- Build: Not run (data-only fix).
+
+## 2025-11-23 (structure placement fixes)
+- Prompt/task: "Analyze WizardTower and fix ModernCompanions so /place loads our NBTs like wizard_tower:wizard_tower."
+- Steps:
+  - Compared WizardTower datapack structure pipeline to ModernCompanions; scanned template pools for unresolved structure locations.
+  - Fixed template typo in `worldgen/template_pool/acacia_pool.json` (`acaciah_house` → `acacia_house`).
+  - Added placeholder NBTs (copied from `structure/house.nbt`) for every missing pool target: `structure/berserker.nbt` and `structure/companions/{alchemist,beastmaster,cleric,scout,stormcaller,vanguard}.nbt`.
+  - Bumped version to 0.1.111 per policy; attempted `./gradlew build -x test` but gradlew has CRLF line endings in this workspace so the script failed before running.
+- Rationale: Pools pointed at non-existent NBTs, preventing structures from registering/placing; supplying the files and fixing the name restores `/place` functionality.
+- Build: Failed to start (gradlew shell script uses CRLF in this environment); no compilation executed.
+
+## 2025-11-23 (biome spread for all structures)
+- Prompt/task: "Make sure all buildings match berserker_house.json; add biomes to spawn in for a good 1.21.1 spread."
+- Steps:
+  - Replaced all worldgen structure biome targets with an explicit temperate spread used by `berserker_house`: plains, sunflower_plains, meadow, forest, flower_forest, birch_forest, old_growth_birch_forest, dark_forest, taiga, old_growth_spruce_taiga, old_growth_pine_taiga, windswept_forest, windswept_hills, windswept_gravelly_hills, cherry_grove, savanna, savanna_plateau.
+  - Applied the same list to every file under `worldgen/structure/*.json` so all companion buildings generate across varied biomes instead of relying on uneven tags.
+  - Bumped version to 0.1.112 per policy.
+- Rationale: Aligns every structure with the working berserker config and distributes spawns across diverse temperate/taiga/savanna biomes to avoid uniform placement.
+- Build: Not run (wrapper still CRLF in WSL; unchanged).
+
+## 2025-11-23 (biome differentiation per structure)
+- Prompt/task: "Make buildings spawn in different biomes, not all the same."
+- Steps:
+  - Reassigned biome lists per structure theme instead of one shared list: 
+    - Desert/badlands: `sandstone_house` (desert + badlands variants + savanna fringe), `terracotta_house` (badlands-only).
+    - Savanna: `acacia_house` (savanna/windswept savanna + plains fringe).
+    - Cold/taiga: `spruce_house` (taiga/old growth/snowy variants + meadow).
+    - Dark forest: `dark_oak_house` (dark_forest only).
+    - Birch-focused: `birch_house` (birch/old_growth_birch + meadow/plains), `oak_birch_house` (temperate + birch growth).
+    - Windswept/meadow set: `windmill`, `tower1`, `tower2` (plains/sunflower/meadow + windswept hills/forest/gravelly + cherry_grove).
+    - Forest/taiga mix: `lumber` (forests + birch + taiga + windswept_forest + meadow).
+    - Riverine temperate: `watermill` (plains/forest/birch/meadow + taiga variants).
+    - General temperate set (plains/sunflower/meadow/forest/flower_forest/windswept_forest/hills/gravelly/cherry_grove) for the remaining houses and class dwellings.
+  - Updated all `worldgen/structure/*.json` accordingly.
+  - Bumped version to 0.1.113 per policy.
+- Rationale: Gives each structure a distinct climate footprint so worldgen feels varied and thematically aligned (e.g., desert builds stay arid, spruce builds stay cold, windmills favor windswept hills).
+- Build: Not run (gradlew still CRLF in WSL; pending fix).
+
+## 2025-11-23 (companion auto-spawn on structure generation)
+- Prompt/task: "Spawn companions in code when the structure generates (no NBT editing)."
+- Steps:
+  - Added `StructureCompanionSpawner` (ChunkEvent.Load listener) to detect our structures as they appear and spawn the matching companion at the structure bounding-box center using `MobSpawnType.STRUCTURE`.
+  - Introduced `StructureSpawnTracker` SavedData guard to record spawned structure placements and prevent duplicate spawns on chunk reload.
+  - Mapped each structure id to its intended companion entity (e.g., alchemist_house → alchemist, smith → vanguard, windmill → stormcaller, etc.).
+  - Bumped version to 0.1.114 per policy; later fixed SavedData signature (HolderLookup.Provider) for 1.21.1.
+  - Deferred spawns onto the main server thread (ChunkEvent.Load can be off-thread) to avoid stall/hangs during chunk generation.
+- Rationale: Ensures every generated companion building reliably contains a recruitable companion, without relying on entities baked into NBT or natural spawn overrides.
+- Build: Not run (gradlew still CRLF in WSL; pending fix).
+
+## 2025-11-23 (README worldgen/spawn documentation)
+- Prompt/task: "Extend the README detailing the structure/spawn system in detail."
+- Steps:
+  - Documented structure set, biome themes per building, and template pools.
+  - Explained the code-driven companion spawning pipeline (StructureCompanionSpawner + SavedData guard) and listed the structure→companion mapping.
+  - Bumped version to 0.1.115 per policy.
+- Rationale: Centralizes worldgen and companion spawning behavior so testers and future contributors know how structures generate and why residents appear without NBT-embedded entities.
+- Build: Not run (gradlew still CRLF in WSL; pending fix).

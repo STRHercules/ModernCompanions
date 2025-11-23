@@ -3,7 +3,19 @@
   "start_pool": "modern_companions:oak_birch_pool",
   "size": 2,
   "max_distance_from_center": 80,
-  "biomes": "#modern_companions:has_structure/oak_birch_house",
+  "biomes": [
+    "plains",
+    "sunflower_plains",
+    "meadow",
+    "forest",
+    "flower_forest",
+    "windswept_forest",
+    "windswept_hills",
+    "windswept_gravelly_hills",
+    "cherry_grove",
+    "birch_forest",
+    "old_growth_birch_forest"
+  ],
   "step": "surface_structures",
   "terrain_adaptation": "beard_thin",
   "start_height": {

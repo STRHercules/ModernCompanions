@@ -7,6 +7,7 @@
         "location": "modern_companions:medieval_mixed1",
         "processors": "minecraft:empty",
         "projection": "rigid",
+        "position_offset": [0, 1, 0],
         "element_type": "minecraft:single_pool_element"
       }
     },
@@ -16,6 +17,7 @@
         "location": "modern_companions:medieval_mixed2",
         "processors": "minecraft:empty",
         "projection": "rigid",
+        "position_offset": [0, 1, 0],
         "element_type": "minecraft:single_pool_element"
       }
     },
@@ -25,6 +27,7 @@
         "location": "modern_companions:medieval_mixed3",
         "processors": "minecraft:empty",
         "projection": "rigid",
+        "position_offset": [0, 1, 0],
         "element_type": "minecraft:single_pool_element"
       }
     },
@@ -34,15 +37,17 @@
         "location": "modern_companions:medieval_acacia_double",
         "processors": "minecraft:empty",
         "projection": "rigid",
+        "position_offset": [0, 1, 0],
         "element_type": "minecraft:single_pool_element"
       }
     },
     {
       "weight": 1,
       "element": {
-        "location": "modern_companions:acaciah_house",
+        "location": "modern_companions:acacia_house",
         "processors": "minecraft:empty",
         "projection": "rigid",
+        "position_offset": [0, 1, 0],
         "element_type": "minecraft:single_pool_element"
       }
     }
