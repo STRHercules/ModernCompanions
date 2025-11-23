@@ -3,14 +3,29 @@
 Modern Companions is a faithful NeoForge 1.21.1 port/rebrand of *Human Companions* with new branding, gem-style spawn eggs, a bundled BasicWeapons-inspired arsenal, and expanded class kit flavor. Hire RPG-flavored human followers, gear them up, and command them with a clear stance UI.
 
 ## What You Get
-- **Ten recruitable roles:** Knight, Vanguard, Axeguard, Berserker, Scout, Archer, Arbalist, Beastmaster, Cleric, Alchemist, Stormcaller—each with tailored AI, weapon prefs, and perks.
+- **Eleven Recruitable Roles:** Knight, Vanguard, Axeguard, Berserker, Scout, Archer, Arbalist, Beastmaster, Cleric, Alchemist, Stormcaller —each with tailored AI, weapon prefs, and perks.
 - **Spawn Gems:** All spawn eggs are class-colored gems on the Modern Companions creative tab; they still behave like eggs but match the new branding.
-- **Custom weapons:** Daggers, clubs, hammers, spears, quarterstaves, and glaives in every vanilla material (plus bronze if that mod is present). Standard crafting recipes (JEI/REI friendly); companions auto-prefer their class weapon type.
-- **RPG stats & leveling:** STR/DEX/INT/END shape damage, speed, XP gain, and bulk. A superlinear XP curve makes high levels meaningful; health scales with END and level.
-- **Command wheel in the GUI:** Follow ↔ Patrol ↔ Guard cycle, alert/hunt toggles, stationary mode, auto-pickup, patrol radius +/- (2–32), clear target, release. Shift+right-click to sit/stand, right-click to open the screen.
-- **Deep taming loop:** Each untamed companion demands two specific foods/resources; supply both stacks to tame. They self-heal from food in their 6×9 inventory and politely ping you when hurt and empty.
-- **Resurrection built in:** Tamed companions drop a Resurrection Scroll containing full NBT/gear. Hold a nether star in off-hand to activate (adds a glint), then use the scroll on a block/face to respawn them exactly there; Beastmaster pets are cleared on revival to avoid duplicates.
-- **Beastmaster pets:** Permanent pet (wolf/fox/cat/panda/camel/hoglin/etc.) that auto-respawns, inherits STR/DEX/END scaling, and ignores friendly fire from its master.
+- **Custom Weapons:** Daggers, clubs, hammers, spears, quarterstaves, and glaives in every vanilla material (plus bronze if that mod is present). Standard crafting recipes (JEI/REI friendly); companions auto-prefer their class weapon type.
+- **RPG Stats & Leveling:** STR/DEX/INT/END shape damage, speed, XP gain, and bulk. A superlinear XP curve makes high levels meaningful; health scales with END and level.
+- **Commands in the GUI:** Follow ↔ Patrol ↔ Guard cycle, alert/hunt toggles, stationary mode, auto-pickup, patrol radius +/- (2–32), clear target, release. Shift+right-click to sit/stand, right-click to open the screen.
+- **Deep Taming Loop:** Each untamed companion demands two specific foods/resources; supply both stacks to tame. They self-heal from food in their 6×9 inventory and politely ping you when hurt and empty.
+- **Resurrection Built-in:** Tamed companions drop a Resurrection Scroll containing full NBT/gear. Hold a nether star in off-hand to activate (adds a glint), then use the scroll on a block/face to respawn them exactly there; Beastmaster pets are cleared on revival to avoid duplicates.
+- **Beastmaster Pets:** Permanent pet (wolf/fox/cat/panda/camel/hoglin/etc.) that auto-respawns, inherits STR/DEX/END scaling, and ignores friendly fire from its master.
+
+## Worldgen & Spawns
+- Companion buildings generate across the Overworld (random-spread set); each spawns exactly **one** resident when generated.
+- Class-by-structure:
+  - Alchemist: alchemist_house, tower1
+  - Beastmaster: beastmaster_house, watermill, spruce_house
+  - Berserker: berserker_house, largehouse3
+  - Cleric: cleric_house, church
+  - Scout: scout_house, tower2, oak_birch_house
+  - Stormcaller: stormcaller_house, windmill
+  - Vanguard: vanguard_house, smith
+  - Knight: house, oak_house, birch_house, sandstone_house
+  - Archer: largehouse, acacia_house
+  - Axeguard: largehouse2, dark_oak_house
+  - Arbalist: lumber, terracotta_house
 
 ## Class Details
 - **Knight:** Balanced melee with swords/clubs/spears; reliable frontliner.

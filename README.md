@@ -38,15 +38,18 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
 ## Companion Auto-Spawning (no entities in NBT)
 - Companions are spawned in code when their structure generates—nothing is baked into the NBT. `StructureCompanionSpawner` listens to chunk loads, detects our structures, and spawns exactly one resident with `MobSpawnType.STRUCTURE`.
 - A SavedData guard (`StructureSpawnTracker`) records each structure placement (structure id + bounding-box center) to prevent dupes on chunk reloads.
-- Structure → resident mapping (selection):
-  - alchemist_house & tower1 → Alchemist
-  - beastmaster_house & watermill → Beastmaster
-  - berserker_house & largehouse3 → Berserker
-  - cleric_house & church → Cleric
-  - scout_house & tower2 → Scout
-  - stormcaller_house & windmill → Stormcaller
-  - vanguard_house & smith → Vanguard
-  - house → Knight, largehouse → Archer, largehouse2 → Axeguard, lumber → Arbalist
+- Structure → resident mapping:
+  - Alchemist: alchemist_house, tower1
+  - Beastmaster: beastmaster_house, watermill, spruce_house
+  - Berserker: berserker_house, largehouse3
+  - Cleric: cleric_house, church
+  - Scout: scout_house, tower2, oak_birch_house
+  - Stormcaller: stormcaller_house, windmill
+  - Vanguard: vanguard_house, smith
+  - Knight: house, oak_house, birch_house, sandstone_house
+  - Archer: largehouse, acacia_house
+  - Axeguard: largehouse2, dark_oak_house
+  - Arbalist: lumber, terracotta_house
 
 ## Requirements
 - Java 21 (JDK 21)

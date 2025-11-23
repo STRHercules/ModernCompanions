@@ -1060,3 +1060,38 @@
   - Bumped version to 0.1.115 per policy.
 - Rationale: Centralizes worldgen and companion spawning behavior so testers and future contributors know how structures generate and why residents appear without NBT-embedded entities.
 - Build: Not run (gradlew still CRLF in WSL; pending fix).
+
+## 2025-11-23 (gradlew line endings fixed)
+- Prompt/task: "Fix the gradlew CRLF issue so we can verify builds locally."
+- Steps:
+  - Converted `gradlew` to LF line endings to make it executable under WSL/Linux.
+  - Ran `./gradlew --version` and `./gradlew build -x test` successfully (build now passes).
+  - Version unchanged (already 0.1.115 from README update).
+- Rationale: Unblocked local builds and ensured the new structure-spawn code compiles cleanly.
+- Build: Successful (`./gradlew build -x test`).
+
+## 2025-11-23 (fill empty houses with residents)
+- Prompt/task: "Many structures have no companions; ensure every structure spawns one."
+- Steps:
+  - Added the biome-themed house variants (oak, oak_birch, birch, acacia, spruce, dark_oak, sandstone, terracotta) to the spawner map, defaulting each to a Knight resident.
+  - Updated README mapping to reflect the added house → Knight assignments.
+  - Bumped version to 0.1.116 per policy.
+- Rationale: Previously only class houses/towers/mills had assigned residents; biome-specific houses could generate empty. Now every structure in the set will spawn exactly one companion.
+- Build: Not re-run after this change (last successful build was 0.1.115).
+
+## 2025-11-24 (README spawn mapping refresh)
+- Prompt/task: "Update README to match the current structure→companion map."
+- Steps:
+  - Synced README mapping with the latest `StructureCompanionSpawner` entries (including biome variants now assigned to specific classes: archer@acacia, axeguard@dark_oak, arbalist@terracotta, etc.).
+  - Bumped version to 0.1.117 per policy.
+- Rationale: Documentation now matches the in-code spawn assignments so testers know exactly which class should appear at each structure.
+- Build: Successful (`./gradlew build -x test`).
+
+## 2025-11-24 (DESCRIPTION worldgen/spawn update)
+- Prompt/task: "Update DESCRIPTION to match README worldgen/structure and spawn info."
+- Steps:
+  - Added player-facing Worldgen & Spawns section: structures spawn one resident each, with the full class-by-structure map (including biome variants).
+  - Kept player tone concise for modpage use.
+  - Bumped version to 0.1.118 per policy.
+- Rationale: Ensures the modpage description accurately reflects the current structure-to-companion assignments without forcing players to read README.
+- Build: Not rerun after this doc change (last success: 0.1.117).

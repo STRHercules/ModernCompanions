@@ -54,7 +54,16 @@ public final class StructureCompanionSpawner {
             Map.entry(Constants.id("tower2"), ModEntityTypes.SCOUT),
             Map.entry(Constants.id("watermill"), ModEntityTypes.BEASTMASTER),
             Map.entry(Constants.id("windmill"), ModEntityTypes.STORMCALLER),
-            Map.entry(Constants.id("church"), ModEntityTypes.CLERIC)
+            Map.entry(Constants.id("church"), ModEntityTypes.CLERIC),
+            // Biome-themed house variants (default to Knight so every house gets a resident)
+            Map.entry(Constants.id("oak_house"), ModEntityTypes.KNIGHT),
+            Map.entry(Constants.id("oak_birch_house"), ModEntityTypes.SCOUT),
+            Map.entry(Constants.id("birch_house"), ModEntityTypes.KNIGHT),
+            Map.entry(Constants.id("acacia_house"), ModEntityTypes.ARCHER),
+            Map.entry(Constants.id("spruce_house"), ModEntityTypes.BEASTMASTER),
+            Map.entry(Constants.id("dark_oak_house"), ModEntityTypes.AXEGUARD),
+            Map.entry(Constants.id("sandstone_house"), ModEntityTypes.KNIGHT),
+            Map.entry(Constants.id("terracotta_house"), ModEntityTypes.ARBALIST)
     );
 
     @SubscribeEvent
