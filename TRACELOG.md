@@ -903,3 +903,19 @@
   - Bumped version to 0.1.91 and rebuilt.
 - Rationale: Prevents wild companions from generating resurrection scrolls on death, matching the intended reward gating.
 - Build: `./gradlew build -x test` (success).
+
+## 2025-11-22 (all classes in house pool)
+- Prompt/task: "Ihave added new NBTs for the new classes, lets get them loaded and ensure that these new buildings spawn in the overworld with hireable companions along with them, just like the other buildings/companions"
+- Steps:
+  - Updated `worldgen/template_pool/companions.json` to include all companion structures (Vanguard, Berserker, Scout, Beastmaster, Cleric, Alchemist, Stormcaller) alongside Knight/Archer/Arbalist/Axeguard, each with weight 1.
+  - Bumped `gradle.properties` version to 0.1.99 per AGENTS version rule.
+- Rationale: Ensures every class can spawn in companion houses with their corresponding structure/NBT.
+- Build: Not run (data-only change).
+
+## 2025-11-22 (structure Y offset fix)
+- Prompt/task: "Our 7 new custom structures were saved at -1, so we need to make sure they are accounting for that when being placed in the overworld"
+- Steps:
+  - Added `position_offset: [0, 1, 0]` to the seven new companion pool entries (Vanguard, Berserker, Scout, Beastmaster, Cleric, Alchemist, Stormcaller) in `worldgen/template_pool/companions.json` to compensate for -1 saved height.
+  - Bumped version to 0.1.100 per policy.
+- Rationale: Prevents the new companion house pieces from spawning one block too low due to their saved Y offset.
+- Build: Not run (data-only change).
