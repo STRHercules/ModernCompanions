@@ -82,7 +82,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> GUARDING = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Boolean> STATIONERY = SynchedEntityData
+    private static final EntityDataAccessor<Boolean> SPRINT_ENABLED = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> PICKUP_ITEMS = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
@@ -154,7 +154,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(PATROLLING, false);
         builder.define(FOLLOWING, false);
         builder.define(GUARDING, false);
-        builder.define(STATIONERY, false);
+        builder.define(SPRINT_ENABLED, false);
         builder.define(PICKUP_ITEMS, true);
         builder.define(PATROL_POS, Optional.empty());
         builder.define(PATROL_RADIUS, 10);
@@ -230,13 +230,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.entityData.set(PICKUP_ITEMS, value);
     }
 
-    public boolean isStationery() {
-        return this.entityData.get(STATIONERY);
-    }
-
-    public void setStationery(boolean value) {
-        this.entityData.set(STATIONERY, value);
-    }
+    public boolean isSprintEnabled() { return this.entityData.get(SPRINT_ENABLED); }
+    public void setSprintEnabled(boolean value) { this.entityData.set(SPRINT_ENABLED, value); }
 
     public boolean isAlert() {
         return this.entityData.get(ALERT);
@@ -648,7 +643,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putBoolean("Patrolling", this.isPatrolling());
         tag.putBoolean("Following", this.isFollowing());
         tag.putBoolean("Guarding", this.isGuarding());
-        tag.putBoolean("Stationery", this.isStationery());
+        tag.putBoolean("SprintEnabled", this.isSprintEnabled());
         tag.putBoolean("Pickup", this.isPickupEnabled());
         tag.putInt("radius", this.getPatrolRadius());
         tag.putInt("sex", this.getSex());
@@ -683,7 +678,12 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.setPatrolling(tag.getBoolean("Patrolling"));
         this.setFollowing(tag.getBoolean("Following"));
         this.setGuarding(tag.getBoolean("Guarding"));
-        this.setStationery(tag.getBoolean("Stationery"));
+        if (tag.contains("SprintEnabled")) {
+            this.setSprintEnabled(tag.getBoolean("SprintEnabled"));
+        } else if (tag.contains("Stationery")) {
+            // Backward compatibility: old saves used Stationery flag; treat "not stationary" as sprint off.
+            this.setSprintEnabled(false);
+        }
         this.setPickupEnabled(tag.contains("Pickup") ? tag.getBoolean("Pickup") : true);
         this.setPatrolRadius(tag.getInt("radius"));
         this.setSex(tag.getInt("sex"));
@@ -761,6 +761,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             if (this.tickCount % 2 == 0 && isPickupEnabled() && this.isTame()) {
                 collectNearbyItems();
             }
+            updateSprintState();
             if (this.tickCount % 10 == 0) {
                 checkStats();
                 if (shouldRequestFood())
@@ -772,6 +773,20 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             }
         }
         super.tick();
+    }
+
+    /**
+     * Toggle sprinting based on the player-controlled flag and whether the companion is actively moving/engaged.
+     */
+    private void updateSprintState() {
+        boolean wantsSprint = isSprintEnabled() && !this.isOrderedToSit();
+        boolean movingOrFighting = (this.getNavigation() != null && !this.getNavigation().isDone())
+                || this.getTarget() != null;
+        if (wantsSprint && movingOrFighting) {
+            this.setSprinting(true);
+        } else {
+            this.setSprinting(false);
+        }
     }
 
     @Override
@@ -837,12 +852,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         setHunting(!isHunting());
     }
 
-    public void toggleStationery() {
-        setStationery(!isStationery());
-        if (!isStationery()) {
-            this.getNavigation().stop();
-        }
-    }
+    public void toggleSprint() { setSprintEnabled(!isSprintEnabled()); }
 
     public void release() {
         this.setTame(false, true);
@@ -852,7 +862,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         setHunting(false);
         setPatrolPos(this.blockPosition());
         setPatrolling(true);
-        setStationery(false);
+        setSprintEnabled(false);
         setPatrolRadius(15);
         assignFoodRequirements();
         if (this.isOrderedToSit()) {
@@ -1062,7 +1072,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             }
             case "hunt" -> setHunting(value);
             case "alert" -> setAlert(value);
-            case "stationery" -> setStationery(value);
+            case "sprint" -> setSprintEnabled(value);
             case "pickup" -> setPickupEnabled(value);
             default -> {
             }
@@ -1076,7 +1086,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             case "guard" -> isGuarding();
             case "hunt" -> isHunting();
             case "alert" -> isAlert();
-            case "stationery" -> isStationery();
+            case "sprint" -> isSprintEnabled();
             case "pickup" -> isPickupEnabled();
             default -> false;
         };

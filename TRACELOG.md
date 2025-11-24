@@ -1342,3 +1342,12 @@
   - Bumped version to 1.0.30 and rebuilt successfully.
 - Rationale: Prevents companions from getting lost during exploration by snapping them back when they fall far behind while still respecting safe teleport positions.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Sprint toggle replaces stationary)
+- Prompt/task: "Swap the Stationary GUI button to a sprint toggle; on = sprint, off = normal run."
+- Steps:
+  - Replaced the stationary flag/UI toggle with a sprint enable flag, wiring the sidebar button and network payload to toggle sprinting.
+  - Added sprint state syncing and per-tick logic so companions only sprint when allowed and moving/engaged; removed the unused stationary logic from crossbow AI.
+  - Bumped version to 1.0.31 and rebuilt successfully.
+- Rationale: Gives players control over companion movement speed, letting them sprint to keep up when desired without keeping a dead stationary toggle.
+- Build/Test: `./gradlew build` ✔️

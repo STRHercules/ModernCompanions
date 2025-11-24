@@ -71,3 +71,4 @@
 - 2025-11-24 (summon polish): Consider letting Necromancer summons ignore Peaceful despawn rules only while tamed/owned, and add a faint timer ring or fade-out particles as their lifetime expires for clearer feedback.
 - 2025-11-24 (Vanguard stance): Add a stance toggle (aggressive vs defensive) that tunes shield-raise distance and aura radius, plus a small shield icon when blocking so owners can read the posture at a glance.
 - 2025-11-24 (teleport tuning): Add a config slider for the companion recall distance (default 35 blocks) plus an optional "recall now" hotkey/button in the companion UI to let players manually snap companions back when crossing portals or long gaps.
+- 2025-11-24 (sprint toggle polish): Consider a proper sprint icon + tooltip that explains speed vs hunger costs (if any), and optionally allow per-role sprint defaults or a config cap on sprint duration to avoid constant sprinting in combat.

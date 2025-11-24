@@ -78,12 +78,6 @@ public class ArbalistCrossbowAttackGoal<T extends AbstractHumanCompanionEntity &
         double dist = this.mob.distanceToSqr(target);
         boolean pathNeeded = (dist > (double) this.attackRadiusSqr || this.seeTime < 5) && this.attackDelay == 0;
 
-        // Guarding + stationary: drop aggro if target leaves range or LOS
-        if (this.mob.isGuarding() && this.mob.isStationery() && (!canSee || dist > (double) this.attackRadiusSqr)) {
-            this.mob.setTarget(null);
-            return;
-        }
-
         if (pathNeeded) {
             --this.updatePathDelay;
             if (this.updatePathDelay <= 0) {

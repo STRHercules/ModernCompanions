@@ -33,7 +33,7 @@ public final class ModNetwork {
                 switch (payload.flag()) {
                     case "alert" -> companion.setAlert(payload.value());
                     case "hunt" -> companion.setHunting(payload.value());
-                    case "stationery" -> companion.setStationery(payload.value());
+                    case "sprint" -> companion.setSprintEnabled(payload.value());
                     case "patrol" -> {
                         companion.setPatrolPos(companion.blockPosition());
                         companion.setPatrolling(payload.value());

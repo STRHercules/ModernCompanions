@@ -32,7 +32,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private static final ResourceLocation PATROL_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/patrolbutton.png");
     private static final ResourceLocation CLEAR_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/clearbutton.png");
     private static final ResourceLocation PICKUP_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/pickupbutton.png");
-    private static final ResourceLocation STATIONARY_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/stationerybutton.png");
+    private static final ResourceLocation SPRINT_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/stationerybutton.png");
     private static final ResourceLocation RELEASE_BTN = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/releasebutton.png");
     // Right-hand info panel on inventory_stats.png
     private static final int TOP_STATS_LEFT = 229;
@@ -52,7 +52,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private CompanionButton alertButton;
     private CompanionButton huntButton;
     private CompanionButton patrolButton;
-    private CompanionButton stationaryButton;
+    private CompanionButton sprintButton;
     private CompanionButton clearButton;
     private CompanionButton pickupButton;
     private CompanionButton releaseButton;
@@ -84,7 +84,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         alertButton = addRenderableWidget(new CompanionButton("alert", col1, row1, 16, 12, 0, 0, 13, ALERT_BTN, () -> sendToggle("alert"), true));
         huntButton = addRenderableWidget(new CompanionButton("hunting", col2, row1, 16, 12, 0, 0, 13, HUNT_BTN, () -> sendToggle("hunt"), true));
         patrolButton = addRenderableWidget(new CompanionButton("patrolling", col1, row2, 16, 12, 0, 0, 13, PATROL_BTN, () -> sendAction("cycle_orders"), true));
-        stationaryButton = addRenderableWidget(new CompanionButton("stationery", col2, row2, 16, 12, 0, 0, 13, STATIONARY_BTN, () -> sendToggle("stationery"), true));
+        sprintButton = addRenderableWidget(new CompanionButton("sprint", col2, row2, 16, 12, 0, 0, 13, SPRINT_BTN, () -> sendToggle("sprint"), true));
         clearButton = addRenderableWidget(new CompanionButton("clear", leftPos + sidebarX + 5, row3, 31, 12, 0, 0, 13, CLEAR_BTN, () -> sendAction("clear_target"), false));
         int row4 = row3 + rowHeight;
         pickupButton = addRenderableWidget(new CompanionButton("pickup", leftPos + sidebarX + 3, row4, 34, 12, 0, 0, 0, PICKUP_BTN, () -> sendToggle("pickup"), true));
@@ -234,7 +234,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             switch (name) {
                 case "alert" -> this.xTexStart = flag(c != null && c.isAlert(), 0, 17);
                 case "hunting" -> this.xTexStart = flag(c != null && c.isHunting(), 0, 17);
-                case "stationery" -> this.xTexStart = flag(c != null && c.isStationery(), 0, 17);
+                case "sprint" -> this.xTexStart = flag(c != null && c.isSprintEnabled(), 0, 17);
                 case "pickup" -> {
                     boolean on = c != null && c.isPickupEnabled();
                     this.xTexStart = 0;
