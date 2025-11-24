@@ -1,16 +1,26 @@
 # Wanted Features
 
-1. More skins.
+* More skins.
 
-2. Beasts should say who their beastmaster owner is on their WTHIT/Jade
+* Dedicated area for equipped gear (paperdoll)
 
-3. Dedicated area for equipped gear (paperdoll)
+* Better follow mechanics
+    6a. Companions seem to just bounce back and forth to and from the player.
+    6b. Wolf-like teleportaion. (Losing companions is easy atm)
 
-4. Better follow mechanics
-    6a. Patrol doesnt seem to work
-    6b. Companions seem to just bounce back and forth to and from the player
+* Mule Companion - Larger inventory? Avoids combat?
 
-6. Mule Companion - Larger inventory? Avoids combat?
-
-8. Way to summon/dismiss companion entirely
+* Way to summon/dismiss companion entirely
     8a. Convert entity to item, then item back to entity?
+
+* Sprint toggle (or sprint logic to apply when X block away from the player)
+
+* Wizard Class (Blaze Fireball, Lightning Bolt)
+
+* Pet Locator Integration
+
+* Custom enchants to boost companion stats
+
+* Wand to summon Companions
+
+* Grant ability to drink potions, eat special food like notch apple

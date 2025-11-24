@@ -17,10 +17,14 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 
 /**
  * Shield-first tank that soaks projectiles and pulls threats off the player.
@@ -31,9 +35,15 @@ public class Vanguard extends Knight {
             com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "vanguard_kb");
     private static final ResourceLocation HEALTH_MOD = ResourceLocation.fromNamespaceAndPath(
             com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "vanguard_health");
+    private static final int SHIELD_DISABLE_TICKS = 60;
+    private static final int PROJECTILE_MEMORY_TICKS = 80;
+    private static final int MIN_BLOCK_WINDOW = 12;
 
     private int auraTicker;
     private int tauntTicker;
+    private int shieldCooldownTicks;
+    private int projectileThreatTicks;
+    private int minBlockTicks;
 
     public Vanguard(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
@@ -49,6 +59,7 @@ public class Vanguard extends Knight {
             checkShield();
             tickDefenseAura();
             tickTaunt();
+            tickShieldUse();
         }
         super.tick();
     }
@@ -58,6 +69,14 @@ public class Vanguard extends Knight {
         float adjusted = amount;
         if (source.is(DamageTypeTags.IS_PROJECTILE)) {
             adjusted *= 0.7F; // heavy shield + armor soaks projectiles
+            projectileThreatTicks = PROJECTILE_MEMORY_TICKS;
+        }
+        if (isShieldRaised() && source.getDirectEntity() instanceof LivingEntity attacker) {
+            ItemStack weapon = attacker.getMainHandItem();
+            if (weapon.getItem() instanceof AxeItem) {
+                shieldCooldownTicks = SHIELD_DISABLE_TICKS;
+                stopUsingShield();
+            }
         }
         return super.hurt(source, adjusted);
     }
@@ -104,6 +123,66 @@ public class Vanguard extends Knight {
                     offhand = stack;
                 }
             }
+        }
+    }
+
+    private void tickShieldUse() {
+        if (shieldCooldownTicks > 0) shieldCooldownTicks--;
+        if (projectileThreatTicks > 0) projectileThreatTicks--;
+        if (minBlockTicks > 0) minBlockTicks--;
+
+        if (this.isEating()) {
+            stopUsingShield();
+            return;
+        }
+
+        if (!this.getItemBySlot(EquipmentSlot.OFFHAND).is(Items.SHIELD)) {
+            stopUsingShield();
+            return;
+        }
+
+        boolean shouldBlock = shieldCooldownTicks <= 0 && shouldRaiseShield();
+        boolean blocking = isShieldRaised();
+
+        if (shouldBlock && !blocking) {
+            // Raise the shield and keep it up briefly to avoid flicker.
+            this.startUsingItem(InteractionHand.OFF_HAND);
+            minBlockTicks = MIN_BLOCK_WINDOW;
+        } else if (!shouldBlock && blocking && minBlockTicks <= 0) {
+            stopUsingShield();
+        }
+    }
+
+    private boolean shouldRaiseShield() {
+        LivingEntity target = this.getTarget();
+        boolean recentProjectile = projectileThreatTicks > 0;
+        if (target == null || !target.isAlive()) {
+            return recentProjectile;
+        }
+
+        double distSq = this.distanceToSqr(target);
+        boolean hasLine = this.getSensing().hasLineOfSight(target);
+        boolean targetRanged = target instanceof RangedAttackMob
+                || target.getMainHandItem().getItem() instanceof ProjectileWeaponItem
+                || target.getOffhandItem().getItem() instanceof ProjectileWeaponItem;
+
+        boolean closingGap = distSq > 9.0D && hasLine;
+        boolean lowHealth = this.getHealth() < this.getMaxHealth() * 0.6F && hasLine;
+        boolean inMelee = distSq < 6.25D && !targetRanged && !recentProjectile;
+
+        if (inMelee) {
+            return false; // Drop shield to stay offensive when face-to-face.
+        }
+        return targetRanged || closingGap || lowHealth || recentProjectile;
+    }
+
+    private boolean isShieldRaised() {
+        return this.isUsingItem() && this.getUseItem().is(Items.SHIELD);
+    }
+
+    private void stopUsingShield() {
+        if (isShieldRaised()) {
+            this.stopUsingItem();
         }
     }
 

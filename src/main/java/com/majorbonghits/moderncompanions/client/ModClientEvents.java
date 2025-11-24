@@ -34,5 +34,12 @@ public final class ModClientEvents {
         event.registerEntityRenderer(ModEntityTypes.ALCHEMIST.get(), CompanionRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.SCOUT.get(), CompanionRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.STORMCALLER.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.FIRE_MAGE.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.LIGHTNING_MAGE.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.NECROMANCER.get(), CompanionRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.SUMMONED_WITHER_SKELETON.get(), net.minecraft.client.renderer.entity.WitherSkeletonRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.FIREBOLT.get(), ctx -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(ctx, 0.75F, true));
+        event.registerEntityRenderer(ModEntityTypes.FIREBURST.get(), ctx -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(ctx, 1.5F, true));
+        event.registerEntityRenderer(ModEntityTypes.SOFT_WITHER_SKULL.get(), net.minecraft.client.renderer.entity.WitherSkullRenderer::new);
     }
 }

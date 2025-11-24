@@ -1114,6 +1114,16 @@
 - Rationale: Resource locations must be lowercase; capitalized file names were rejected, breaking spawn egg textures on case-sensitive environments.
 - Build/Test: `./gradlew build -x test` ✔️
 
+## 2025-11-24 (Mage/Necromancer classes)
+- Prompt/task: "Let's create a new classes of Companions: Mages and Necromancer."
+- Steps:
+  - Added shared `AbstractMageCompanion` and `MageRangedAttackGoal` to handle ranged spellcasting, weapon preference (daggers/quarterstaffs), and punch-cast animations with owner-safety checks.
+  - Implemented Fire Mage (blaze fireball light, ghast fireball heavy), Lightning Mage (single-target bolt light, multi-target storm heavy), and Necromancer (weakened wither skull light, temporary wither skeleton summons heavy) with intelligence-scaled damage and distance-focused AI.
+  - Introduced `SummonedWitherSkeleton` entity to ensure necromancer minions respect owner alliances and expire after 1–3 minutes.
+  - Registered new entities/renderers/spawn eggs, added localization strings, placed eggs in the creative tab, and bumped `gradle.properties` to 1.0.4 per policy.
+- Rationale: Expands companion class variety with ranged magic and summoning roles while preserving friendly-fire safeguards and configurable spawn artifacts.
+- Build/Test: `./gradlew build` ✔️
+
 ## 2025-11-24 (release button texture casing)
 - Prompt/task: "The 'Release' button appears to be completely blacked out in the companion inventory."
 - Steps:
@@ -1122,3 +1132,213 @@
   - Rebuilt with `./gradlew build -x test` to confirm the button renders.
 - Rationale: Minecraft resource paths are case-sensitive; the mixed-case filename prevented the release button texture from loading.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-24 (Mage bugfix pass)
+- Prompt/task: "Fire Mages projectiles are firing too high, spreading fire; companions damaging each other; lightning fire; necromancer summons failing; mages too close-range."
+- Steps:
+  - Added custom non-igniting firebolt/fireburst and soft wither skull projectiles, retargeting Fire Mage and Necromancer to prevent terrain fire/explosions and lower aim to hit center mass.
+  - Set Lightning Mage bolts to visual-only effects and kept damage manual to avoid fire spread; lowered mage aim offsets to stop overshooting.
+  - Improved mage AI with a minimum standoff distance so casters kite instead of face-tanking.
+  - Strengthened friendly-fire guard to cancel damage from companion-owned projectiles against owners or allied companions/pets.
+  - Ensured Necromancer summons always trigger while under cap and kept minion counts/timers intact; verified build.
+- Rationale: Fixes accuracy, fire spread, ally safety, and summoning reliability so magic companions behave as intended ranged casters.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Mage follow-up tuning)
+- Prompt/task: "Necromancer summons flashing away; fire mage aim still high; lightning mage too spammy."
+- Steps:
+  - Prevented summoned wither skeletons from despawning on Peaceful (`shouldDespawnInPeaceful` override) to stop instant vanish.
+  - Re-aimed fire mage projectiles at lower center mass with gentler velocity to curb overshooting and preserve no-fire projectiles.
+  - Slowed Lightning Mage cadence (light interval 26 ticks; heavy cooldown 150 ticks) and pushed caster AI standoff range to 12 blocks.
+  - Bumped version to 1.0.6 and rebuilt successfully.
+- Rationale: Keeps summons alive, improves spell accuracy, and spaces out lightning bursts for better balance.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Caster safety & firebolt contact)
+- Prompt/task: "Summoned Wither Skeletons burn in sun; lightning hitting companions; fire mage bolts expire before hitting."
+- Steps:
+  - Made summoned wither skeletons immune to sunlight (`isSunBurnTick` = false) so they persist outdoors.
+  - Added ally/owner checks to Lightning Mage light/heavy casts to refuse striking players or companion allies.
+  - Swapped Fire Mage to direct-construct non-igniting fireball projectiles (still deal damage) to avoid early expiration; kept lower aim offsets.
+  - Bumped version to 1.0.7 and rebuilt successfully.
+- Rationale: Ensures necro summons survive daylight, lightning never harms allies, and firebolts still connect while remaining non-flammable.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Mage accuracy hotfix)
+- Prompt/task: "Fire Mage projectiles still not damaging; necromancer skulls too high."
+- Steps:
+  - Increased Fire Mage projectile speed and re-aimed at lower center mass; heavy shots now shoot() for reliable velocity while staying non-igniting.
+  - Lowered Necromancer skull aim offset to 18% of target height to avoid overshooting small mobs.
+  - Bumped version to 1.0.8 and rebuilt successfully.
+- Rationale: Ensures firebolts reach and damage targets and necro skulls travel at a usable trajectory without terrain damage.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Summon ally guard)
+- Prompt/task: "Wither summons fighting each other / being targeted; skulls still high."
+- Steps:
+  - Marked summoned wither skeletons as friendly to other summons with the same owner and clear targets if they ever become friendly, stopping infighting and owner targeting.
+  - Prevented Necromancer from firing at or siccing summons on allied entities; lowered skull aim further (12% height) and boosted speed for reliable contact.
+  - Version bumped to 1.0.9 and build succeeded.
+- Rationale: Keeps summoned minions cooperative, prevents necros from griefing their own summons, and improves skull hit reliability.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Summon retarget + skull aim)
+- Prompt/task: "Summons idle after a kill; necro should not summon while any are alive; skulls still high."
+- Steps:
+  - Added periodic retargeting for summoned wither skeletons (owner’s last attacker or nearest valid hostile) and cleared friendly targets to keep one active wave working.
+  - Necromancer now refuses to summon if any summons are alive; only one wave at a time.
+  - Lowered wither skull aim offset (≤0.1 block/8% height), set no-gravity, and increased speed for better hits.
+  - Bumped version to 1.0.10 and rebuilt successfully.
+- Rationale: Keeps existing summons engaged without stacking waves, prevents idle minions, and improves projectile trajectory.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Wither skull damage & ally check)
+- Prompt/task: "Wither projectile not doing damage; necromancer targeting summons."
+- Steps:
+  - Removed the over-broad `onHit` discard on `SoftWitherSkull` so entity hits now apply damage before despawning.
+  - Treated a necromancer’s own summoned wither skeletons as allies (`isAlliedTo` override) to stop hostile targeting.
+  - Bumped version to 1.0.11 and rebuilt successfully.
+- Rationale: Restores wither projectile damage while ensuring necromancers never attack their own summons.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Caster facing, summons leash, skull safety)
+- Prompt/task: "Casters spin; necro skulls hit summons; multiple waves; skull origin too high; summons too tanky/stray."
+- Steps:
+  - Forced mage look control to lock onto targets to prevent spin while casting.
+  - SoftWitherSkull now skips damage to allies/summons of the owner.
+  - Necromancer summons only if no alive summons within a wide radius; skull spawn point lowered to chest height.
+  - Summoned skeletons retarget every 20 ticks, stay near the summoner (move/teleport back), and have 4 HP (2 hearts).
+  - Version bumped to 1.0.12 and build succeeded.
+- Rationale: Keeps casters facing targets, prevents friendly hits, ensures single-wave summons that stay leashed and lightweight, and improves skull origin/trajectory.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Summon leash + no block damage)
+- Prompt/task: "Adjust summon leash distance; wither projectile must not break blocks."
+- Steps:
+  - Tuned summoned wither skeleton leash: pursue if beyond ~5.3 blocks, teleport back if beyond ~7.2 blocks to reduce rubber-banding while preventing wandering.
+  - Confirmed SoftWitherSkull still discards on block hit with no terrain damage; version bumped to 1.0.13 and build succeeded.
+- Rationale: Keeps summons near the necromancer without constant snapping, and guarantees projectile impacts never destroy blocks.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Wither skull explosion suppression)
+- Prompt/task: "Necromancer projectile is still destroying blocks."
+- Steps:
+  - Overrode `SoftWitherSkull.onHit` to fully suppress the vanilla wither skull explosion, ensuring block safety.
+  - Bumped version to 1.0.14 and rebuilt successfully.
+- Rationale: Prevents any wither projectile block damage while keeping entity damage intact.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Block-safe explosion visuals)
+- Prompt/task: "Keep explosion visuals/sound but still avoid block damage."
+- Steps:
+  - Reworked `SoftWitherSkull.onHit` to trigger explosion particles/sound using `Level.ExplosionInteraction.NONE`, then manually apply AoE damage only to non-allied entities to retain impact without block destruction.
+  - Version bumped to 1.0.15 and rebuilt successfully.
+- Rationale: Preserves explosion feedback and damage while guaranteeing blocks remain untouched.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Caster spin damping)
+- Prompt/task: "Necromancer is still doing a lot of spinning."
+- Steps:
+  - Added smooth facing logic in `AbstractMageCompanion` to lerp body/head yaw toward the target each tick, reducing spin while casting.
+  - Bumped version to 1.0.17 and rebuilt successfully.
+- Rationale: Stabilizes caster facing to keep spells trained on targets instead of spinning.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Rotation NaN guard)
+- Prompt/task: "Server log spamming Invalid entity rotation: +/-Infinity."
+- Steps:
+  - Added finite-check guard in mage facing logic so yaw lerp aborts if calculations would produce NaN/Infinity.
+  - Bumped version to 1.0.18 and rebuilt successfully.
+- Rationale: Prevents NaN rotations that were crashing/discarding entities during casting.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Facing clamp refinement)
+- Prompt/task: "Game still locking up while using faceTargetSmoothly."
+- Steps:
+  - Swapped facing to use wrapped degrees and `approachDegrees` with tighter step plus a distance epsilon check; reset bad yaw states defensively.
+  - Bumped version to 1.0.20 and rebuilt successfully.
+- Rationale: Avoids runaway/NaN rotations that could stall the server during caster ticks.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Fire mage explosion parity)
+- Prompt/task: "Fire mage projectiles should explode like necromancer skulls without spreading fire; heavy should ignite target only."
+- Steps:
+  - Updated light firebolt to trigger block-safe explosion visuals (`ExplosionInteraction.NONE`) while still dealing damage and never placing fire.
+  - Updated heavy fireburst to explode safely, deal damage, and ignite only the struck target; no block damage or fire spread.
+  - Bumped version to 1.0.21 and rebuilt successfully.
+- Rationale: Gives fire mages proper impact feedback and damage parity with necromancer projectiles while keeping terrain safe from fire spread.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Fire mage damage/cooldown tuning)
+- Prompt/task: "Increase heavy cooldown, boost heavy damage, boost light damage slightly."
+- Steps:
+  - Extended fire mage heavy cooldown to 220 ticks, increased projectile speed/scale for heavier hits, and tightened light interval to 16 ticks with a mild damage velocity boost.
+  - Bumped version to 1.0.22 and rebuilt successfully.
+- Rationale: Makes fire mages rely primarily on buffed light attacks while heavy hits harder but much less often.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Fire bolt vanilla mimic)
+- Prompt/task: "Fire mage light attack not firing; mimic vanilla blaze fireball without fire spread."
+- Steps:
+  - Reworked light attack to construct the projectile with blaze-like directional vectors and spawn offset, retaining block-safe explosion and no fire spread.
+  - Bumped version to 1.0.23 and rebuilt successfully.
+- Rationale: Ensures fire mage bolts spawn and travel like vanilla blaze fireballs while remaining non-flammable.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Flame charge fix)
+- Prompt/task: "Light attack still not firing—use a flame charge with small explosion, no block fire."
+- Steps:
+  - Swapped light attack to use look-direction flame charge with blaze-like spawn, faster shoot speed (1.3F), and block-safe explosion radius bumped to 0.8F.
+  - Version bumped to 1.0.24 and rebuilt successfully.
+- Rationale: Restores reliable light projectile firing while keeping terrain safe from fire spread.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Mage pacing fix)
+- Prompt/task: "Fire mages stop casting light while waiting on heavy cooldown."
+- Steps:
+  - Changed mage attack goal to always pace by light interval; heavy is still gated by its own cooldown, so light attacks continue while heavy is cooling down.
+  - Bumped version to 1.0.25 and rebuilt successfully.
+- Rationale: Ensures fire mages keep using light attacks instead of idling between heavies.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Fire bolt precision)
+- Prompt/task: "Fire mage light shots are wild; make them calculated strikes."
+- Steps:
+  - Re-aimed light attack directly at the target midpoint with zero inaccuracy (1.15F speed) while retaining block-safe explosion/no fire spread.
+  - Bumped version to 1.0.26 and rebuilt successfully.
+- Rationale: Keeps light attacks precise instead of random sprays.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Fire mage pacing nerf)
+- Prompt/task: "Fire mages firing light attacks too often; increase heavy cooldown."
+- Steps:
+  - Raised heavy cooldown to 480 ticks and set light attack interval to 24 ticks to slow overall cadence.
+  - Bumped version to 1.0.27 and rebuilt successfully.
+- Rationale: Reduces light spam and makes heavy bursts less frequent.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Further pacing nerf)
+- Prompt/task: "Increase cooldowns a bit more."
+- Steps:
+  - Heavy cooldown raised again to 560 ticks; light interval raised to 28 ticks.
+  - Bumped version to 1.0.28 and rebuilt successfully.
+- Rationale: Further slows fire mage attack cadence per request.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Vanguard shields)
+- Prompt/task: "Vanguards need to actually use shields in combat using shield mechanics."
+- Steps:
+  - Added shield-raising logic that watches ranged threats and recent projectiles, drops the shield when brawling up close, and respects axe-based shield breaks with a cooldown.
+  - Ensured Vanguards start using their offhand shield (when equipped and not eating) to trigger vanilla blocking instead of just holding it passively.
+  - Bumped version to 1.0.29 and rebuilt successfully.
+- Rationale: Makes the Vanguard fulfill its tank identity by actively blocking and mitigating damage with vanilla shield behavior.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Companion recall range)
+- Prompt/task: "Let's work on pet-like teleportation for companions. I would like for companions to teleport back to the player once the distance between them has exceeded 35 blocks."
+- Steps:
+  - Enabled teleporting in the follow-owner goal and raised the leash to ~35 blocks squared, mirroring pet-style recall rather than short snaps.
+  - Added same-dimension guard plus safe-position checks around the owner, with a navigation fallback if no open spot is found to avoid stuck companions.
+  - Bumped version to 1.0.30 and rebuilt successfully.
+- Rationale: Prevents companions from getting lost during exploration by snapping them back when they fall far behind while still respecting safe teleport positions.
+- Build/Test: `./gradlew build` ✔️

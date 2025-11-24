@@ -66,3 +66,8 @@
 - 2025-11-24: Add a compact Jade/WTHIT line for Beastmaster pets that shows their master’s name and pet status/cooldown so players can quickly tell which companion a pet belongs to.
 - 2025-11-24 (asset lint): Add a small build-time check (e.g., Gradle task) that fails if any asset paths contain uppercase letters or spaces so texture/model names stay pack-format compliant.
 - 2025-11-24 (gui assets): Deduplicate GUI button textures (root vs `textures/gui`) and settle on one path convention to avoid silent fallbacks or black squares when casing diverges.
+- 2025-11-24 (new casters): Playtest Fire/Lightning Mage and Necromancer damage numbers, AoE safety, and summon lifetime; consider lightweight HUD indicators for heavy-cooldown readiness to telegraph burst windows to players.
+- 2025-11-24 (caster UX): Add a visible cooldown bar or particle cue for mage heavy spells and a timer UI for necromancer summons so players can predict downtime and despawns.
+- 2025-11-24 (summon polish): Consider letting Necromancer summons ignore Peaceful despawn rules only while tamed/owned, and add a faint timer ring or fade-out particles as their lifetime expires for clearer feedback.
+- 2025-11-24 (Vanguard stance): Add a stance toggle (aggressive vs defensive) that tunes shield-raise distance and aura radius, plus a small shield icon when blocking so owners can read the posture at a glance.
+- 2025-11-24 (teleport tuning): Add a config slider for the companion recall distance (default 35 blocks) plus an optional "recall now" hotkey/button in the companion UI to let players manually snap companions back when crossing portals or long gaps.

@@ -24,17 +24,35 @@ public final class CompanionEvents {
 
     @SubscribeEvent
     public static void friendlyFire(LivingIncomingDamageEvent event) {
-        if (event.getSource().getDirectEntity() instanceof AbstractHumanCompanionEntity companion && companion.isTame()) {
-            if (!ModConfig.safeGet(ModConfig.FRIENDLY_FIRE_PLAYER) && event.getEntity() instanceof Player player) {
-                if (companion.getOwner() == player) {
-                    event.setCanceled(true);
-                    return;
-                }
+        var source = event.getSource();
+        var direct = source.getDirectEntity();
+        var attacker = source.getEntity();
+
+        AbstractHumanCompanionEntity companion = null;
+        if (attacker instanceof AbstractHumanCompanionEntity comp) {
+            companion = comp;
+        } else if (direct instanceof net.minecraft.world.entity.projectile.Projectile proj && proj.getOwner() instanceof AbstractHumanCompanionEntity comp) {
+            companion = comp;
+        }
+
+        if (companion == null || !companion.isTame()) return;
+
+        // Prevent harming owner
+        if (!ModConfig.safeGet(ModConfig.FRIENDLY_FIRE_PLAYER) && event.getEntity() instanceof Player player) {
+            if (companion.getOwner() == player) {
+                event.setCanceled(true);
+                return;
             }
-            if (!ModConfig.safeGet(ModConfig.FRIENDLY_FIRE_COMPANIONS) && event.getEntity() instanceof TamableAnimal other && other.isTame()) {
-                if (other.getOwner() == companion.getOwner()) {
-                    event.setCanceled(true);
-                }
+        }
+
+        // Prevent harming other tamed companions/pets of same owner
+        if (!ModConfig.safeGet(ModConfig.FRIENDLY_FIRE_COMPANIONS)) {
+            if (event.getEntity() instanceof TamableAnimal other && other.isTame() && other.getOwner() == companion.getOwner()) {
+                event.setCanceled(true);
+                return;
+            }
+            if (event.getEntity() instanceof AbstractHumanCompanionEntity otherComp && otherComp.getOwner() == companion.getOwner()) {
+                event.setCanceled(true);
             }
         }
     }

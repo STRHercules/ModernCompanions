@@ -37,6 +37,9 @@ public final class ModCreativeTabs {
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.ALCHEMIST_SPAWN_EGG.get());
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.SCOUT_SPAWN_EGG.get());
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.STORMCALLER_SPAWN_EGG.get());
+                        output.accept(com.majorbonghits.moderncompanions.core.ModItems.FIRE_MAGE_SPAWN_EGG.get());
+                        output.accept(com.majorbonghits.moderncompanions.core.ModItems.LIGHTNING_MAGE_SPAWN_EGG.get());
+                        output.accept(com.majorbonghits.moderncompanions.core.ModItems.NECROMANCER_SPAWN_EGG.get());
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.RESURRECTION_SCROLL.get());
 
                         // Weapon variants grouped by type

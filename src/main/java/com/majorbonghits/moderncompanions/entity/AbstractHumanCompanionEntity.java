@@ -178,7 +178,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
         this.goalSelector.addGoal(2, new AvoidCreeperGoal(this, 1.5D, 1.5D));
         this.goalSelector.addGoal(3, new MoveBackToGuardGoal(this));
-        this.goalSelector.addGoal(3, new CustomFollowOwnerGoal(this, 1.3D, 8.0F, 2.5F, false));
+        this.goalSelector.addGoal(3, new CustomFollowOwnerGoal(this, 1.3D, 8.0F, 2.5F, true));
         this.goalSelector.addGoal(4, new CustomWaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));

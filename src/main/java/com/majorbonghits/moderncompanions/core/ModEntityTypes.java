@@ -73,6 +73,45 @@ public final class ModEntityTypes {
                     .sized(0.6F, 1.8F)
                     .build(id("stormcaller")));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<FireMage>> FIRE_MAGE =
+            ENTITY_TYPES.register("fire_mage", () -> EntityType.Builder.of(FireMage::new, MobCategory.AMBIENT)
+                    .sized(0.6F, 1.8F)
+                    .build(id("fire_mage")));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<LightningMage>> LIGHTNING_MAGE =
+            ENTITY_TYPES.register("lightning_mage", () -> EntityType.Builder.of(LightningMage::new, MobCategory.AMBIENT)
+                    .sized(0.6F, 1.8F)
+                    .build(id("lightning_mage")));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<Necromancer>> NECROMANCER =
+            ENTITY_TYPES.register("necromancer", () -> EntityType.Builder.of(Necromancer::new, MobCategory.AMBIENT)
+                    .sized(0.6F, 1.8F)
+                    .build(id("necromancer")));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<SummonedWitherSkeleton>> SUMMONED_WITHER_SKELETON =
+            ENTITY_TYPES.register("summoned_wither_skeleton", () -> EntityType.Builder.of(SummonedWitherSkeleton::new, MobCategory.MONSTER)
+                    .sized(0.7F, 2.4F)
+                    .build(id("summoned_wither_skeleton")));
+
+    // Helper projectiles (client uses vanilla renderers)
+    public static final DeferredHolder<EntityType<?>, EntityType<com.majorbonghits.moderncompanions.entity.projectile.NonIgnitingSmallFireball>> FIREBOLT =
+            ENTITY_TYPES.register("firebolt", () -> EntityType.Builder.<com.majorbonghits.moderncompanions.entity.projectile.NonIgnitingSmallFireball>of(
+                            com.majorbonghits.moderncompanions.entity.projectile.NonIgnitingSmallFireball::new, MobCategory.MISC)
+                    .sized(0.3125F, 0.3125F)
+                    .build(id("firebolt")));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.majorbonghits.moderncompanions.entity.projectile.NonExplodingLargeFireball>> FIREBURST =
+            ENTITY_TYPES.register("fireburst", () -> EntityType.Builder.<com.majorbonghits.moderncompanions.entity.projectile.NonExplodingLargeFireball>of(
+                            com.majorbonghits.moderncompanions.entity.projectile.NonExplodingLargeFireball::new, MobCategory.MISC)
+                    .sized(1.0F, 1.0F)
+                    .build(id("fireburst")));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.majorbonghits.moderncompanions.entity.projectile.SoftWitherSkull>> SOFT_WITHER_SKULL =
+            ENTITY_TYPES.register("soft_wither_skull", () -> EntityType.Builder.<com.majorbonghits.moderncompanions.entity.projectile.SoftWitherSkull>of(
+                            com.majorbonghits.moderncompanions.entity.projectile.SoftWitherSkull::new, MobCategory.MISC)
+                    .sized(0.3125F, 0.3125F)
+                    .build(id("soft_wither_skull")));
+
     private static String id(String path) {
         return ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, path).toString();
     }

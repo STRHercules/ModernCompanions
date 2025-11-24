@@ -22,5 +22,10 @@ public final class ModEntityAttributes {
         event.put(ModEntityTypes.ALCHEMIST.get(), attrs);
         event.put(ModEntityTypes.SCOUT.get(), attrs);
         event.put(ModEntityTypes.STORMCALLER.get(), attrs);
+        event.put(ModEntityTypes.FIRE_MAGE.get(), attrs);
+        event.put(ModEntityTypes.LIGHTNING_MAGE.get(), attrs);
+        event.put(ModEntityTypes.NECROMANCER.get(), attrs);
+        event.put(ModEntityTypes.SUMMONED_WITHER_SKELETON.get(), net.minecraft.world.entity.monster.WitherSkeleton.createAttributes().build());
+        // Projectile entities have no attributes
     }
 }

@@ -54,4 +54,13 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> STORMCALLER_SPAWN_EGG = ITEMS.register("stormcaller_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntityTypes.STORMCALLER, 0xB0E0FF, 0xFFD166, new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> FIRE_MAGE_SPAWN_EGG = ITEMS.register("fire_mage_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntityTypes.FIRE_MAGE, 0xFF6B3D, 0xA8320F, new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LIGHTNING_MAGE_SPAWN_EGG = ITEMS.register("lightning_mage_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntityTypes.LIGHTNING_MAGE, 0x9BD7FF, 0x3659A6, new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> NECROMANCER_SPAWN_EGG = ITEMS.register("necromancer_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntityTypes.NECROMANCER, 0x5A5A5A, 0x2B1B3D, new Item.Properties()));
+
 }
