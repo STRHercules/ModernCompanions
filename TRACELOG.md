@@ -1095,3 +1095,30 @@
   - Bumped version to 0.1.118 per policy.
 - Rationale: Ensures the modpage description accurately reflects the current structure-to-companion assignments without forcing players to read README.
 - Build: Not rerun after this doc change (last success: 0.1.117).
+
+## 2025-11-24 (Beastmaster pet owner HUD)
+- Prompt/task: "Beastmaster pets are displaying 'Owner: ???' when looking at them. They should be displaying their beastmaster's name in that field."
+- Steps:
+  - Added `BeastmasterPetHudUtil` to identify Beastmaster-bound pets and resolve their master's display name server-side for overlays.
+  - Registered Jade and WTHIT providers that transmit the owner name and render an "Owner: <name>" line for Beastmaster pets, eliminating the ??? tooltip.
+  - Incremented `gradle.properties` version to 1.0.1 per AGENTS rules and rebuilt the project.
+- Rationale: Ensures Beastmaster pets present the correct owner name in WTHIT/Jade instead of showing unknown (???).
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (spawn egg gem texture paths)
+- Prompt/task: "A user got 'Invalid path in pack: modern_companions:textures/item/Gem_*.png' errors."
+- Steps:
+  - Renamed all Gem textures to lowercase (`gem_0.png` ... `gem_13.png`) to satisfy Minecraft's lowercase resource path rules.
+  - Updated every companion spawn egg model to reference `modern_companions:item/gem_*` accordingly.
+  - Bumped `gradle.properties` version to 1.0.2 per AGENTS policy and rebuilt with `./gradlew build -x test`.
+- Rationale: Resource locations must be lowercase; capitalized file names were rejected, breaking spawn egg textures on case-sensitive environments.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-24 (release button texture casing)
+- Prompt/task: "The 'Release' button appears to be completely blacked out in the companion inventory."
+- Steps:
+  - Renamed `textures/releaseButton.png` to lowercase `releasebutton.png` so the GUI resource location `modern_companions:textures/releasebutton.png` resolves on case-sensitive packs.
+  - Bumped `gradle.properties` version to 1.0.3 per AGENTS policy.
+  - Rebuilt with `./gradlew build -x test` to confirm the button renders.
+- Rationale: Minecraft resource paths are case-sensitive; the mixed-case filename prevented the release button texture from loading.
+- Build/Test: `./gradlew build -x test` ✔️

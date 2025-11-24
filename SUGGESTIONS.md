@@ -63,3 +63,6 @@
 - 2025-11-23 (biome tuning): After playtesting, split biome lists by theme (e.g., keep sandstone/terracotta to arid, spruce to cold, windmills to windswept/meadow) instead of the unified temperate spread applied today, and consider separate structure sets per climate for finer control.
 - 2025-11-23 (next refinement): Consider reintroducing biome tags (e.g., `#modern_companions:arid_structures`, `#modern_companions:cold_structures`) to reduce duplication and make future tuning data-driven; add exclusion lists for class houses if they should avoid arid/cold zones.
 - 2025-11-23 (spawn QA): Add a lightweight debug config to log companion spawns per structure (or toggle the tracker) to confirm no duplicate spawning once gradlew is runnable again.
+- 2025-11-24: Add a compact Jade/WTHIT line for Beastmaster pets that shows their master’s name and pet status/cooldown so players can quickly tell which companion a pet belongs to.
+- 2025-11-24 (asset lint): Add a small build-time check (e.g., Gradle task) that fails if any asset paths contain uppercase letters or spaces so texture/model names stay pack-format compliant.
+- 2025-11-24 (gui assets): Deduplicate GUI button textures (root vs `textures/gui`) and settle on one path convention to avoid silent fallbacks or black squares when casing diverges.

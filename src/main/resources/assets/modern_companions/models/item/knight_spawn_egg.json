@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "modern_companions:item/Gem_7"
+    "layer0": "modern_companions:item/gem_7"
   }
 }
