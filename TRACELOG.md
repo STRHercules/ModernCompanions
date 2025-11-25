@@ -1377,3 +1377,12 @@
   - Bumped version to 1.0.34 and rebuilt successfully.
 - Rationale: Necromancer summons are intended helpers; treating them as allies prevents friendly-fire when multiple companions fight together.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Mage spawn gem assignment)
+- Prompt/task: "Assign the spawn gems for Fire Mage, Lightning Mage and Necromancer to the unused gem assets."
+- Steps:
+  - Added item models for the Fire Mage, Lightning Mage, and Necromancer spawn gems and mapped them to the previously unused gem_11, gem_12, and gem_13 textures.
+  - Bumped the mod version to 1.0.35 to reflect the new asset additions.
+  - Verified the resource changes compile by running the full Gradle build.
+- Rationale: Hooks the new caster spawn items to distinct gem art so each class uses a dedicated icon instead of defaulting to missing or reused assets.
+- Build/Test: `./gradlew build` ✔️
