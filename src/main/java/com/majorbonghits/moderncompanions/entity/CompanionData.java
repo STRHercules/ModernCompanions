@@ -1,19 +1,20 @@
 package com.majorbonghits.moderncompanions.entity;
 
 import com.majorbonghits.moderncompanions.ModernCompanions;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.*;
 import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.raid.Raider;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterials;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.alchemy.PotionContents;
 
 import java.util.*;
 
@@ -38,6 +39,14 @@ public class CompanionData {
             Items.COOKED_BEEF,
             Items.COOKED_CHICKEN,
             Items.COOKED_RABBIT
+    };
+
+    /** Higher-tier foods/drinks companions can consume for healing but will not request while taming. */
+    public static final Item[] EXTRA_HEAL_CONSUMABLES = new Item[]{
+            Items.GOLDEN_APPLE,
+            Items.ENCHANTED_GOLDEN_APPLE,
+            Items.GOLDEN_CARROT,
+            Items.HONEY_BOTTLE
     };
 
     /** Non-food resources companions might demand during taming. */
@@ -327,12 +336,33 @@ public class CompanionData {
         return food;
     }
 
-    public static boolean isFood(Item item) {
+    public static boolean isFood(ItemStack stack) {
+        Item item = stack.getItem();
         if (DISALLOWED_FOODS.contains(item)) return false;
         for (Item food : ALL_FOODS) {
             if (food.equals(item)) return true;
         }
-        return false;
+        for (Item bonus : EXTRA_HEAL_CONSUMABLES) {
+            if (bonus.equals(item)) return true;
+        }
+        return isHealingPotion(stack);
+    }
+
+    /** Allow only regen/healing potions (no splash/harmful mixes) as valid consumables. */
+    public static boolean isHealingPotion(ItemStack stack) {
+        if (!(stack.getItem() instanceof PotionItem)) return false;
+
+        PotionContents contents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+        boolean hasHealingEffect = false;
+        for (MobEffectInstance effect : contents.getAllEffects()) {
+            if (effect.getEffect().value().getCategory() == MobEffectCategory.HARMFUL) {
+                return false;
+            }
+            if (effect.getEffect().is(MobEffects.HEAL) || effect.getEffect().is(MobEffects.REGENERATION)) {
+                hasHealingEffect = true;
+            }
+        }
+        return hasHealingEffect;
     }
 
     private static Item pickAllowedFood(Random random) {

@@ -1351,3 +1351,20 @@
   - Bumped version to 1.0.31 and rebuilt successfully.
 - Rationale: Gives players control over companion movement speed, letting them sprint to keep up when desired without keeping a dead stationary toggle.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-24 (Better consumables)
+- Prompt/task: "Let's give the companions the ability to eat more food/drink. Such as beneficial potions like regen/healing, and special foods like enchanted apples"
+- Steps:
+  - Expanded valid consumables to include golden foods and honey, and taught the heal logic to prefer items by estimated healing value (including potion regen/instant health).
+  - Applied food/potion effects (regen, absorption, etc.) when consumed, returning empty containers to inventory or dropping them if full, with drink/eat sounds handled automatically.
+  - Bumped version to 1.0.32 and rebuilt successfully.
+- Rationale: Lets companions leverage high-value foods and healing/regen potions to stay alive instead of being limited to basic meats and bread.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Potion effects fix)
+- Prompt/task: "Potion effects do not seem to be applying to them when they drink the potions"
+- Steps:
+  - Preserve potion contents before shrinking the stack so effects apply even when only one bottle remains; consume the copy, then hand back an empty bottle as before.
+  - Bumped version to 1.0.33 and rebuilt successfully.
+- Rationale: Shrinking the last potion stack was erasing its stored effects, so companions drank but gained no buffs.
+- Build/Test: `./gradlew build` ✔️

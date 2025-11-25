@@ -35,11 +35,15 @@ import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -442,7 +446,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public boolean hasFoodInInventory() {
         for (int i = 0; i < inventory.getContainerSize(); i++) {
-            if (CompanionData.isFood(inventory.getItem(i).getItem()))
+            if (CompanionData.isFood(inventory.getItem(i)))
                 return true;
         }
         return false;
@@ -451,25 +455,24 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public ItemStack checkFood() {
         int missing = (int) Math.ceil(this.getMaxHealth() - this.getHealth());
         ItemStack best = ItemStack.EMPTY;
-        int bestOverflow = Integer.MAX_VALUE;
-        int bestUnder = -1;
+        float bestOverflow = Float.MAX_VALUE;
+        float bestUnder = -1;
 
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (!CompanionData.isFood(stack.getItem()))
-                continue;
-            FoodProperties food = stack.get(DataComponents.FOOD);
-            if (food == null || food.nutrition() <= 0)
-                continue;
-            int nutrition = food.nutrition();
-            if (nutrition >= missing) {
-                int overflow = nutrition - missing;
+            if (!CompanionData.isFood(stack)) continue;
+
+            float healValue = estimateHealingPotential(stack, missing);
+            if (healValue <= 0) continue;
+
+            if (healValue >= missing) {
+                float overflow = healValue - missing;
                 if (overflow < bestOverflow) {
                     bestOverflow = overflow;
                     best = stack;
                 }
-            } else if (bestOverflow == Integer.MAX_VALUE && nutrition > bestUnder) {
-                bestUnder = nutrition;
+            } else if (bestOverflow == Float.MAX_VALUE && healValue > bestUnder) {
+                bestUnder = healValue;
                 best = stack;
             }
         }
@@ -477,29 +480,83 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public boolean healFromFoodStack(ItemStack stack) {
-        if (stack.isEmpty() || !CompanionData.isFood(stack.getItem()))
-            return false;
-        FoodProperties food = stack.get(DataComponents.FOOD);
-        if (food == null)
+        if (stack.isEmpty() || !CompanionData.isFood(stack))
             return false;
         float missing = this.getMaxHealth() - this.getHealth();
         if (missing <= 0.01f)
             return false;
-        int healAmount = Math.max(1, Math.min(food.nutrition(), (int) Math.ceil(missing)));
-        playEatingEffects(stack);
-        stack.shrink(1);
-        this.heal(healAmount);
-        return true;
+
+        FoodProperties food = stack.get(DataComponents.FOOD);
+        if (food != null) {
+            int healAmount = Math.max(1, Math.min(food.nutrition(), (int) Math.ceil(missing)));
+            playConsumptionEffects(stack);
+            stack.shrink(1);
+            this.heal(healAmount);
+            applyFoodEffects(food);
+            food.usingConvertsTo().ifPresent(this::storeOrDrop);
+            return true;
+        }
+
+        if (CompanionData.isHealingPotion(stack)) {
+            ItemStack potionCopy = stack.copyWithCount(1); // preserve effects before shrinking
+            playConsumptionEffects(potionCopy);
+            stack.shrink(1);
+            applyPotionEffects(potionCopy);
+            storeOrDrop(new ItemStack(Items.GLASS_BOTTLE));
+            return true;
+        }
+
+        return false;
     }
 
-    private void playEatingEffects(ItemStack stack) {
+    private float estimateHealingPotential(ItemStack stack, float missingHealth) {
+        FoodProperties food = stack.get(DataComponents.FOOD);
+        if (food != null) {
+            return Math.min(food.nutrition(), missingHealth);
+        }
+        if (!CompanionData.isHealingPotion(stack)) return 0;
+
+        float healAmount = 0f;
+        PotionContents contents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+        for (MobEffectInstance effect : contents.getAllEffects()) {
+            if (effect.getEffect().is(MobEffects.HEAL)) {
+                healAmount += 4f * (effect.getAmplifier() + 1);
+            } else if (effect.getEffect().is(MobEffects.REGENERATION)) {
+                healAmount += (effect.getDuration() * (effect.getAmplifier() + 1)) / 50f;
+            } else if (effect.getEffect().is(MobEffects.ABSORPTION)) {
+                healAmount += 4f * (effect.getAmplifier() + 1) * 0.5f; // weight shields lightly
+            }
+        }
+        return Math.min(healAmount, missingHealth + 8); // let regen/absorb count a bit above missing
+    }
+
+    private void applyFoodEffects(FoodProperties food) {
+        if (this.level().isClientSide()) return;
+        for (FoodProperties.PossibleEffect possible : food.effects()) {
+            if (this.random.nextFloat() <= possible.probability()) {
+                this.addEffect(possible.effect());
+            }
+        }
+    }
+
+    private void applyPotionEffects(ItemStack stack) {
+        if (this.level().isClientSide()) return;
+        PotionContents contents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+        for (MobEffectInstance effect : contents.getAllEffects()) {
+            if (effect.getEffect().value().isInstantenous()) {
+                effect.getEffect().value().applyInstantenousEffect(null, null, this, effect.getAmplifier(), 1.0D);
+            } else {
+                this.addEffect(new MobEffectInstance(effect));
+            }
+        }
+    }
+
+    private void playConsumptionEffects(ItemStack stack) {
         if (this.level().isClientSide())
             return;
-        // Sound
-        var sound = stack.getItem().getEatingSound();
+        var sound = stack.getUseAnimation() == UseAnim.DRINK ? stack.getItem().getDrinkingSound() : stack.getItem().getEatingSound();
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 0.7F,
                 1.0F + (this.getRandom().nextFloat() - 0.5F) * 0.2F);
-        // Particles roughly at face height
         for (int j = 0; j < 5; ++j) {
             double dx = this.getRandom().nextGaussian() * 0.02D;
             double dy = this.getRandom().nextGaussian() * 0.02D;
@@ -511,6 +568,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                     this.getY() + this.getBbHeight() * 0.8D,
                     this.getZ() + (double) (this.getRandom().nextFloat() * 0.4F - 0.2F),
                     dx, dy, dz);
+        }
+    }
+
+    private void storeOrDrop(ItemStack stack) {
+        if (stack.isEmpty()) return;
+        ItemStack remainder = this.inventory.addItem(stack);
+        if (!remainder.isEmpty()) {
+            this.spawnAtLocation(remainder);
         }
     }
 
@@ -751,7 +816,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return CompanionData.isFood(stack.getItem());
+        return CompanionData.isFood(stack);
     }
 
     @Override
