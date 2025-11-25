@@ -1439,3 +1439,20 @@
   - Bumped version to 1.0.41.
 - Rationale: Gives the new attribute books distinct visuals and lets them drop naturally in adventure loot without losing compatibility.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Docs: new mechanics + items)
+- Prompt/task: "Extend the README and DECRIPTION documents to include all the changes we have made today; teleport logic for companions; Vanguard Shield logic; New Magic Classes; Swapped Stationary toggle to Sprint toggle; Companions will consume enchanted food/beneficial potions; Companion Mover, its' mechanics; Summoning Wand, its' mechanics; New Enchants, what they do and where to find them"
+- Steps:
+  - Updated README.md gameplay overview to cover sprint toggle, long-distance teleport recall (~35 blocks), expanded consumables (enchanted foods/beneficial potions), and added a utility section for Companion Mover, Summoning Wand, and attribute enchants.
+  - Expanded Companion Classes to include Fire Mage, Lightning Mage, and Necromancer, and noted the Vanguard’s active shield-raising logic.
+  - Mirrored the same additions in DESCRIPTION.md (feature list, class blurbs, items, enchantment availability) to keep storefront text aligned; bumped version to 1.0.42.
+- Rationale: Keeps public docs in sync with the latest gameplay and item additions introduced on 2025-11-24/25 so players know how to use the new tools and classes.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Docs: caps and party size)
+- Prompt/task: "Now add a section to both documents explaining that there is no level cap for the companions and no limit to how many you can control at once"
+- Steps:
+  - Added explicit "Limits" bullets in README.md and DESCRIPTION.md stating there is no level cap and no hard limit on party size (only practical performance constraints).
+  - Bumped version to 1.0.43 and reran `./gradlew build` to confirm docs-only change still passes.
+- Rationale: Makes the uncapped leveling and unlimited companion control explicit for players skimming the docs.
+- Build/Test: `./gradlew build` ✔️

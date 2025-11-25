@@ -81,3 +81,5 @@
 - 2025-11-25 (enchantment tuning): Add a config/data cap for how many attribute enchant levels can stack across armor pieces (or introduce diminishing returns) and surface gear-contributed attribute bonuses directly in the companion UI for clarity.
 - 2025-11-25 (creative tab polish): Consider grouping the new enchant books under a subheader or ordering them near armor items, and add a JEI info page describing their attribute bonuses and intended companion-only use.
 - 2025-11-25 (data pack docs): Document the new data-driven enchant JSONs so pack makers can tweak costs/weights/slots via datapacks without code edits.
+- 2025-11-25 (docs follow-up): Add an in-game guide/JEI info page for the sprint toggle, teleport recall distance, Companion Mover, Summoning Wand, and the four attribute enchants (what they boost and loot/creative sources) so players learn the new systems without leaving the game.
+- 2025-11-25 (party UI): Consider an optional UI hint/config that shows current companion count vs a soft recommended cap, since the docs now highlight unlimited party size.
