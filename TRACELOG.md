@@ -1456,3 +1456,12 @@
   - Bumped version to 1.0.43 and reran `./gradlew build` to confirm docs-only change still passes.
 - Rationale: Makes the uncapped leveling and unlimited companion control explicit for players skimming the docs.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Mage tower assignments)
+- Prompt/task: "We need to make sure the 3 new classes (Fire mage, lightning mage, and necromancer) are assigned to buildings like other classes... Add their structure spawns to thematic biomes and be sure the new classes fit in with the rest with how their structures are placed and they are spawned at them"
+- Steps:
+  - Updated StructureCompanionSpawner to support multiple entity choices per structure and mapped tower1 to Fire/Lightning Mage and tower2 to Necromancer, keeping other structures unchanged.
+  - Adjusted tower1/tower2 structure spawn overrides to spawn the new mage entities, and broadened their biome lists with flower forests and old-growth birch for a magical feel.
+  - Refreshed README/DESCRIPTION structure-resident tables to reflect the new tower assignments; bumped version to 1.0.44 and rebuilt.
+- Rationale: Ensures the new mage classes spawn from dedicated towers in appropriate biomes and integrate with the existing structure-driven spawn system.
+- Build/Test: `./gradlew build` ✔️

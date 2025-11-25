@@ -45,17 +45,20 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
 - Companions are spawned in code when their structure generates—nothing is baked into the NBT. `StructureCompanionSpawner` listens to chunk loads, detects our structures, and spawns exactly one resident with `MobSpawnType.STRUCTURE`.
 - A SavedData guard (`StructureSpawnTracker`) records each structure placement (structure id + bounding-box center) to prevent dupes on chunk reloads.
 - Structure → resident mapping:
-  - Alchemist: alchemist_house, tower1
+  - Alchemist: alchemist_house
   - Beastmaster: beastmaster_house, watermill, spruce_house
   - Berserker: berserker_house, largehouse3
   - Cleric: cleric_house, church
-  - Scout: scout_house, tower2, oak_birch_house
+  - Scout: scout_house, oak_birch_house
   - Stormcaller: stormcaller_house, windmill
   - Vanguard: vanguard_house, smith
   - Knight: house, oak_house, birch_house, sandstone_house
   - Archer: largehouse, acacia_house
   - Axeguard: largehouse2, dark_oak_house
   - Arbalist: lumber, terracotta_house
+  - Fire Mage: tower1
+  - Lightning Mage: tower1
+  - Necromancer: tower2
 
 ## Utility Items & Enchants
 - **Companion Mover:** Owner-only capture tool that packages a companion (full NBT/UUID/inventory) into a glinting stored item so you can redeploy them safely elsewhere.

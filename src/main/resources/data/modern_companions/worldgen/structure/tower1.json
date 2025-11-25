@@ -10,7 +10,9 @@
     "windswept_hills",
     "windswept_forest",
     "windswept_gravelly_hills",
-    "cherry_grove"
+    "cherry_grove",
+    "flower_forest",
+    "old_growth_birch_forest"
   ],
   "step": "surface_structures",
   "terrain_adaptation": "beard_thin",
@@ -24,7 +26,13 @@
       "bounding_box": "full",
       "spawns": [
         {
-          "type": "modern_companions:alchemist",
+          "type": "modern_companions:fire_mage",
+          "weight": 1,
+          "minCount": 1,
+          "maxCount": 1
+        },
+        {
+          "type": "modern_companions:lightning_mage",
           "weight": 1,
           "minCount": 1,
           "maxCount": 1
