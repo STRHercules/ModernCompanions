@@ -89,5 +89,9 @@
   "tooltip.modern_companions.summoning_wand": "Right-click to summon your companions (and their pets) to you.",
   //"message.modern_companions.resurrection_scroll.spawned": "Resurrected companion at (%s, %s, %s)",
   "message.modern_companions.resurrection_scroll.spawned": "Resurrected companion!",
+  "enchantment.modern_companions.empower": "Empower",
+  "enchantment.modern_companions.nimbility": "Nimbility",
+  "enchantment.modern_companions.enlightenment": "Enlightenment",
+  "enchantment.modern_companions.vitality": "Vitality",
   "itemGroup.modern_companions": "Modern Companions"
 }

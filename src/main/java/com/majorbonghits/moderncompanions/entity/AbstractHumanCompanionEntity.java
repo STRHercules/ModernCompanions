@@ -5,8 +5,10 @@ import com.majorbonghits.moderncompanions.core.ModMenuTypes;
 import com.majorbonghits.moderncompanions.entity.ai.*;
 import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import com.majorbonghits.moderncompanions.core.ModItems;
+import com.majorbonghits.moderncompanions.core.ModEnchantments;
 import com.majorbonghits.moderncompanions.item.ResurrectionScrollItem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -44,6 +46,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -122,6 +128,11 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private int totalExperience;
     private float experienceProgress;
     private int lastLevelUpTime;
+
+    private int equipmentStrengthBonus;
+    private int equipmentDexterityBonus;
+    private int equipmentIntelligenceBonus;
+    private int equipmentEnduranceBonus;
 
     protected AbstractHumanCompanionEntity(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
@@ -399,18 +410,34 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public int getStrength() {
-        return this.entityData.get(STR);
+        return getBaseStrength() + equipmentStrengthBonus;
     }
 
     public int getDexterity() {
-        return this.entityData.get(DEX);
+        return getBaseDexterity() + equipmentDexterityBonus;
     }
 
     public int getIntelligence() {
-        return this.entityData.get(INTL);
+        return getBaseIntelligence() + equipmentIntelligenceBonus;
     }
 
     public int getEndurance() {
+        return getBaseEndurance() + equipmentEnduranceBonus;
+    }
+
+    public int getBaseStrength() {
+        return this.entityData.get(STR);
+    }
+
+    public int getBaseDexterity() {
+        return this.entityData.get(DEX);
+    }
+
+    public int getBaseIntelligence() {
+        return this.entityData.get(INTL);
+    }
+
+    public int getBaseEndurance() {
         return this.entityData.get(END);
     }
 
@@ -745,10 +772,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putString("food2", entityData.get(FOOD2));
         tag.putInt("food1_amt", entityData.get(FOOD1_AMT));
         tag.putInt("food2_amt", entityData.get(FOOD2_AMT));
-        tag.putInt("Strength", getStrength());
-        tag.putInt("Dexterity", getDexterity());
-        tag.putInt("Intelligence", getIntelligence());
-        tag.putInt("Endurance", getEndurance());
+        tag.putInt("Strength", getBaseStrength());
+        tag.putInt("Dexterity", getBaseDexterity());
+        tag.putInt("Intelligence", getBaseIntelligence());
+        tag.putInt("Endurance", getBaseEndurance());
         tag.putInt("SpecialistAttr", getSpecialistAttributeIndex());
         if (this.getPatrolPos().isPresent()) {
             int[] patrolPos = { this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(),
@@ -823,7 +850,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         } else {
             assignRpgAttributes();
         }
+        recomputeEquipmentAttributeBonuses();
         applyRpgAttributeModifiers();
+        clampHealthToMax();
     }
 
     /* ---------- Spawning ---------- */
@@ -861,6 +890,11 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 }
             }
         }
+        boolean equipmentChanged = recomputeEquipmentAttributeBonuses();
+        if (equipmentChanged) {
+            applyRpgAttributeModifiers();
+            clampHealthToMax();
+        }
         super.tick();
     }
 
@@ -887,7 +921,6 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         modifyMaxHealth(baseHealth - 20, "companion base health", true);
         this.setHealth(this.getMaxHealth());
         setBaseHealth(baseHealth);
-        applyRpgAttributeModifiers();
         setSex(this.random.nextInt(2));
         setSkinIndex(this.random.nextInt(CompanionData.skins[getSex()].length));
         setCustomName(Component.literal(CompanionData.getRandomName(getSex())));
@@ -910,6 +943,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             }
             checkArmor();
         }
+        recomputeEquipmentAttributeBonuses();
+        applyRpgAttributeModifiers();
+        clampHealthToMax();
         return super.finalizeSpawn(level, difficulty, reason, spawnDataIn);
     }
 
@@ -1233,6 +1269,40 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         setEndurance(stats[3]);
     }
 
+    /**
+     * Recalculate enchantment-driven bonuses from the companion's worn armor.
+     * Returns true when a change is detected so downstream attribute application can be refreshed.
+     */
+    private boolean recomputeEquipmentAttributeBonuses() {
+        int newStr = getEnchantmentBonus(ModEnchantments.EMPOWER);
+        int newDex = getEnchantmentBonus(ModEnchantments.NIMBILITY);
+        int newInt = getEnchantmentBonus(ModEnchantments.ENLIGHTENMENT);
+        int newEnd = getEnchantmentBonus(ModEnchantments.VITALITY);
+
+        if (newStr == equipmentStrengthBonus && newDex == equipmentDexterityBonus
+                && newInt == equipmentIntelligenceBonus && newEnd == equipmentEnduranceBonus) {
+            return false;
+        }
+
+        equipmentStrengthBonus = newStr;
+        equipmentDexterityBonus = newDex;
+        equipmentIntelligenceBonus = newInt;
+        equipmentEnduranceBonus = newEnd;
+        return true;
+    }
+
+    private int getEnchantmentBonus(ResourceKey<Enchantment> enchantment) {
+        var registry = this.level().registryAccess().registry(Registries.ENCHANTMENT);
+        if (registry.isEmpty()) return 0;
+        int total = 0;
+        for (ItemStack armor : this.getArmorSlots()) {
+            total += registry.get().getHolder(enchantment)
+                    .map(holder -> EnchantmentHelper.getItemEnchantmentLevel(holder, armor))
+                    .orElse(0);
+        }
+        return total;
+    }
+
     private void applyRpgAttributeModifiers() {
         applyStrengthModifiers();
         applyDexterityModifiers();
@@ -1262,12 +1332,15 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     private void applyEnduranceModifiers() {
-        int bonusHealth = getEnduranceBonusHealth();
-        // Apply on top of base health modifier so baseHealth tracks the END effect.
         int baseline = ModConfig.BASE_HEALTH != null ? ModConfig.safeGet(ModConfig.BASE_HEALTH) : 20;
-        int desiredBase = Math.max(getBaseHealth(), baseline + bonusHealth);
+        int baseBonusHealth = getEnduranceBonusHealth();
+        int desiredBase = Math.max(getBaseHealth(), baseline + baseBonusHealth);
         setBaseHealth(desiredBase);
         modifyMaxHealth(desiredBase - 20, "companion base health", true);
+
+        int gearHealthBonus = Math.max(0, getEndurance() - getBaseEndurance());
+        applyModifier(Attributes.MAX_HEALTH, "rpg_end_gear_health", gearHealthBonus,
+                AttributeModifier.Operation.ADD_VALUE);
 
         double kbResist = Math.min(0.6D, (getEndurance() - 4) * 0.02D);
         applyModifier(Attributes.KNOCKBACK_RESISTANCE, "rpg_end_kb_resist", kbResist,
@@ -1275,7 +1348,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     private int getEnduranceBonusHealth() {
-        return Math.max(0, getEndurance() - 4); // +1 hp per END over base (0.5 hearts)
+        return Math.max(0, getBaseEndurance() - 4); // +1 hp per END over base (0.5 hearts)
     }
 
     private float applyEnduranceResistance(DamageSource source, float amount) {
@@ -1288,6 +1361,13 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         }
         float reduction = (float) Math.min(0.35D, Math.max(0.0D, (getEndurance() - 4) * 0.015D));
         return amount * (1.0F - reduction);
+    }
+
+    private void clampHealthToMax() {
+        float max = this.getMaxHealth();
+        if (this.getHealth() > max) {
+            this.setHealth(max);
+        }
     }
 
     private void applyModifier(net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute,

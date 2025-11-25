@@ -1404,3 +1404,29 @@
   - Added a helper on Beastmaster to fetch the active pet entity so it can be teleported alongside its owner.
 - Rationale: Provides an on-demand recall tool to regroup scattered companions and their pets without killing or re-summoning them.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Companion attribute enchantments)
+- Prompt/task: "I want to add new enchantments unique to Modern Companions ... armor enchanted for companions should add attribute bonuses (Strength, Dexterity, Intelligence, Endurance) when equipped and remove them when unequipped."
+- Steps:
+  - Registered four armor-only enchantments (Empower, Nimbility, Enlightenment, Vitality) and wired them into the mod bus with new localization entries.
+  - Added enchantment scanning on companion armor to derive per-attribute bonuses, updated attribute calculations to use effective (base + gear) values, and reapply modifiers whenever equipment changes so health/damage/speed update live.
+  - Split base Endurance health from gear-based health via a dedicated modifier, clamping current health after recalculations to avoid over-max HP, and bumped version to 1.0.38.
+- Rationale: Lets enchanted companion armor meaningfully boost RPG stats while cleanly recalculating derived attributes as gear is swapped.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Enchanted books in creative tab)
+- Prompt/task: "Let's add our enchant books to the creative tab."
+- Steps:
+  - Added helper to spawn pre-leveled enchanted books (I–III) for Empower, Nimbility, Enlightenment, and Vitality into the Modern Companions creative tab.
+  - Imported the new enchantment registry into the tab builder and bumped project version to 1.0.39.
+- Rationale: Makes it easy to grab the new attribute enchant books without commands or JEI search filters.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Data-driven enchant registration)
+- Prompt/task: "These commands arent working, clearly there is something wrong with the enchant registration or something."
+- Steps:
+  - Switched enchant definitions to data-driven JSON entries (`data/modern_companions/enchantment/*.json`) compatible with 1.21's dynamic enchantment registry.
+  - Updated companion armor bonus lookup and creative tab book listing to resolve holders from the registry access instead of deferred registration, and removed the code-side enchant registration hook.
+  - Rebuilt as version 1.0.40.
+- Rationale: Ensures the custom attribute enchants load in the 1.21 datapack-based registry so books can exist in JEI/creative and commands succeed.
+- Build/Test: `./gradlew build` ✔️

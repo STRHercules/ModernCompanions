@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "entries": [
+    "modern_companions:empower_i",
+    "modern_companions:empower_ii",
+    "modern_companions:empower_iii",
+    "modern_companions:nimbility_i",
+    "modern_companions:nimbility_ii",
+    "modern_companions:nimbility_iii",
+    "modern_companions:enlightenment_i",
+    "modern_companions:enlightenment_ii",
+    "modern_companions:enlightenment_iii",
+    "modern_companions:vitality_i",
+    "modern_companions:vitality_ii",
+    "modern_companions:vitality_iii"
+  ]
+}
