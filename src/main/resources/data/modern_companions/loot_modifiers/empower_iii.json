@@ -24,7 +24,8 @@
           "components": {
             "minecraft:stored_enchantments": {
               "levels": { "modern_companions:empower": 3 }
-            }
+            },
+            "minecraft:custom_model_data": 410003
           }
         }
       ]

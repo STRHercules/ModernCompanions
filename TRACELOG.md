@@ -1430,3 +1430,12 @@
   - Rebuilt as version 1.0.40.
 - Rationale: Ensures the custom attribute enchants load in the 1.21 datapack-based registry so books can exist in JEI/creative and commands succeed.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Custom models + dungeon loot for enchant books)
+- Prompt/task: "Do a model override. I added empower/nimbility/enlightenment/vitality textures."
+- Steps:
+  - Added enchanted book model overrides with custom model data mapping to new textures; created per-enchant models and set CMD on creative-tab books and dungeon loot drops.
+  - Extended loot modifiers to inject the books (levels I–III) into dungeon/mineshaft/stronghold-library/temple/buried treasure/shipwreck chests with the requested probabilities and matching custom models.
+  - Bumped version to 1.0.41.
+- Rationale: Gives the new attribute books distinct visuals and lets them drop naturally in adventure loot without losing compatibility.
+- Build/Test: `./gradlew build` ✔️

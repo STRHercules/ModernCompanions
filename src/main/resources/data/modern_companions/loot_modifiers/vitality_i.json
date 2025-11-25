@@ -24,7 +24,8 @@
           "components": {
             "minecraft:stored_enchantments": {
               "levels": { "modern_companions:vitality": 1 }
-            }
+            },
+            "minecraft:custom_model_data": 410031
           }
         }
       ]

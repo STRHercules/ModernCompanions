@@ -11,6 +11,8 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.core.component.DataComponents;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -74,7 +76,27 @@ public final class ModCreativeTabs {
 
     private static void addBookLevels(CreativeModeTab.Output output, net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> holder) {
         for (int level = 1; level <= 3; level++) {
-            output.accept(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(holder, level)));
+            ItemStack stack = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(holder, level));
+            applyCustomModelData(holder.unwrapKey().orElse(null), level, stack);
+            output.accept(stack);
         }
+    }
+
+    private static void applyCustomModelData(ResourceKey<net.minecraft.world.item.enchantment.Enchantment> key, int level, ItemStack stack) {
+        if (key == null) return;
+        int base;
+        if (key.equals(ModEnchantments.EMPOWER)) {
+            base = 410000;
+        } else if (key.equals(ModEnchantments.NIMBILITY)) {
+            base = 410010;
+        } else if (key.equals(ModEnchantments.ENLIGHTENMENT)) {
+            base = 410020;
+        } else if (key.equals(ModEnchantments.VITALITY)) {
+            base = 410030;
+        } else {
+            return;
+        }
+        int cmd = base + level;
+        stack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(cmd));
     }
 }

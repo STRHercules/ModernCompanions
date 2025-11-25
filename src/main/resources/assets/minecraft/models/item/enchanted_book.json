@@ -1,0 +1,23 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/enchanted_book"
+  },
+  "overrides": [
+    { "predicate": { "custom_model_data": 410001 }, "model": "modern_companions:item/empower_book" },
+    { "predicate": { "custom_model_data": 410002 }, "model": "modern_companions:item/empower_book" },
+    { "predicate": { "custom_model_data": 410003 }, "model": "modern_companions:item/empower_book" },
+
+    { "predicate": { "custom_model_data": 410011 }, "model": "modern_companions:item/nimbility_book" },
+    { "predicate": { "custom_model_data": 410012 }, "model": "modern_companions:item/nimbility_book" },
+    { "predicate": { "custom_model_data": 410013 }, "model": "modern_companions:item/nimbility_book" },
+
+    { "predicate": { "custom_model_data": 410021 }, "model": "modern_companions:item/enlightenment_book" },
+    { "predicate": { "custom_model_data": 410022 }, "model": "modern_companions:item/enlightenment_book" },
+    { "predicate": { "custom_model_data": 410023 }, "model": "modern_companions:item/enlightenment_book" },
+
+    { "predicate": { "custom_model_data": 410031 }, "model": "modern_companions:item/vitality_book" },
+    { "predicate": { "custom_model_data": 410032 }, "model": "modern_companions:item/vitality_book" },
+    { "predicate": { "custom_model_data": 410033 }, "model": "modern_companions:item/vitality_book" }
+  ]
+}

@@ -24,7 +24,8 @@
           "components": {
             "minecraft:stored_enchantments": {
               "levels": { "modern_companions:nimbility": 1 }
-            }
+            },
+            "minecraft:custom_model_data": 410011
           }
         }
       ]
