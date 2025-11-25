@@ -34,6 +34,7 @@
   "item.modern_companions.stored_companion": "Soul Gem",
   "item.modern_companions.stored_companion.named": "%s's Soul Gem",
   "item.modern_companions.companion_mover": "Companion Mover",
+  "item.modern_companions.summoning_wand": "Summoning Wand",
   "item.modern_companions.wooden_dagger": "Wooden Dagger",
   "item.modern_companions.wooden_hammer": "Wooden Hammer",
   "item.modern_companions.wooden_club": "Wooden Club",
@@ -85,6 +86,7 @@
   "tooltip.modern_companions.stored_companion.bound": "Bound to: %s",
   "tooltip.modern_companions.stored_companion.empty": "No companion data stored.",
   "tooltip.modern_companions.companion_mover.not_owner": "You can only store companions you own.",
+  "tooltip.modern_companions.summoning_wand": "Right-click to summon your companions (and their pets) to you.",
   //"message.modern_companions.resurrection_scroll.spawned": "Resurrected companion at (%s, %s, %s)",
   "message.modern_companions.resurrection_scroll.spawned": "Resurrected companion!",
   "itemGroup.modern_companions": "Modern Companions"

@@ -1395,3 +1395,12 @@
   - Registered the new items, models, recipe, and lang entries; exposed them on the Modern Companions creative tab; and bumped the version to 1.0.36.
 - Rationale: Provides a manual, lossless way to transport companions without killing them, mirroring the resurrection scroll data preservation but triggered on demand.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Summoning Wand)
+- Prompt/task: "Add a Summoning Wand that teleports living companions (and their pets) to the player."
+- Steps:
+  - Added `SummoningWandItem` with durability/glint rarity matching the Companion Mover; right-click recalls all owned companions in the dimension plus Beastmaster pets to a safe spot near the player, with minor cooldown and teleport SFX.
+  - Exposed the wand via registration, creative tab, English lang entry + tooltip, item model using the new `wand.png`, and a diagonal pearl/rod/glowstone crafting recipe; bumped version to 1.0.37.
+  - Added a helper on Beastmaster to fetch the active pet entity so it can be teleported alongside its owner.
+- Rationale: Provides an on-demand recall tool to regroup scattered companions and their pets without killing or re-summoning them.
+- Build/Test: `./gradlew build` ✔️

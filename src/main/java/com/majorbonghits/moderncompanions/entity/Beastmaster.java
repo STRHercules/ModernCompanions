@@ -94,6 +94,16 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
     private ResourceLocation petTypeId;
     private boolean suppressPetRespawn;
 
+    /**
+     * Returns the currently tracked pet entity if it is alive and loaded in the given level.
+     */
+    @Nullable
+    public LivingEntity getPetEntity(ServerLevel level) {
+        if (petId == null) return null;
+        Entity pet = level.getEntity(petId);
+        return pet instanceof LivingEntity living ? living : null;
+    }
+
     public Beastmaster(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
         this.goalSelector.addGoal(2, new ArcherRangedBowAttackGoal<>(this, 1.05D, 22, 20.0F));
