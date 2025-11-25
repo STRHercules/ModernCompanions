@@ -16,3 +16,5 @@
 * Pet Locator Integration
 
 * Custom enchants to boost companion stats
+
+* Resource gathering??

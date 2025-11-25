@@ -1386,3 +1386,12 @@
   - Verified the resource changes compile by running the full Gradle build.
 - Rationale: Hooks the new caster spawn items to distinct gem art so each class uses a dedicated icon instead of defaulting to missing or reused assets.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Companion storage tool)
+- Prompt/task: "Add the ability to convert companions into items (preserving all NBT/UUID) so they can be re-placed like unique spawn eggs."
+- Steps:
+  - Implemented `StoredCompanionItem` to hold full companion entity data, always render with an enchanted glint, and redeploy the bound companion at the targeted spot via right-click on blocks or water.
+  - Added the `CompanionMoverItem` capture tool that only works for the owner, packages the companion into a stored item, plays VFX/SFX, damages the mover, and hands the item to the player (or drops it) before removing the entity safely.
+  - Registered the new items, models, recipe, and lang entries; exposed them on the Modern Companions creative tab; and bumped the version to 1.0.36.
+- Rationale: Provides a manual, lossless way to transport companions without killing them, mirroring the resurrection scroll data preservation but triggered on demand.
+- Build/Test: `./gradlew build` ✔️

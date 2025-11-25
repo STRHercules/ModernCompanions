@@ -76,3 +76,4 @@
 - 2025-11-25 (potion UX): Add a small HUD/icon when a companion is under an active potion effect and surface the remaining duration in the companion screen/Jade line so players know the drink actually applied.
 - 2025-11-25 (summon affinity UI): Consider a tooltip or small icon near the Necromancer that indicates how many summons are active and that other companions will ignore them, reducing confusion about whether minions are friendly.
 - 2025-11-25 (gem theming): Now that the spare gem textures are mapped to the mage and necromancer summon items, consider recoloring or outlining them to reflect class hues (fire, lightning, necrotic) and add a compact palette guide in docs for future eggs.
+- 2025-11-25 (companion storage polish): Add per-class stored-companion models/textures (or a tint based on entity type) plus an optional owner-lock tooltip/advancement to make stored items clearly distinguishable from spawn gems and to teach the mover recipe in-game.

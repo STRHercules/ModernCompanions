@@ -630,6 +630,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             } else {
                 if (this.isAlliedTo(player)) {
+                    // Let the Companion Mover handle interaction (even when sneaking) to avoid triggering sit/GUI.
+                    if (held.is(ModItems.COMPANION_MOVER.get())) {
+                        return InteractionResult.PASS;
+                    }
                     if (player.isShiftKeyDown()) {
                         if (!this.level().isClientSide()) {
                             toggleSit((ServerPlayer) player);
