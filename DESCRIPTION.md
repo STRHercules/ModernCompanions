@@ -93,4 +93,4 @@ Modern Companions is a faithful NeoForge 1.21.1 port/rebrand of *Human Companion
 - **Can they hurt me/each other?** Player FF off by default; companion FF off by default; both configurable.
 - **Where are recipes?** Standard JSON recipes; view with JEI/REI. Resurrection uses nether star activation—no smithing template needed.
 
-Take a squad with you, keep them fed, and enjoy the extra firepower. Feedback and balance reports are welcome!***
+***Take a squad with you, keep them fed, and enjoy the extra firepower. Feedback and balance reports are welcome!***
