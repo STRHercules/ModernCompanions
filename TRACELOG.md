@@ -1368,3 +1368,12 @@
   - Bumped version to 1.0.33 and rebuilt successfully.
 - Rationale: Shrinking the last potion stack was erasing its stored effects, so companions drank but gained no buffs.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-25 (Summoned wither skeleton safety)
+- Prompt/task: "If I have more than one Companion, my other companions will attack my necromancers summoned wither skeletons, we need to make sure no companion attacks any summoned wither skeletons at all."
+- Steps:
+  - Short-circuited companion targeting to always reject `SummonedWitherSkeleton` entities so cross-class parties never flag them as hostiles.
+  - Marked summoned wither skeletons as allies to companions to keep other friendliness checks consistent across AI behaviors.
+  - Bumped version to 1.0.34 and rebuilt successfully.
+- Rationale: Necromancer summons are intended helpers; treating them as allies prevents friendly-fire when multiple companions fight together.
+- Build/Test: `./gradlew build` ✔️

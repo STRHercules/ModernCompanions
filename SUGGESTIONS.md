@@ -74,3 +74,4 @@
 - 2025-11-24 (sprint toggle polish): Consider a proper sprint icon + tooltip that explains speed vs hunger costs (if any), and optionally allow per-role sprint defaults or a config cap on sprint duration to avoid constant sprinting in combat.
 - 2025-11-24 (consumable tuning): Add a config for which potion effects are allowed (or a whitelist tag) and a health-threshold slider so companions don't waste regen/heal potions when barely scratched; consider logging/debug overlays to show what item they'll consume next.
 - 2025-11-25 (potion UX): Add a small HUD/icon when a companion is under an active potion effect and surface the remaining duration in the companion screen/Jade line so players know the drink actually applied.
+- 2025-11-25 (summon affinity UI): Consider a tooltip or small icon near the Necromancer that indicates how many summons are active and that other companions will ignore them, reducing confusion about whether minions are friendly.

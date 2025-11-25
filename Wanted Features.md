@@ -16,7 +16,3 @@
 * Pet Locator Integration
 
 * Custom enchants to boost companion stats
-
-* Grant ability to drink potions, eat special food like notch apple
-
-* Companions will attack another companions summoned wither skeletons, we need to make sure no companion attack any summoned wither skeletons at all.

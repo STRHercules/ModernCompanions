@@ -51,6 +51,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+import com.majorbonghits.moderncompanions.entity.SummonedWitherSkeleton;
+
 /**
  * Port of the original AbstractHumanCompanionEntity with taming, leveling,
  * patrol/guard logic, and inventory handling.
@@ -693,6 +695,24 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             return id;
         Item item = BuiltInRegistries.ITEM.get(rl);
         return item.getDescription().getString();
+    }
+
+    @Override
+    public boolean wantsToAttack(LivingEntity target, LivingEntity owner) {
+        if (target instanceof SummonedWitherSkeleton) {
+            // Companion summons are utility allies; never mark them as valid targets.
+            return false;
+        }
+        return super.wantsToAttack(target, owner);
+    }
+
+    @Override
+    public boolean isAlliedTo(Entity other) {
+        if (other instanceof SummonedWitherSkeleton skeleton) {
+            // Treat any summoned wither skeleton as an ally so cross-class parties stay cooperative.
+            return true;
+        }
+        return super.isAlliedTo(other);
     }
 
     /* ---------- Breeding / persistence ---------- */
