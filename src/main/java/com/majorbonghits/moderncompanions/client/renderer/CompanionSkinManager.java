@@ -57,37 +57,48 @@ public final class CompanionSkinManager {
                 return;
             }
 
-            try (InputStream in = conn.getInputStream(); NativeImage image = NativeImage.read(in)) {
-                if (image == null) {
-                    Constants.LOG.warn("Custom companion skin download returned null image: {}", url);
-                    return;
-                }
-                int w = image.getWidth();
-                int h = image.getHeight();
-                if (w != 64 || (h != 64 && h != 32)) {
-                    Constants.LOG.warn("Custom companion skin has invalid size {}x{} (expected 64x64 or 64x32): {}", w, h, url);
-                    return;
-                }
-
-                NativeImage prepared = image;
-                if (h == 32) {
-                    // Expand legacy 64x32 into 64x64 like vanilla HttpTexture would.
-                    prepared = new NativeImage(64, 64, true);
-                    prepared.copyFrom(image);
-                    image.close();
-                    prepared.fillRect(0, 32, 64, 32, 0);
-                }
-
-                final NativeImage readyImage = prepared;
-                Minecraft.getInstance().execute(() -> {
-                    TextureManager manager = Minecraft.getInstance().getTextureManager();
-                    // Register as a dynamic texture; TextureManager owns the texture lifecycle.
-                    manager.register(location, new DynamicTexture(readyImage));
-                    URL_CACHE.put(url, location);
-                });
+            InputStream in = conn.getInputStream();
+            NativeImage image = NativeImage.read(in);
+            if (image == null) {
+                Constants.LOG.warn("Custom companion skin download returned null image: {}", url);
+                URL_CACHE.put(url, fallback);
+                return;
             }
+            int w = image.getWidth();
+            int h = image.getHeight();
+            if (w != 64 || (h != 64 && h != 32)) {
+                Constants.LOG.warn("Custom companion skin has invalid size {}x{} (expected 64x64 or 64x32): {}", w, h, url);
+                image.close();
+                URL_CACHE.put(url, fallback);
+                return;
+            }
+
+            NativeImage prepared = image;
+            if (h == 32) {
+                // Expand legacy 64x32 into 64x64 like vanilla HttpTexture would.
+                prepared = new NativeImage(64, 64, true);
+                prepared.copyFrom(image);
+                image.close();
+                prepared.fillRect(0, 32, 64, 32, 0);
+            }
+
+            final NativeImage readyImage = prepared;
+            Minecraft.getInstance().execute(() -> {
+                try {
+                    TextureManager manager = Minecraft.getInstance().getTextureManager();
+                    DynamicTexture dyn = new DynamicTexture(readyImage);
+                    manager.register(location, dyn);
+                    URL_CACHE.put(url, location);
+                } catch (IllegalStateException ex) {
+                    // If the image somehow got freed, log and fall back.
+                    Constants.LOG.warn("Failed to bind custom companion skin (image freed): {}", url, ex);
+                    readyImage.close();
+                    URL_CACHE.put(url, fallback);
+                }
+            });
         } catch (IOException io) {
             Constants.LOG.warn("Failed to download custom companion skin from {}", url, io);
+            URL_CACHE.put(url, fallback);
         } finally {
             IN_FLIGHT.remove(url);
         }
