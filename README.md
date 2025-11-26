@@ -1,5 +1,7 @@
 # Modern Companions (NeoForge 1.21.1)
 
+![](https://i.imgur.com/V29Cq8E.jpeg)
+
 Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions mod by justinwon777, maintained by MajorBonghits. The goal is full feature parity under the new mod id `modern_companions`, with updated APIs and attribution intact.
 
 ## Status
@@ -8,6 +10,9 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
 - Rendering + advanced gameplay behavior remain placeholder-only until the remaining AI/entity/renderer work is finished.
 
 ## Gameplay Overview
+
+![](https://i.imgur.com/EESbQTj.png)
+
 - **Finding companions:** Companion houses generate across the Overworld in houses/buildings (spacing is config-driven, default ~20 chunks). Residents spawn untamed with random name, sex, skin, base health variance, and RPG stats (STR/DEX/INT/END; a rare “specialist” rolls +5 in one stat).
 - **Taming & upkeep:** Right-click an untamed companion with the exact items they request (two food/resource stacks chosen at spawn); once both reach zero they tame, follow, and unlock their GUI. Tamed companions heal with a wide pantry — cooked foods, veggies, fruits, enchanted golden foods, honey, and beneficial potions (regen/instant health, etc.), applying the effects and returning empty bottles when possible—plus they still ping the owner for food when low.
 - **Commands & stances:** Shift + right-click toggles sit. Right-click opens the companion screen: follow/patrol/guard cycle, alert (hostile blacklist focus), hunt (farm animals), **sprint toggle** (on = sprint with you; off = normal run), auto-pickup toggle, clear target, release back to the wild, and patrol-radius +/- (2–32, saved per companion). Patrol/guard anchor at your current block.
@@ -19,24 +24,14 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
 - **Resurrection:** Tamed companions drop a Resurrection Scroll containing full NBT/gear instead of loose items. Activate it by right-clicking with a nether star in off-hand; then use on a block or fluid face to respawn the companion exactly at that spot with inventory intact (pet cleared for Beastmasters). Scrolls are ignored by the auto-loot magnet.
 - **Spawn Gems:** All companion spawn eggs are reskinned as class-colored gems. They still behave like eggs but visually match the new branding; find them on the creative tab.
 - **Custom weapons & recipes:** Modern Companions bundles a BasicWeapons-style arsenal (dagger, club, hammer, spear, quarterstaff, glaive) in every vanilla material plus optional bronze when that mod is loaded. Each weapon has a standard crafting recipe in the data pack (JEI-compatible) matching its material tier; companions auto-prefer their class weapons.
+- **Custom Skins:** You can assign specific companions any skin you want! Using the command `/companionskin "NAME" URL` you can assign skins to your companions like so; `/companionskin "Daniel George" https://i.imgur.com/FWADR65.png`
 
-## Companion Classes
-- **Knight:** Balanced melee with swords/clubs/spears; standard tanky frontliner.
-- **Vanguard:** Knight variant with **active shield-raising**—blocks arrows/axes like players (respecting axe shield breaks/cooldown), adds max health + KB resist, 30% projectile reduction, periodic resistance aura, and taunts monsters off the owner.
-- **Axeguard:** Axe-first bruiser; auto-equips axes and closes to melee.
-- **Berserker:** High-risk DPS; lighter armor, high KB resist, bonus damage ramps as health drops, cleaves nearby foes on hit.
-- **Scout:** Fast hit-and-run; passive speed+jump buffs, reduced fall damage, extra damage when backstabbing or target is focused elsewhere.
-- **Archer:** Bow user with ranged attack goal; auto-equips bows and arrows.
-- **Arbalist:** Crossbow specialist using 1.21 charge/cooldown behavior; prefers crossbows and fires standard arrows.
-- **Beastmaster:** Ranged companion with a bound pet (wolves, foxes, cats, pandas, camels, hoglins, etc.) that respawns automatically, won’t be friendly-fired, and scales with the master’s stats; buffs nearby tamed animals and deals bonus damage to beasts.
-- **Cleric:** Support melee; carries golden/quarterstaff + totem, periodically heals/regen allies under 65% HP, grants brief resistance/regen pulses, and deals extra damage to undead.
-- **Alchemist:** Splash-potion support; throws regen/heal at allies and weakness/slow at enemies, occasionally upgrading effects; uses daggers/staves if no potions in hand.
-- **Stormcaller:** Trident brawler that calls lightning on hit (shorter cooldown in rain/thunder), gaining brief strength after striking.
-- **Fire Mage:** Caster that peppers targets with precise, non-igniting blaze fireballs and occasionally launches a heavier ghast-style blast.
-- **Lightning Mage:** Ranged caster that drops single-target lightning bolts and chained multi-bolt bursts (up to four) with extra punch during storms.
-- **Necromancer:** Dark caster firing wither skulls and raising short-lived wither skeleton allies; other companions treat these summons as friendly.
+## Worldgen & Spawns
 
-## Worldgen & Structures
+![](https://i.imgur.com/ERYQEPk.jpeg)
+
+- Companion buildings generate across the Overworld (random-spread set); each spawns exactly **one** resident when generated.
+- Certain structures will house certain Companions.
 - **Structure set:** All buildings are injected via `data/modern_companions/worldgen/structure_set/companion_house.json` (random_spread placement). Use `/locate structure #modern_companions:companion_houses` to find the nearest; `/place structure modern_companions:<id>` to force-generate.
 - **Biome theming (examples):** acacia→savanna, sandstone→desert/badlands, terracotta→badlands only, spruce→cold taiga, dark_oak→dark forest, windmill/tower→windswept+meadow, lumber→forest/taiga mix, watermill→temperate rivers, birch/oak_birch→birch/temperate, general houses→temperate spread. See each file in `data/modern_companions/worldgen/structure/*.json` for the exact list.
 - **Template pools:** Each structure JSON points to a simple pool (e.g., `raw_berserker`, `raw_house`) that drops in the matching NBT from `data/modern_companions/structure/`.
@@ -60,10 +55,70 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
   - Lightning Mage: tower1
   - Necromancer: tower2
 
-## Utility Items & Enchants
-- **Companion Mover:** Owner-only capture tool that packages a companion (full NBT/UUID/inventory) into a glinting stored item so you can redeploy them safely elsewhere.
-- **Summoning Wand:** Recalls all your living companions in the dimension—and Beastmaster pets—to a safe spot near you with a short cooldown and teleport SFX.
-- **Attribute Enchants (armor-only):** Empower (STR), Nimbility (DEX), Enlightenment (INT), Vitality (END) add gear-based stat bonuses that update live as armor is swapped. Custom-textured enchanted books appear on the Modern Companions creative tab and can drop from dungeon/mineshaft/stronghold library/temple/buried treasure/shipwreck loot.
+## Class Details
+
+![](https://i.imgur.com/HW0Zk9y.png)
+
+- **Knight:** Balanced melee with swords/clubs/spears; reliable frontliner.
+- **Vanguard:** Shielded tank; **actively raises/lowers shields against ranged threats (respecting axe breaks/cooldowns)**, +HP/KB resist, 30% projectile DR, resistance aura ticks, and taunts monsters off the owner.
+- **Axeguard:** Axe bruiser; heavy hits, closes to melee.
+- **Berserker:** Ramps damage as health drops, cleaves nearby foes, high KB resist, lighter armor mitigation.
+- **Scout:** Fast skirmisher; speed+jump buffs, reduced fall damage, bonus damage on backstab or distracted targets.
+- **Archer:** Classic bow user with ranged AI; auto-equips bows/arrows.
+- **Arbalist:** 1.21 crossbow behavior (charge/cooldown/LOS); favors crossbows.
+- **Beastmaster:** Bow + scaling pet; buffs nearby tamed animals and deals bonus damage to beasts.
+- **Cleric:** Support melee; periodic heals/regen/resistance to allies under 65% HP, extra damage vs undead, carries totem/golden gear theme.
+- **Alchemist:** Potion support; throws regen/heal at allies and weakness/slow at enemies, sometimes upgraded potency; uses dagger/staff if no potions in hand.
+- **Stormcaller:** Trident brawler; calls lightning on hit (shorter cooldown in rain/thunder) and gains brief strength after striking.
+- **Fire Mage:** Caster that peppers foes with precise, non-igniting blaze fireballs and occasionally fires a heavier ghast-style blast.
+- **Lightning Mage:** Precision caster dropping single-target lightning and 4-target chain bursts that hit harder during storms.
+- **Necromancer:** Wither-skull artillery that can raise short-lived wither skeleton allies; other companions treat the summons as friendly.
+
+## Items & Crafting
+**Weapons:** Vanilla-style recipes for every weapon/material combo; JEI/REI will show them. Bronze variants appear only when a bronze mod is loaded.
+
+  ![](https://i.imgur.com/vJeU7FG.png)
+  ![](https://i.imgur.com/wuyhvYn.png)
+  ![](https://i.imgur.com/yfRNaFM.png)
+
+  ![](https://i.imgur.com/dAwVUHw.png)
+  ![](https://i.imgur.com/ebEzs9s.png)
+  ![](https://i.imgur.com/kK0xqiX.png)
+
+ **Companion Mover:** Owner-only tool that captures a companion into a glinting stored item (preserves full NBT/UUID/inventory) for redeployment.
+
+  ![](https://i.imgur.com/wKsYkiP.png)
+
+**Soul Gems:** A Companion's soul transferred into a Soul Gem using the **Companion Mover**.
+
+  ![](https://i.imgur.com/1FrL94k.png)
+
+**Summoning Wand:** Teleports all of your living companions (and Beastmaster pets) in the dimension to a safe spot near you on a short cooldown.
+
+  ![](https://i.imgur.com/OClm2Fj.png)
+
+**Gem Eggs:** Retextured spawn eggs available on the Modern Companions creative tab; survival acquisition is up to pack makers/datapacks.
+
+  ![](https://i.imgur.com/nHlP3mX.png)
+  ![](https://i.imgur.com/Ddy3yEk.png)
+
+**Resurrection Scroll:** Drops only from *tamed* companions. Activation consumes one nether star (off-hand).
+
+  ![](https://i.imgur.com/NV1urK6.png)
+
+  ![](https://i.imgur.com/K8Zl7ka.png)
+
+## Attribute Enchantments
+**Empower, Nimbility, Enlightenment, Vitality (armor-only):** Add STR/DEX/INT/END bonuses from companion armor; stats recalc live as gear changes. Levels I-III available.
+
+  ![](https://i.imgur.com/NDqdrXP.png)
+
+**Availability:** Custom-textured enchanted books live on the Modern Companions creative tab and can drop from dungeon/mineshaft/stronghold library/temple/buried treasure/shipwreck loot tables.
+
+## Config & Packmaker Notes
+- Friendly fire, fall damage, spawn armor/weapon, and house spacing are configurable.
+- Data pack uses pack_format 48; loot injections use NeoForge global loot modifiers for compatibility.
+- Better Combat detected: reach modifiers are skipped to avoid stacking with that mod’s reach.
 
 ## Requirements
 - Java 21 (JDK 21)
@@ -75,12 +130,18 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
 ./gradlew build        # builds the mod jar
 ./gradlew runClient    # launches the NeoForge dev client
 ```
-
 ## Development Notes
 - Source lives in `src/`; other top-level directories are read-only references.
 - Version is managed in `gradle.properties` and must be bumped with each change (per AGENTS.md).
 - Companion behavior toggles now use NeoForge's payload system (`ToggleFlagPayload` registered in `ModNetwork`, emitted by `CompanionScreen`)—follow this pattern for future GUI actions.
 - Worldgen/structure data now resides under `data/modern_companions`; ensure future resources use the same namespace.
+
+## Technical Notes
+- **Recipes & tags:** All custom weapons use vanilla-style JSON recipes and standard tool/block tags; JEI/REI will list them automatically. Spawn eggs are items with gem textures; survival acquisition is left to pack makers/datapacks.
+- **Resurrection:** Activation is purely item logic (nether star off-hand). Auto-loot blacklist prevents companions from grabbing their own scroll.
+- **XP & health scaling:** Companions gain XP when they land killing blows (server-side event). INT raises XP gain (≈ +3% per INT over 4). A superlinear curve governs level costs: XP needed ≈ 20 + 10·(level+1)^1.35. Each level raises max health by +⅓ heart (via attribute modifier), and END grants +1 HP per point above 4, plus up to 35% physical mitigation via END-based reduction. Current health is clamped to new max on level-up; the GUI shows level, XP bar, and kills.
+- **Beastmaster pets:** Pets are permanently bound, inherit STR/DEX/END scaling, and automatically respawn after a short timer if they die or unload. Respawn is suppressed while the Beastmaster is dying/dropped to a scroll to prevent dupes. Pets also avoid friendly fire from their master.
+- **Random names:** Companions roll from a large male/female name pool on spawn, and Beastmaster pets get their own sizable pet-name list. Names are saved, shown on hover (not always-on), and carried through resurrection/pet respawn.
 
 ## Credits
 - Original mod: Human Companions by justinwon777.

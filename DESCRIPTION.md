@@ -20,6 +20,7 @@ Modern Companions is a faithful NeoForge 1.21.1 port/rebrand of [*Human Companio
 - **Beastmaster Pets:** Permanent pet (wolf/fox/cat/panda/camel/hoglin/etc.) that auto-respawns, inherits STR/DEX/END scaling, and ignores friendly fire from its master.
 - **Self-care:** Along with regular veggies and cooked foods, Companions also eat enchanted golden foods/honey and will drink beneficial potions (regen/instant health, etc.), applying the effects and holding onto empty bottles when they can, dropping them when they can't.
 - **Staying close:** Follow AI recalls companions that drift ~35 blocks away on the same dimension to a safe spot near you, when set to follow.
+- **Custom Skins:** You can assign specific companions any skin you want! Using the command `/companionskin "NAME" URL` you can assign skins to your companions like so; `/companionskin "Daniel George" https://i.imgur.com/FWADR65.png`
 
 ## Worldgen & Spawns
 
