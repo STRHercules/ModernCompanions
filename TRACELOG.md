@@ -1465,3 +1465,13 @@
   - Refreshed README/DESCRIPTION structure-resident tables to reflect the new tower assignments; bumped version to 1.0.44 and rebuilt.
 - Rationale: Ensures the new mage classes spawn from dedicated towers in appropriate biomes and integrate with the existing structure-driven spawn system.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Companion skin command)
+- Prompt/task: "I want to add a new command that players can use the update/change the skin of their companions."
+- Steps:
+  - Added `/companionskin <name> <url>` command gated to players (or ops) that locates the named owned companion across all loaded levels, validates http/https URLs, and syncs the custom skin link to the entity.
+  - Synced a new `CustomSkinUrl` data parameter + NBT field on companions so the URL persists and replicates to clients alongside the existing skin index.
+  - Added a client-side `CompanionSkinManager` that downloads remote textures asynchronously via `HttpTexture`, caches them by SHA-1, and teaches the renderer to prefer custom URLs before falling back to bundled skins.
+  - Bumped project version to 1.1.1 to track the new command and client skin support.
+- Rationale: Lets players swap a companion’s look on demand by pointing at any hosted skin image while keeping server/client sync lightweight.
+- Build/Test: `./gradlew build` ✔️

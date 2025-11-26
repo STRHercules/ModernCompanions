@@ -1,6 +1,8 @@
 package com.majorbonghits.moderncompanions.client.renderer;
 
 import com.majorbonghits.moderncompanions.entity.AbstractHumanCompanionEntity;
+import com.majorbonghits.moderncompanions.client.renderer.CompanionSkinManager;
+import net.minecraft.resources.ResourceLocation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
@@ -72,7 +74,10 @@ public class CompanionRenderer extends HumanoidMobRenderer<AbstractHumanCompanio
 
     @Override
     public ResourceLocation getTextureLocation(AbstractHumanCompanionEntity entity) {
-        return entity.getSkinTexture();
+        // If a custom URL is present, hand off to the dynamic downloader; otherwise use the bundled texture.
+        return entity.getCustomSkinUrl()
+                .map(CompanionSkinManager::getOrCreate)
+                .orElse(entity.getDefaultSkinTexture());
     }
 
     @Override

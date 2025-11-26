@@ -72,6 +72,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> EXP_LVL = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> CUSTOM_SKIN_URL = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> STR = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DEX = SynchedEntityData
@@ -186,6 +188,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(END, 4);
         builder.define(SPECIALIST, -1);
         builder.define(KILL_COUNT, 0);
+        builder.define(CUSTOM_SKIN_URL, "");
     }
 
     @Override
@@ -353,6 +356,23 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         int sex = getSex();
         int max = CompanionData.skins[sex].length;
         this.entityData.set(SKIN_VARIANT, Mth.clamp(index, 0, Math.max(0, max - 1)));
+    }
+
+    public ResourceLocation getDefaultSkinTexture() {
+        int sex = Mth.clamp(getSex(), 0, CompanionData.skins.length - 1);
+        ResourceLocation[] variants = CompanionData.skins[sex];
+        int idx = Mth.clamp(getSkinIndex(), 0, variants.length - 1);
+        return variants[idx];
+    }
+
+    public Optional<String> getCustomSkinUrl() {
+        String raw = this.entityData.get(CUSTOM_SKIN_URL);
+        return raw == null || raw.isBlank() ? Optional.empty() : Optional.of(raw);
+    }
+
+    public void setCustomSkinUrl(@Nullable String url) {
+        // Store URL as a synced string so clients can fetch/download the texture on demand.
+        this.entityData.set(CUSTOM_SKIN_URL, url == null ? "" : url.trim());
     }
 
     public int getSex() {
@@ -753,6 +773,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         super.addAdditionalSaveData(tag);
         tag.put("Inventory", this.inventory.createTag(this.registryAccess()));
         tag.putInt("skin", this.getSkinIndex());
+        tag.putString("CustomSkinUrl", this.entityData.get(CUSTOM_SKIN_URL));
         tag.putBoolean("Eating", this.isEating());
         tag.putBoolean("Alert", this.isAlert());
         tag.putBoolean("Hunting", this.isHunting());
@@ -788,6 +809,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         this.setSkinIndex(tag.getInt("skin"));
+        if (tag.contains("CustomSkinUrl")) {
+            this.setCustomSkinUrl(tag.getString("CustomSkinUrl"));
+        }
         this.setEating(tag.getBoolean("Eating"));
         this.setAlert(tag.getBoolean("Alert"));
         this.setHunting(tag.getBoolean("Hunting"));

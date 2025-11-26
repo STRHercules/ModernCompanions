@@ -83,3 +83,4 @@
 - 2025-11-25 (data pack docs): Document the new data-driven enchant JSONs so pack makers can tweak costs/weights/slots via datapacks without code edits.
 - 2025-11-25 (docs follow-up): Add an in-game guide/JEI info page for the sprint toggle, teleport recall distance, Companion Mover, Summoning Wand, and the four attribute enchants (what they boost and loot/creative sources) so players learn the new systems without leaving the game.
 - 2025-11-25 (party UI): Consider an optional UI hint/config that shows current companion count vs a soft recommended cap, since the docs now highlight unlimited party size.
+- 2025-11-26: Add a small `/companionskin list` or GUI toggle that surfaces which companions have custom URLs applied, plus a quick button to revert to bundled skins so players can manage downloads easily.
