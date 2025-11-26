@@ -114,7 +114,8 @@ public class ArbalistCrossbowAttackGoal<T extends AbstractHumanCompanionEntity &
                 this.state = CrossbowState.READY_TO_ATTACK;
             }
         } else if (this.state == CrossbowState.READY_TO_ATTACK && canSee) {
-            this.mob.performCrossbowAttack(target, 1.6F);
+            // Use the shooter (mob) for performCrossbowAttack; the default implementation looks up the target itself.
+            this.mob.performCrossbowAttack(this.mob, 1.6F);
             this.state = CrossbowState.UNCHARGED;
         }
     }

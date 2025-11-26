@@ -1475,3 +1475,84 @@
   - Bumped project version to 1.1.1 to track the new command and client skin support.
 - Rationale: Lets players swap a companion’s look on demand by pointing at any hosted skin image while keeping server/client sync lightweight.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations)
+- Prompt/task: "No companion appears to be using any sort of attack animation when they attack with melee weapons, and the archers are not drawing the string on their bows."
+- Steps:
+  - Forced a server-side hand swing inside `AbstractHumanCompanionEntity#doHurtTarget` to broadcast melee attack animations even when damage triggers bypass vanilla goal swings.
+  - Reworked `ArcherRangedBowAttackGoal` to mirror vanilla bow combat: only run when holding a bow, strafe while in range, start using the bow to show the draw animation, release after a full charge, and delay the next shot via the attack timer.
+  - Added a small comment around the release point to document why we stop using the item before firing, and incremented `gradle.properties` version to 1.1.3.
+- Rationale: Ensures melee companions visibly swing during attacks and archers properly draw/release bows so their combat feedback matches player expectations.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations follow-up)
+- Prompt/task: "The companions are still not playing the attack (swing) animation when attacking"
+- Steps:
+  - Switched the forced swing in `AbstractHumanCompanionEntity#doHurtTarget` to `swing(InteractionHand.MAIN_HAND, true)` without the side gate so rapid hits always rebroadcast and also notify the instigating client.
+  - Bumped `gradle.properties` to 1.1.4 and rebuilt.
+- Rationale: Ensures swing packets always fire (and refire) for melee hits, preventing missed client animations during fast or server-only damage paths.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations force-broadcast)
+- Prompt/task: "I still am not seeing any swing/attack animation"
+- Steps:
+  - Added `forceSwingAnimation` to companions to reset swing state and manually broadcast `ClientboundAnimatePacket` each time `doHurtTarget` runs, bypassing the vanilla "already swinging" guard so every melee hit triggers visible animation even under very high attack speeds or server-only damage.
+  - Version bumped to 1.1.5 and rebuilt successfully.
+- Rationale: Guarantees clients receive a swing packet on every melee hit, eliminating cases where the default swing suppression hid attack animations.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations client restart)
+- Prompt/task: "I am still not seeing any weapon swing from my vanguard"
+- Steps:
+  - Overrode both `swing` overloads on companions to always delegate to `super.swing(hand, true)`, forcing the animation to restart client-side even if the previous swing hasn't reached midpoint—matching the packets we already broadcast.
+  - Kept the explicit `forceSwingAnimation` call in `doHurtTarget` for server-only damage paths; bumped version to 1.1.6 and rebuilt.
+- Rationale: Ensures the client-side animation logic itself never suppresses rapid swings, fixing cases where Vanguard attacks were still visually muted.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations suppression fix)
+- Prompt/task: "Still no swing animation is being played. They just walk up to a target, it dies, and they walk away"
+- Steps:
+  - Modified companion `swing` overrides to clear `swinging` and `swingTime` before calling `super.swing(hand, true)`, bypassing vanilla's mid-swing suppression so every hit restarts the animation locally and over the network.
+  - Version bumped to 1.1.7 and rebuilt successfully.
+- Rationale: Eliminates the client/server guard that was still blocking rapid consecutive swings, ensuring Vanguards and other melee companions visibly swing on each attack.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations sync param)
+- Prompt/task: "Still not seeing any swing animation from any companion."
+- Steps:
+  - Added a synced `LAST_SWING_TICK` data parameter and client-side replay: every server swing writes the current tick, and clients re-trigger the swing locally when the value changes, guaranteeing animation even if animate packets drop or get suppressed.
+  - Left server-side `forceSwingAnimation` broadcast intact; bumped version to 1.1.8 and rebuilt.
+- Rationale: Provides a reliable data-driven fallback so companions always animate melee swings on clients, independent of packet delivery quirks or swing suppression.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations client reset)
+- Prompt/task: "Still no swinging taking place using 1.1.18"
+- Steps:
+  - When `LAST_SWING_TICK` updates client-side, now explicitly resets swing state (`swinging`, `swingTime`, `attackAnim`, `oAttackAnim`, `swingingArm`) before replaying the swing to guarantee the model restarts the animation from frame 0 even if a previous swing was mid-anim.
+  - Version bumped to 1.1.9 and rebuilt successfully.
+- Rationale: Forces the client animation state back to the start on every server swing tick so companions visibly swing even under rapid-fire hits or packet timing quirks.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations forced anim curve)
+- Prompt/task: "Still no swings showing"
+- Steps:
+  - Added a client-only fallback timer: when `LAST_SWING_TICK` changes, also seed a 6-tick `forcedAttackTicks` window that directly drives `attackAnim` from 1.0 → 0.0, ensuring the PlayerModel arm animation plays even if vanilla swing interpolation fails.
+  - Bumped version to 1.1.10 and rebuilt.
+- Rationale: Provides a last-resort visual driver for swing animation so companions always show a melee swing, even if packets or swing state get suppressed.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Attack animations decay fix)
+- Prompt/task: "The swing animation appears to be working... but now all the companions are stuck with their arms raised at all times?"
+- Steps:
+  - Removed the manual `forcedAttackTicks` curve and instead call `updateSwingTime()` client-side each tick; when a swing is detected, we reset swing state and let vanilla swing timers advance so `attackAnim` decays naturally.
+  - Version bumped to 1.1.11 and rebuilt.
+- Rationale: Keeps the swing animation visible but lets it decay back to idle so companions don't hold their arms up indefinitely.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Arbalist firing fix)
+- Prompt/task: "Attack animations are working ... but arbalists never actually fire; they keep loading the crossbow."
+- Steps:
+  - Fixed `ArbalistCrossbowAttackGoal` to call `performCrossbowAttack` with the shooter (`this.mob`) instead of the target; the default CrossbowAttackMob implementation expects the shooter, so we were previously trying to fire using the victim entity, leaving the crossbow perpetually charged.
+  - Bumped version to 1.1.12 and rebuilt.
+- Rationale: Allows arbalists to actually shoot after charging instead of staying stuck in the ready state.
+- Build/Test: `./gradlew build` ✔️

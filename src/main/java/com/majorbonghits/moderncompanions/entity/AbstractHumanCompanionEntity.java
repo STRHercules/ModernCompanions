@@ -13,10 +13,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -86,6 +88,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> LAST_SWING_TICK = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> ALERT = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> HUNTING = SynchedEntityData
@@ -135,6 +139,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private int equipmentDexterityBonus;
     private int equipmentIntelligenceBonus;
     private int equipmentEnduranceBonus;
+
+    // Client-side tracking of the last swing tick we already applied locally.
+    private int lastAppliedSwingTick = -1;
 
     protected AbstractHumanCompanionEntity(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
@@ -189,6 +196,21 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(SPECIALIST, -1);
         builder.define(KILL_COUNT, 0);
         builder.define(CUSTOM_SKIN_URL, "");
+        builder.define(LAST_SWING_TICK, 0);
+    }
+
+    @Override
+    public void swing(InteractionHand hand) {
+        swing(hand, true);
+    }
+
+    @Override
+    public void swing(InteractionHand hand, boolean updateSelf) {
+        // Bypass the vanilla guard that ignores swings if an earlier one hasn't reached mid-animation.
+        // Reset state first so rapid consecutive hits always restart the swing animation locally and in packets.
+        this.swinging = false;
+        this.swingTime = -1;
+        super.swing(hand, true);
     }
 
     @Override
@@ -898,6 +920,23 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     @Override
     public void tick() {
+        if (this.level().isClientSide()) {
+            // Ensure swing timers advance each frame on the client so attackAnim decays naturally.
+            this.updateSwingTime();
+        }
+        if (this.level().isClientSide()) {
+            int swingTick = this.entityData.get(LAST_SWING_TICK);
+            if (swingTick != lastAppliedSwingTick) {
+                lastAppliedSwingTick = swingTick;
+                // Replay the swing locally to guarantee a visible animation even if packets were dropped/suppressed.
+                this.swinging = true;
+                this.swingTime = 0;
+                this.oAttackAnim = 0.0F;
+                this.attackAnim = 0.0F;
+                this.swingingArm = InteractionHand.MAIN_HAND;
+                super.swing(InteractionHand.MAIN_HAND, true);
+            }
+        }
         if (!this.level().isClientSide()) {
             checkArmor();
             if (this.tickCount % 2 == 0 && isPickupEnabled() && this.isTame()) {
@@ -1155,6 +1194,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     @Override
     public boolean doHurtTarget(Entity entity) {
+        forceSwingAnimation(InteractionHand.MAIN_HAND);
         ItemStack itemstack = this.getMainHandItem();
         if (!this.level().isClientSide && !itemstack.isEmpty() && entity instanceof LivingEntity) {
             itemstack.hurtAndBreak(1, this, EquipmentSlot.MAINHAND);
@@ -1165,6 +1205,20 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             }
         }
         return super.doHurtTarget(entity);
+    }
+
+    /**
+     * Unconditionally broadcast a swing animation, bypassing the internal "already swinging" guard
+     * so rapid hits and server-only damage paths still show the attack motion to all clients.
+     */
+    private void forceSwingAnimation(InteractionHand hand) {
+        if (!(this.level() instanceof ServerLevel server)) return;
+        this.swingTime = 0;
+        this.swinging = true;
+        this.swingingArm = hand;
+        this.entityData.set(LAST_SWING_TICK, this.tickCount);
+        ServerChunkCache chunks = server.getChunkSource();
+        chunks.broadcastAndSend(this, new ClientboundAnimatePacket(this, hand == InteractionHand.MAIN_HAND ? 0 : 3));
     }
 
     public void checkArmor() {
