@@ -1,12 +1,13 @@
 package com.majorbonghits.moderncompanions.client.renderer;
 
 import com.google.common.hash.Hashing;
-import com.majorbonghits.moderncompanions.ModernCompanions;
+import com.majorbonghits.moderncompanions.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,20 +20,31 @@ public final class CompanionSkinManager {
 
     private CompanionSkinManager() {}
 
-    public static ResourceLocation getOrCreate(String url) {
-        return URL_CACHE.computeIfAbsent(url, CompanionSkinManager::registerTexture);
+    public static ResourceLocation getOrCreate(String url, ResourceLocation fallback) {
+        return URL_CACHE.compute(url, (key, existing) -> {
+            if (existing != null) return existing;
+            ResourceLocation created = registerTexture(url, fallback);
+            return created == null ? fallback : created;
+        });
     }
 
-    private static ResourceLocation registerTexture(String url) {
+    private static ResourceLocation registerTexture(String url, ResourceLocation fallback) {
         String digest = Hashing.sha1().hashString(url, StandardCharsets.UTF_8).toString();
         ResourceLocation location = ResourceLocation.fromNamespaceAndPath(
-                ModernCompanions.MOD_ID, "custom_skins/" + digest);
+                Constants.MOD_ID, "custom_skins/" + digest);
 
         TextureManager manager = Minecraft.getInstance().getTextureManager();
         if (!(manager.getTexture(location) instanceof HttpTexture)) {
-            // HttpTexture handles async download + upload on the render thread.
-            HttpTexture texture = new HttpTexture(null, url, location, false, null);
+            HttpTexture texture = new HttpTexture(null, url, location, true, null);
             manager.register(location, texture);
+            try {
+                // Force immediate load so we can fall back cleanly if the download fails.
+                texture.load(Minecraft.getInstance().getResourceManager());
+            } catch (IOException io) {
+                Constants.LOG.warn("Failed to download custom companion skin from {}", url, io);
+                manager.release(location);
+                return fallback;
+            }
         }
         return location;
     }

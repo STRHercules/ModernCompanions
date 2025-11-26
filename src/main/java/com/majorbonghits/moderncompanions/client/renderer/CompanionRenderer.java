@@ -74,10 +74,11 @@ public class CompanionRenderer extends HumanoidMobRenderer<AbstractHumanCompanio
 
     @Override
     public ResourceLocation getTextureLocation(AbstractHumanCompanionEntity entity) {
-        // If a custom URL is present, hand off to the dynamic downloader; otherwise use the bundled texture.
+        // Prefer custom URL skins; fall back to bundled texture if download fails.
+        ResourceLocation fallback = entity.getDefaultSkinTexture();
         return entity.getCustomSkinUrl()
-                .map(CompanionSkinManager::getOrCreate)
-                .orElse(entity.getDefaultSkinTexture());
+                .map(url -> CompanionSkinManager.getOrCreate(url, fallback))
+                .orElse(fallback);
     }
 
     @Override
