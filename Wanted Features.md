@@ -12,3 +12,5 @@
 * Relics Compat
 
 * Curio Compat
+
+* Invaders
