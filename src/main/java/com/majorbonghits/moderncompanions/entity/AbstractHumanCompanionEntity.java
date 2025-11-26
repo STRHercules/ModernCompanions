@@ -206,8 +206,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     @Override
     public void swing(InteractionHand hand, boolean updateSelf) {
-        // Bypass the vanilla guard that ignores swings if an earlier one hasn't reached mid-animation.
-        // Reset state first so rapid consecutive hits always restart the swing animation locally and in packets.
+        // Bypass the vanilla guard that ignores swings if an earlier one hasn't reached
+        // mid-animation.
+        // Reset state first so rapid consecutive hits always restart the swing
+        // animation locally and in packets.
         this.swinging = false;
         this.swingTime = -1;
         super.swing(hand, true);
@@ -272,8 +274,13 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.entityData.set(PICKUP_ITEMS, value);
     }
 
-    public boolean isSprintEnabled() { return this.entityData.get(SPRINT_ENABLED); }
-    public void setSprintEnabled(boolean value) { this.entityData.set(SPRINT_ENABLED, value); }
+    public boolean isSprintEnabled() {
+        return this.entityData.get(SPRINT_ENABLED);
+    }
+
+    public void setSprintEnabled(boolean value) {
+        this.entityData.set(SPRINT_ENABLED, value);
+    }
 
     public boolean isAlert() {
         return this.entityData.get(ALERT);
@@ -308,11 +315,13 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
      */
     public String getClassDisplayName() {
         var key = BuiltInRegistries.ENTITY_TYPE.getKey(this.getType());
-        if (key == null) return "Companion";
+        if (key == null)
+            return "Companion";
         String path = key.getPath().replace('_', ' ');
         StringBuilder builder = new StringBuilder();
         for (String part : path.split(" ")) {
-            if (part.isEmpty()) continue;
+            if (part.isEmpty())
+                continue;
             builder.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
         }
         return builder.toString().trim();
@@ -393,7 +402,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public void setCustomSkinUrl(@Nullable String url) {
-        // Store URL as a synced string so clients can fetch/download the texture on demand.
+        // Store URL as a synced string so clients can fetch/download the texture on
+        // demand.
         this.entityData.set(CUSTOM_SKIN_URL, url == null ? "" : url.trim());
     }
 
@@ -531,10 +541,12 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (!CompanionData.isFood(stack)) continue;
+            if (!CompanionData.isFood(stack))
+                continue;
 
             float healValue = estimateHealingPotential(stack, missing);
-            if (healValue <= 0) continue;
+            if (healValue <= 0)
+                continue;
 
             if (healValue >= missing) {
                 float overflow = healValue - missing;
@@ -585,7 +597,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         if (food != null) {
             return Math.min(food.nutrition(), missingHealth);
         }
-        if (!CompanionData.isHealingPotion(stack)) return 0;
+        if (!CompanionData.isHealingPotion(stack))
+            return 0;
 
         float healAmount = 0f;
         PotionContents contents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
@@ -602,7 +615,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     private void applyFoodEffects(FoodProperties food) {
-        if (this.level().isClientSide()) return;
+        if (this.level().isClientSide())
+            return;
         for (FoodProperties.PossibleEffect possible : food.effects()) {
             if (this.random.nextFloat() <= possible.probability()) {
                 this.addEffect(possible.effect());
@@ -611,7 +625,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     private void applyPotionEffects(ItemStack stack) {
-        if (this.level().isClientSide()) return;
+        if (this.level().isClientSide())
+            return;
         PotionContents contents = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
         for (MobEffectInstance effect : contents.getAllEffects()) {
             if (effect.getEffect().value().isInstantenous()) {
@@ -625,7 +640,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private void playConsumptionEffects(ItemStack stack) {
         if (this.level().isClientSide())
             return;
-        var sound = stack.getUseAnimation() == UseAnim.DRINK ? stack.getItem().getDrinkingSound() : stack.getItem().getEatingSound();
+        var sound = stack.getUseAnimation() == UseAnim.DRINK ? stack.getItem().getDrinkingSound()
+                : stack.getItem().getEatingSound();
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 0.7F,
                 1.0F + (this.getRandom().nextFloat() - 0.5F) * 0.2F);
         for (int j = 0; j < 5; ++j) {
@@ -643,7 +659,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     private void storeOrDrop(ItemStack stack) {
-        if (stack.isEmpty()) return;
+        if (stack.isEmpty())
+            return;
         ItemStack remainder = this.inventory.addItem(stack);
         if (!remainder.isEmpty()) {
             this.spawnAtLocation(remainder);
@@ -699,7 +716,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             } else {
                 if (this.isAlliedTo(player)) {
-                    // Let the Companion Mover handle interaction (even when sneaking) to avoid triggering sit/GUI.
+                    // Let the Companion Mover handle interaction (even when sneaking) to avoid
+                    // triggering sit/GUI.
                     if (held.is(ModItems.COMPANION_MOVER.get())) {
                         return InteractionResult.PASS;
                     }
@@ -782,7 +800,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     @Override
     public boolean isAlliedTo(Entity other) {
         if (other instanceof SummonedWitherSkeleton skeleton) {
-            // Treat any summoned wither skeleton as an ally so cross-class parties stay cooperative.
+            // Treat any summoned wither skeleton as an ally so cross-class parties stay
+            // cooperative.
             return true;
         }
         return super.isAlliedTo(other);
@@ -843,7 +862,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         if (tag.contains("SprintEnabled")) {
             this.setSprintEnabled(tag.getBoolean("SprintEnabled"));
         } else if (tag.contains("Stationery")) {
-            // Backward compatibility: old saves used Stationery flag; treat "not stationary" as sprint off.
+            // Backward compatibility: old saves used Stationery flag; treat "not
+            // stationary" as sprint off.
             this.setSprintEnabled(false);
         }
         this.setPickupEnabled(tag.contains("Pickup") ? tag.getBoolean("Pickup") : true);
@@ -921,14 +941,16 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     @Override
     public void tick() {
         if (this.level().isClientSide()) {
-            // Ensure swing timers advance each frame on the client so attackAnim decays naturally.
+            // Ensure swing timers advance each frame on the client so attackAnim decays
+            // naturally.
             this.updateSwingTime();
         }
         if (this.level().isClientSide()) {
             int swingTick = this.entityData.get(LAST_SWING_TICK);
             if (swingTick != lastAppliedSwingTick) {
                 lastAppliedSwingTick = swingTick;
-                // Replay the swing locally to guarantee a visible animation even if packets were dropped/suppressed.
+                // Replay the swing locally to guarantee a visible animation even if packets
+                // were dropped/suppressed.
                 this.swinging = true;
                 this.swingTime = 0;
                 this.oAttackAnim = 0.0F;
@@ -962,7 +984,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     /**
-     * Toggle sprinting based on the player-controlled flag and whether the companion is actively moving/engaged.
+     * Toggle sprinting based on the player-controlled flag and whether the
+     * companion is actively moving/engaged.
      */
     private void updateSprintState() {
         boolean wantsSprint = isSprintEnabled() && !this.isOrderedToSit();
@@ -1040,7 +1063,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         setHunting(!isHunting());
     }
 
-    public void toggleSprint() { setSprintEnabled(!isSprintEnabled()); }
+    public void toggleSprint() {
+        setSprintEnabled(!isSprintEnabled());
+    }
 
     public void release() {
         this.setTame(false, true);
@@ -1100,7 +1125,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public int getXpNeededForNextLevel() {
         int level = this.getExpLvl();
-        // MMO-style curve: gentle start, then superlinear growth so each level costs meaningfully more XP
+        // MMO-style curve: gentle start, then superlinear growth so each level costs
+        // meaningfully more XP
         double curve = Math.pow(level + 1, 1.35D);
         int required = (int) Math.round(20 + (curve * 10));
         return Math.max(20, required);
@@ -1208,11 +1234,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     /**
-     * Unconditionally broadcast a swing animation, bypassing the internal "already swinging" guard
-     * so rapid hits and server-only damage paths still show the attack motion to all clients.
+     * Unconditionally broadcast a swing animation, bypassing the internal "already
+     * swinging" guard
+     * so rapid hits and server-only damage paths still show the attack motion to
+     * all clients.
      */
     private void forceSwingAnimation(InteractionHand hand) {
-        if (!(this.level() instanceof ServerLevel server)) return;
+        if (!(this.level() instanceof ServerLevel server))
+            return;
         this.swingTime = 0;
         this.swinging = true;
         this.swingingArm = hand;
@@ -1306,7 +1335,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 e -> e.isAlive() && !e.hasPickUpDelay())) {
             if (item.getItem().isEmpty())
                 continue;
-            // Blacklist certain items from being auto-picked up (e.g., resurrection scrolls).
+            // Blacklist certain items from being auto-picked up (e.g., resurrection
+            // scrolls).
             if (item.getItem().is(com.majorbonghits.moderncompanions.core.ModItems.RESURRECTION_SCROLL.get()))
                 continue;
             var pull = this.position().subtract(item.position());
@@ -1349,7 +1379,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     /**
      * Recalculate enchantment-driven bonuses from the companion's worn armor.
-     * Returns true when a change is detected so downstream attribute application can be refreshed.
+     * Returns true when a change is detected so downstream attribute application
+     * can be refreshed.
      */
     private boolean recomputeEquipmentAttributeBonuses() {
         int newStr = getEnchantmentBonus(ModEnchantments.EMPOWER);
@@ -1371,7 +1402,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     private int getEnchantmentBonus(ResourceKey<Enchantment> enchantment) {
         var registry = this.level().registryAccess().registry(Registries.ENCHANTMENT);
-        if (registry.isEmpty()) return 0;
+        if (registry.isEmpty())
+            return 0;
         int total = 0;
         for (ItemStack armor : this.getArmorSlots()) {
             total += registry.get().getHolder(enchantment)
@@ -1491,7 +1523,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 "Ouch. Could really use a snack right now.",
                 "Low on health here. Got anything edible?",
                 "One more hit might drop me. Food, please!",
-                "Feeling woozy—little food would help.",
+                "Feeling woozy, little food would help.",
                 "Bandages? Nah. Bread? Yes, please.",
                 "My stomach says 'ow'. Do you have rations?",
                 "If you feed me, I can keep fighting.",
@@ -1517,7 +1549,58 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 "Everything hurts except my appetite.",
                 "I’m not mad, I’m just hungry and almost dead.",
                 "I can bite enemies or I can bite food. Your choice.",
-                "Pretty sure food is super effective against 'almost dead'."
+                "Pretty sure food is super effective against 'almost dead'.",
+                // +50 new lines
+                "Okay, I admit it, I need a snack and a hug.",
+                "My armor's cracked and so am I. Food?",
+                "Warning: companion integrity at 12%. Apply food.",
+                "Pretty sure my spleen just rage quit. Got stew?",
+                "If you toss food, I promise to catch it. Probably.",
+                "I'd walk it off, but I can barely stand. Rations?",
+                "Is it normal to hear boss music and my stomach growling?",
+                "Low health, high anxiety, zero snacks. Bad combo.",
+                "If you have bread, now’s the time for a miracle.",
+                "Potion, salve, drumstick.. I’m not picky.",
+                "If I drop, loot my body for regrets and crumbs.",
+                "I'll stop complaining the second I start chewing.",
+                "Your inventory looks heavy. Let me lighten it—via snacks.",
+                "Can't parry death on an empty stomach.",
+                "My survival strategy currently involves you feeding me.",
+                "Health potions are nice, but have you tried soup?",
+                "Help, I appear to be leaking. Send food.",
+                "Doctor's orders: more food, less getting stabbed.",
+                "If you feed me, I’ll pretend this was all part of the plan.",
+                "I'm fine. Totally fine. Just kidding, please feed me.",
+                "Imagine how epic I'd be at full health and full belly.",
+                "New quest: Restore companion. Objective: Provide snacks.",
+                "Pretty sure my HP bar qualifies as a horror story.",
+                "If hunger doesn’t get me, that last hit will.",
+                "I'm one sneeze away from collapsing.",
+                "I can tank monsters, not skipping meals.",
+                "Food now would really boost company morale. My morale.",
+                "This feels like a 'eat first, fight later' situation.",
+                "On the bright side, at least I still have my appetite.",
+                "If you hear a thud, that was me. Bring food.",
+                "My inner monologue is just 'ow' and 'snacks' on repeat.",
+                "Good news: I'm loyal. Bad news: I'm starving.",
+                "Let’s not make my tombstone read 'died snackless.'",
+                "I could really go for something that isn’t floor right now.",
+                "If I had more food, I’d have less dying.",
+                "Tell my story… unless you have food, then save me instead.",
+                "Reminder: companions run better on calories.",
+                "Critical condition achieved. Time for critical snacks.",
+                "Half of my health is gone and so is all the jerky.",
+                "My HP is lower than your standards. Fix that with food.",
+                "Do we have a combat medic or a combat sandwich?",
+                "My body says 'rest' but my stomach says 'buffet.'",
+                "I’ve had better days and more snacks.",
+                "If 'nearly dead' had a flavor, it would be 'no food.'",
+                "I swear I dodge better after a good meal.",
+                "Low health has entered the chat. Please respond with food.",
+                "Your companion is buffering… need food to continue.",
+                "Consider this a polite pre-death snack request.",
+                "I'm holding the line, but I'd rather be holding a sandwich.",
+                "If reinforcements aren't coming, at least let the snacks arrive."
         };
         return lines[rand.nextInt(lines.length)];
     }
