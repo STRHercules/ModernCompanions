@@ -2,7 +2,7 @@
 
 ![](https://i.imgur.com/V29Cq8E.jpeg)
 
-Modern Companions is a faithful NeoForge 1.21.1 port/rebrand of [*Human Companions*]() with new branding, soul gems, summoning wand, a bundled BasicWeapons-inspired arsenal, and expanded class kit flavor. Hire RPG-flavored human followers, gear them up, and command them with a clear stance UI.
+Modern Companions is a faithful NeoForge 1.21.1 port/rebrand of [*Human Companions*](https://www.curseforge.com/minecraft/mc-mods/human-companions) with new branding, soul gems, summoning wand, a bundled BasicWeapons-inspired arsenal, and expanded class kit flavor. Hire RPG-flavored human followers, gear them up, and command them with a clear stance UI.
 
 ## What You Get
 

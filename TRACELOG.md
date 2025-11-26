@@ -1556,3 +1556,11 @@
   - Bumped version to 1.1.12 and rebuilt.
 - Rationale: Allows arbalists to actually shoot after charging instead of staying stuck in the ready state.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-26 (Resurrection scroll safety)
+- Prompt/task: "We need to make sure that Resurrection Scrolls are completely indestructible. Impervious to explosions, fire, lava, and even void."
+- Steps:
+  - Added `ResurrectionScrollEvents` to harden scroll item entities when they enter a level: inject fire resistance on the stack, mark the entity invulnerable, remove gravity/velocity, grant unlimited lifetime, and lift it above the world floor to dodge void discard.
+  - Bumped project version to 1.1.13 per AGENTS rules.
+- Rationale: Ensures dropped Resurrection Scrolls cannot be destroyed by environmental hazards or despawn mechanics, preserving the guaranteed revival item.
+- Build/Test: `./gradlew build` ✔️

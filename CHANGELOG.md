@@ -3,3 +3,7 @@
 
 # v1.1.3
     * Attack/Cast/Eat/Drink Animations fixed
+
+# v1.1.4
+    * Extended Companion is hungry messages
+    * Resurrection Scrolls now invulnerable - They resist gravity/fire/lava/explosions and will avoid the void.

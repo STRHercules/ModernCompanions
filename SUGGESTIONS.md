@@ -94,3 +94,4 @@
 - 2025-11-26 (debug command): Add `/companions debug swings` to print the last swing tick per nearby companion and whether the forced fallback fired, to help players confirm the sync is working.
 - 2025-11-26 (idle pose): If arms ever stick again, consider also zeroing `attackAnim` when no swing ticks have changed for >1s to hard-reset the pose without touching combat swings.
 - 2025-11-26 (crossbow cooldowns): If arbalists feel too bursty now that they fire correctly, consider raising `attackDelay` (post-charge) slightly or scaling it with DEX so late-game arbalists gain smoother DPS without stalling charges.
+- 2025-11-26 (scroll visibility): Add a subtle particle ring or glint hue around dropped Resurrection Scrolls so players can spot their now-indestructible drops quickly in cluttered battlefields.
