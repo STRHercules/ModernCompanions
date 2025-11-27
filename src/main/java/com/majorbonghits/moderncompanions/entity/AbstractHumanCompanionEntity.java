@@ -1550,8 +1550,6 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 "I’m not mad, I’m just hungry and almost dead.",
                 "I can bite enemies or I can bite food. Your choice.",
                 "Pretty sure food is super effective against 'almost dead'.",
-
-                
                 // +50 new lines
                 "Okay, I admit it, I need a snack and a hug.",
                 "My armor's cracked and so am I. Food?",
