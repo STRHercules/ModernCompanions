@@ -38,7 +38,6 @@
     * Auto-logged book tracking each companion's journey—first tame, major kills, death/resurrections, milestones. Readable lore item you can keep.
 
 # Crafting & Professions
-
 * Profession System
     * Assign secondary roles: Blacksmith (repairs gear faster), Cook (creates buffed food), Tailor (crafts companion-specific armor), Scribe (copies enchanted books). Levels separately from combat.
 * Resource Gathering
@@ -95,23 +94,22 @@
 
 # Environmental Hazards Awareness
 * Companions call out dangers
-* Lines + subtle behavior tweaks when:
-    * Near lava lakes
-    * At the edge of ravines
-    * Entering the deep dark
-
+    * Lines + subtle behavior tweaks when:
+        * Near lava lakes
+        * At the edge of ravines
+        * Entering the deep dark
 * Maybe a config: “Cautious Mode” where they avoid walking close to obvious hazards.
 
-* Idle Chatter & Context Lines
-    * Biome/structure lines:
-        * “These mountains remind me of my training days…”
-        * “Ugh, it’s so humid in this jungle.”
-    * Class-based comments when fighting certain mobs:
-        * Cleric: extra lines vs undead
-        * Beastmaster: lines when near wolves, horses, etc.
-    * Kill celebrations, ambient chatter when idle
-    * Weather Reactions - Companions seek shelter during storms, dry off near fires, or comment on environmental conditions. Stormcaller could gain visible energy crackling in thunderstorms.
-    * Simple timed random line system with cooldown so it doesn’t spam.
+# Idle Chatter & Context Lines
+* Biome/structure lines:
+    * “These mountains remind me of my training days…”
+    * “Ugh, it’s so humid in this jungle.”
+* Class-based comments when fighting certain mobs:
+    * Cleric: extra lines vs undead
+    * Beastmaster: lines when near wolves, horses, etc.
+* Kill celebrations, ambient chatter when idle
+* Weather Reactions - Companions seek shelter during storms, dry off near fires, or comment on environmental conditions. Stormcaller could gain visible energy crackling in thunderstorms.
+* Simple timed random line system with cooldown so it doesn’t spam.
 
 # Barracks / Banner Anchor
 * A dedicated block or item that acts as a home base:
@@ -143,21 +141,29 @@
 # Transformation Items 
 * Ultra-rare items that permanently transform a companion into a new class (Knight → Paladin, Scout → Assassin). Maintains level but changes abilities and appearance.
 
-# Dedicated area for equipped gear (paperdoll)
+# Dedicated area for equipped gear 
+* Minecraft Player style paperdoll
 
 # Cosmetic Armor Slots
+* Set Armors to show instead of what they are actually wearing.
 
-# Mule Companion - Larger inventory? Avoids combat?
+# Mule Companion
+* Larger inventory?
+* Avoids combat?
 
-# Resource gathering??
+# Resource gathering
+* Self explanitory.
 
 # War
 * FTB Teams integration - opposing team companions will fight eachother as if they are hostile mobs
 
 # Relics Compat
+* Add slot to equip relics
 
 # Curio Compat
+* Add slot to equip Curios
 
 # Artifacts Compat
+* Add slot to equip Artifacts
 
 # Invaders
