@@ -11,12 +11,10 @@
 * Personality Traits System
     * Give each companion 1–2 lightweight traits rolled at spawn:
     * Examples:
-        ```
-        Brave (+small KB resist, more likely to push into melee)
-        Cautious (keeps slightly larger follow distance, kites more)
-        Glutton (asks for food more often, gets bonus healing)
-        Disciplined (+XP gain from kills, less idle wandering)
-        ```
+        * Brave (+small KB resist, more likely to push into melee)
+        * Cautious (keeps slightly larger follow distance, kites more)
+        * Glutton (asks for food more often, gets bonus healing)
+        * Disciplined (+XP gain from kills, less idle wandering)
     * Traits could just be NBT flags + flavor lines in the GUI; no need for full mood simulation.
     * Synergy with your random names + stat rolls, adds replay value and “this one is special” feeling.
     * Bond / Loyalty Track
