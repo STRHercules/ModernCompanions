@@ -6,6 +6,9 @@ import com.majorbonghits.moderncompanions.core.ModMenuTypes;
 import com.majorbonghits.moderncompanions.core.ModEntityAttributes;
 import com.majorbonghits.moderncompanions.core.ModConfig;
 import com.majorbonghits.moderncompanions.registry.ModCreativeTabs;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -28,6 +31,11 @@ public final class ModernCompanions {
         modBus.addListener(ModEntityAttributes::registerAttributes);
         modBus.addListener(this::onCommonSetup);
         ModCreativeTabHandler.register(modBus);
+
+        // Only load Curios hooks when the mod is present to avoid classloading crashes.
+        if (ModList.get().isLoaded("curios")) {
+            com.majorbonghits.moderncompanions.compat.curios.CuriosCompat.register(modBus, FMLEnvironment.dist == Dist.CLIENT);
+        }
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {

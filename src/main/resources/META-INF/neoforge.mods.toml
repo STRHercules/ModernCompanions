@@ -14,14 +14,21 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
 
 [[dependencies.${mod_id}]]
 modId = "neoforge"
-mandatory = true
+type = "required"
 versionRange = "[${neo_version},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
 modId = "minecraft"
-mandatory = true
+type = "required"
 versionRange = "[${minecraft_version},1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "curios"
+type = "optional"
+versionRange = "[9.5.0,)"
 ordering = "NONE"
 side = "BOTH"

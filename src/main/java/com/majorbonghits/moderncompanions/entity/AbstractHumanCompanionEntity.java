@@ -1345,7 +1345,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             }
             if (this.distanceToSqr(item) <= 2.25D) {
                 ItemStack stack = item.getItem();
-                ItemStack leftover = this.inventory.addItem(stack);
+                ItemStack leftover = tryInsertBackpackFirst(stack);
+                if (!leftover.isEmpty()) {
+                    leftover = this.inventory.addItem(leftover);
+                }
                 this.inventory.setChanged();
                 if (leftover.isEmpty()) {
                     item.discard();
@@ -1354,6 +1357,59 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 }
             }
         }
+    }
+
+    /**
+     * If Sophisticated Backpacks + Curios are present and the companion has a backpack
+     * equipped in the back slot, try inserting into it before using the normal inventory.
+     */
+    private ItemStack tryInsertBackpackFirst(ItemStack stack) {
+        if (stack.isEmpty()) return stack;
+        if (!net.neoforged.fml.ModList.get().isLoaded("curios") || !net.neoforged.fml.ModList.get().isLoaded("sophisticatedbackpacks")) {
+            return stack;
+        }
+        try {
+            var handlerOpt = top.theillusivec4.curios.api.CuriosApi.getCuriosInventory(this);
+            if (handlerOpt.isEmpty()) return stack;
+            var handler = handlerOpt.get();
+            var backOpt = handler.getStacksHandler("back");
+            if (backOpt.isEmpty()) return stack;
+            var stacks = backOpt.get().getStacks();
+            for (int i = 0; i < stacks.getSlots(); i++) {
+                ItemStack backpack = stacks.getStackInSlot(i);
+                if (backpack.isEmpty()) {
+                    continue;
+                }
+                if (!backpack.getItem().builtInRegistryHolder().key().location().getNamespace().equals("sophisticatedbackpacks")) {
+                    continue;
+                }
+
+                net.neoforged.neoforge.items.IItemHandler handlerItem = null;
+                // Preferred: direct wrapper (matches how SB exposes inventory for IO)
+                try {
+                    var wrapperCls = Class.forName("net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper");
+                    var fromStack = wrapperCls.getMethod("fromStack", ItemStack.class);
+                    Object wrapper = fromStack.invoke(null, backpack);
+                    var getInv = wrapperCls.getMethod("getInventoryForInputOutput");
+                    handlerItem = (net.neoforged.neoforge.items.IItemHandler) getInv.invoke(wrapper);
+                } catch (Exception ignored) { }
+
+                // Fallback: item capability if wrapper failed
+                if (handlerItem == null) {
+                    handlerItem = backpack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.ITEM, null);
+                }
+                if (handlerItem == null) continue;
+
+                ItemStack remainder = net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(handlerItem, stack, false);
+                if (remainder.getCount() != stack.getCount()) {
+                    // Inserted at least part; stop processing other containers
+                    return remainder;
+                }
+                stack = remainder;
+            }
+        } catch (Exception ignored) {
+        }
+        return stack;
     }
 
     /* ---------- RPG attribute generation & effects ---------- */

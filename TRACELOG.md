@@ -1564,3 +1564,111 @@
   - Bumped project version to 1.1.13 per AGENTS rules.
 - Rationale: Ensures dropped Resurrection Scrolls cannot be destroyed by environmental hazards or despawn mechanics, preserving the guaranteed revival item.
 - Build/Test: `./gradlew build` ✔️
+
+## 2025-11-29 (Companion Curios integration)
+- Prompt/task: "Add support for Curio to my mod, using their API... add a button to the Companion Inventory GUI that will open a curio window to equip companions"
+- Steps:
+  - Added Curios dependency (maven repo + mods.toml dep) and bumped mod version to 1.1.5.
+  - Declared Curios slot layout for all companion entities via datapack (`curios/entities/companions.json`) and a new shoulder slot definition; ring slot expanded to two by overriding slot size.
+  - Implemented `CompanionCuriosMenu`/`CompanionCuriosScreen` to present companion Curios slots, plus a server payload that opens the menu only for owned companions.
+  - Wired a "Curios" button into the companion inventory screen to trigger the open-menu payload when Curios is present; registered the new menu type/screen client+server.
+- Rationale: Gives companions their own Curios inventory with standard slot rules so Curios items apply effects to companions just like players.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-29 (Curios menu crash fix)
+- Prompt/task: "Crash on opening companion Curios (ClientboundOpenScreenPacket NPE)"
+- Steps:
+  - Made the Curios menu factory tolerate missing buffers and ensured the server writes the companion id when opening the Curios menu so the client can resolve the entity safely.
+  - Bumped version to 1.1.6 and rebuilt.
+- Rationale: Client was receiving a null `FriendlyByteBuf` from `SimpleMenuProvider`, causing an NPE when reading the entity id; sending the id restores proper menu sync.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-29 (Curios render layer for companions)
+- Prompt/task: "Curios are still not visible on the companions entity"
+- Steps:
+  - Added Curios render layer injection for all companion entity renderers on `AddLayers` when Curios is loaded, ensuring Curios' model rendering attaches to our custom renderer.
+  - Bumped version to 1.1.7 and rebuilt.
+- Rationale: Curios auto-layer wasn’t attaching to the custom companion renderer, so equipped curios never drew; explicitly adding the layer fixes visual rendering.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-29 (Curios screen polish + back navigation)
+- Prompt/task: "Show Curios screen with new background, include stats, and add Back button"
+- Steps:
+  - Swapped companion Curios UI to the new `inventory_curio.png` background and mirrored the stats/food sidebar from the main inventory.
+  - Added a Back button that reopens the default companion inventory via a new `OpenCompanionInventoryPayload` server packet.
+  - Exposed companion reference in the Curios menu so the screen can render stats; version bumped to 1.1.8.
+- Rationale: Keep parity with the main companion UI while giving a clear way to return; ensures the new background asset is used.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-29 (Curios UI alignment)
+- Prompt/task: "Drop the Curios button to match Back; lower player inventory in Curios GUI"
+- Steps:
+  - Moved the Curios button on the main companion screen down to the same Y position as the Back button in the Curios screen.
+  - Lowered the player inventory grid in the Curios menu by ~1.5 slots (27px) for better alignment with the new background; version bumped to 1.1.9.
+- Rationale: Visually aligns navigation between inventory and Curios screens and fixes cramped player-inventory placement on the Curios GUI.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-29 (Curios optional + GUI nudge)
+- Prompt/task: "Player inventory still needs shifted down a few pixels; Curios must stay optional"
+- Steps:
+  - Lowered the Curios GUI player inventory a bit further (total offset 32px).
+  - Made Curios a non-mandatory dependency and gated Curios menu/screen/network registration behind a Curios-present check; menu holder is null when Curios is absent.
+  - Version bumped to 1.1.9 and rebuilt.
+- Rationale: Final GUI alignment tweak and ensure the mod runs without Curios installed.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-30 (Curios slot visibility buttons)
+- Prompt/task: "Companion GUI Curios screen needs render visibility toggles like the player Curios screen"
+- Steps:
+  - Added per-slot render toggle buttons to the companion Curios screen using the Curios texture; toggles send `CPacketToggleRender` for the slot identifier/index.
+  - Exposed identifier/render status on companion curio slots to drive the buttons.
+  - Bumped version to 1.1.11 and rebuilt.
+- Rationale: Gives companions the same show/hide control for equipped curios that the player Curios UI provides.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-30 (Sophisticated Backpacks pickup routing)
+- Prompt/task: "Sophisticated Backpacks items still go to main inventory"
+- Steps:
+  - Swapped the reflection-based backpack insert for a direct NeoForge capability lookup (`Capabilities.ItemHandler.ITEM`) and now only targets stacks in the Curios `back` slot with the Sophisticated Backpacks namespace, inserting via `ItemHandlerHelper.insertItemStacked` before falling back to the companion inventory.
+  - Build/Test: `./gradlew build` ✔️
+- Rationale: Use the actual backpack item capability registration to reliably route pickups into the worn backpack when present.
+
+## 2025-12-01 (Sophisticated Backpacks insert fallback)
+- Prompt/task: "Still bypassing backpack on pickup"
+- Steps:
+  - Prefer the Sophisticated Backpacks `BackpackWrapper.fromStack(...).getInventoryForInputOutput()` to obtain the item handler; fall back to the item capability if needed, then insert via `ItemHandlerHelper.insertItemStacked`, returning as soon as any amount is inserted. Version bumped to 1.1.13 and rebuilt.
+- Rationale: Directly uses SB’s wrapper, which always exists even if the item capability lookup fails, ensuring pickups go into the worn backpack first.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-29 (Curios truly optional)
+- Prompt/task: "Curios should not be a hard dependancy. We should only be loading Curio support if Curio is present. I am currently not able to load 1.1.13 without Curios installed."
+- Steps:
+  - Split Curios hooks into a dedicated compat path (`compat/curios`) and only register them when the Curios mod is detected; base client/network events no longer import Curios classes.
+  - Added a Curios-only menu registration helper and gated client layer/screen wiring behind the Curios presence flag, preventing classloading when absent.
+  - Marked Curios as `compileOnly`/`runtimeOnly`, bumped version to 1.1.14, and rebuilt.
+- Rationale: Prevent `NoClassDefFoundError` when Curios is not installed while keeping full functionality when it is present.
+- Build/Test: `./gradlew build` ✔️
+
+## 2025-11-29 (mods.toml version + optional dep check)
+- Prompt/task: "Mod file requires Curios even when not installed; ModernCompanions-1.1.14 still marked as hard dependency."
+- Steps:
+  - Ensured `processResources` tracks key properties (version, mod id/name/author, Minecraft/NeoForge versions) so metadata is regenerated when versions change.
+  - Cleaned and rebuilt; verified the packaged `neoforge.mods.toml` shows version 1.1.14 and Curios `mandatory = false`.
+- Rationale: Prevent stale metadata from declaring Curios as a requirement and align packaged version numbers with gradle properties.
+- Build/Test: `./gradlew clean build` ✔️
+
+## 2025-11-29 (1.1.15 rebuild for optional Curios)
+- Prompt/task: "Mod modern_companions requires curios 9.5.0 or above" still triggered in user instance.
+- Steps:
+  - Bumped version to 1.1.15 and rebuilt to produce a fresh jar after the metadata fix.
+  - Confirmed packaged `neoforge.mods.toml` has `mandatory = false` for Curios and version `1.1.15`.
+- Rationale: Provide a clearly new artifact so launchers pick up the corrected optional dependency metadata.
+- Build/Test: `./gradlew clean build` ✔️
+
+## 2025-11-29 (Curios optional using NeoForge schema)
+- Prompt/task: "Curios is still a hard requirement dependency."
+- Steps:
+  - Updated `META-INF/neoforge.mods.toml` to the current NeoForge schema (`type = required/optional`) and set Curios to `optional`.
+  - Bumped version to 1.1.16 and rebuilt; verified packaged mods.toml reflects the change.
+- Rationale: NeoForge ignores the legacy `mandatory` flag; using the modern `type` field ensures Curios stays optional in dependency resolution.
+- Build/Test: `./gradlew clean build` ✔️

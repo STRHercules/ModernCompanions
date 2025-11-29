@@ -1,0 +1,32 @@
+{
+  "entities": [
+    "modern_companions:knight",
+    "modern_companions:archer",
+    "modern_companions:arbalist",
+    "modern_companions:axeguard",
+    "modern_companions:vanguard",
+    "modern_companions:berserker",
+    "modern_companions:beastmaster",
+    "modern_companions:cleric",
+    "modern_companions:alchemist",
+    "modern_companions:scout",
+    "modern_companions:stormcaller",
+    "modern_companions:fire_mage",
+    "modern_companions:lightning_mage",
+    "modern_companions:necromancer"
+  ],
+  "slots": [
+    "head",
+    "shoulder",
+    "back",
+    "body",
+    "bracelet",
+    "necklace",
+    "hands",
+    "ring",
+    "belt",
+    "feet",
+    "charm",
+    "curio"
+  ]
+}

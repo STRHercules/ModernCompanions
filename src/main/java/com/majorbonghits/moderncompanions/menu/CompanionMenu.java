@@ -42,7 +42,7 @@ public class CompanionMenu extends AbstractContainerMenu {
             }
         }
 
-        int offset = (COMPANION_ROWS - 4) * 18;
+        int offset = (COMPANION_ROWS - 4) * 18 + 1; // drop player inventory by 1px for alignment
         // Player inventory
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {

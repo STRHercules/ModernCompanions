@@ -2,6 +2,8 @@ package com.majorbonghits.moderncompanions.network;
 
 import com.majorbonghits.moderncompanions.ModernCompanions;
 import com.majorbonghits.moderncompanions.entity.AbstractHumanCompanionEntity;
+import com.majorbonghits.moderncompanions.menu.CompanionMenu;
+import com.majorbonghits.moderncompanions.network.OpenCompanionInventoryPayload;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -9,6 +11,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.minecraft.world.SimpleMenuProvider;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = ModernCompanions.MOD_ID)
 public final class ModNetwork {
@@ -16,10 +19,11 @@ public final class ModNetwork {
 
     @SubscribeEvent
     public static void register(RegisterPayloadHandlersEvent event) {
-        event.registrar(ModernCompanions.MOD_ID)
+        var registrar = event.registrar(ModernCompanions.MOD_ID)
                 .playToServer(ToggleFlagPayload.TYPE, ToggleFlagPayload.CODEC, ModNetwork::handleToggleFlag)
                 .playToServer(CompanionActionPayload.TYPE, CompanionActionPayload.CODEC, ModNetwork::handleAction)
-                .playToServer(SetPatrolRadiusPayload.TYPE, SetPatrolRadiusPayload.CODEC, ModNetwork::handlePatrolRadius);
+                .playToServer(SetPatrolRadiusPayload.TYPE, SetPatrolRadiusPayload.CODEC, ModNetwork::handlePatrolRadius)
+                .playToServer(OpenCompanionInventoryPayload.TYPE, OpenCompanionInventoryPayload.CODEC, ModNetwork::handleOpenInventory);
     }
 
     private static void handleToggleFlag(ToggleFlagPayload payload, IPayloadContext ctx) {
@@ -79,6 +83,20 @@ public final class ModNetwork {
             Entity entity = serverPlayer.level().getEntity(payload.entityId());
             if (entity instanceof AbstractHumanCompanionEntity companion && companion.isOwnedBy(serverPlayer)) {
                 companion.setPatrolRadius(payload.radius());
+            }
+        });
+    }
+
+    private static void handleOpenInventory(OpenCompanionInventoryPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer serverPlayer)) {
+                return;
+            }
+            Entity entity = serverPlayer.level().getEntity(payload.entityId());
+            if (entity instanceof AbstractHumanCompanionEntity companion && companion.isOwnedBy(serverPlayer)) {
+                serverPlayer.openMenu(new SimpleMenuProvider(
+                        (id, inv, player) -> new CompanionMenu(id, inv, companion), companion.getDisplayName()),
+                        buf -> buf.writeVarInt(companion.getId()));
             }
         });
     }

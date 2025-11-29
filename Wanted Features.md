@@ -1,13 +1,17 @@
 # Wanted Features
 
+## Class Additions
 * Sneaky Stealth Rogue Class
 
-# New Races
+## Weapon Usage Expansion
+* Classes will PREFER their preferred weapons, but will use anything given to them - using their preferred weapons first.
+
+## New Races
 * Orcs
 * Elves
     * Strictly skin based, maybe specific names if rolled with a unique skin
 
-# Companion Depth & Personality
+## Companion Depth & Personality
 * Personality Traits System
     * Give each companion 1–2 lightweight traits rolled at spawn:
     * Examples:
@@ -29,7 +33,7 @@
         * Unlock a special “bond emote” or voice line
 * This plays nicely with the Resurrection Scroll system and reinforces long-term attachment.
 
-# Lore & Narrative
+## Lore & Narrative
 * Personal Quests
     * High-level companions occasionally offer personal quests (find their lost sibling, retrieve a family heirloom, defeat a specific boss). Completion grants permanent bonuses and deepens attachment.
 * Backstory System
@@ -37,7 +41,7 @@
 * Memory Journal
     * Auto-logged book tracking each companion's journey—first tame, major kills, death/resurrections, milestones. Readable lore item you can keep.
 
-# Crafting & Professions
+## Crafting & Professions
 * Profession System
     * Assign secondary roles: Blacksmith (repairs gear faster), Cook (creates buffed food), Tailor (crafts companion-specific armor), Scribe (copies enchanted books). Levels separately from combat.
 * Resource Gathering
@@ -45,19 +49,19 @@
 * Automated Crafting
     * High-INT companions can craft from their inventory when given a recipe book item. Useful for making arrows, potions, or food during long expeditions.
 
-# Wandering Champions
+## Wandering Champions
 * Rare named companions spawn randomly in the world with unique gear and elevated stats. Defeating them in honorable combat (specific challenge) lets you recruit them.
 
-# Skill Trees
+## Skill Trees
 * At level milestones (10, 20, 30, etc.), let players choose passive bonuses or unlock alternative abilities. For example, Archers could specialize in power shots vs. rapid fire, or Clerics could focus healing vs. offensive holy damage.
 
-# Companion Relationships
+## Companion Relationships
 * Companions who fight together build affinity, unlocking cooperative buffs when near each other. Could add light personality traits (brave, cautious, loyal) that affect relationship gains.
 
-# Home Base System
+## Home Base System
 * Let players designate a structure as a companion barracks. Companions left there could generate passive resources, train to gain slow XP, or unlock a vendor NPC who trades based on your party's total level.
 
-# Achievements & Titles
+## Achievements & Titles
 * Track milestones (first level 50, defeated X enemies, etc.) that unlock cosmetic titles displayed under companion names. Gives long-term goals without affecting balance.
 * Examples:
     * “Slayer of Endermen” (X endermen kills)
@@ -67,20 +71,20 @@
     * Show in GUI & hover text
     * Grant tiny passive bonuses or just be cosmetic.
 
-# Elite Variants
+## Elite Variants
 * Rare "Ancient" or "Veteran" companions with unique skins and +2 to all base stats. Spawn in special rare structures or require difficult summoning rituals.
 
-# Raid Bosses
+## Raid Bosses
 * Add a few massive optional bosses designed for full companion parties, dropping unique gear or enchantments that only companions can use.
 
-# Companion Expeditions
+## Companion Expeditions
 * Send companions on timed automated missions (like WoW's garrison system). They return with loot based on their levels/stats, with small risk of injury requiring extra healing.
 
-# Consumable "Tomes"
+## Consumable "Tomes"
 * Rare loot found in Dungeons/Strongholds.
 * Usage: A companion reads the tome to instantly gain a chunk of XP or a permanent +1 to a specific stat (capped at +5 total per companion to prevent overpowered scaling).
 
-# Weather & Biome Affinities
+## Weather & Biome Affinities
 * We already do storms boosting lightning—expand that idea:
     * Fire Mage:
         * Slightly weaker in rain, slightly stronger in Nether.
@@ -92,7 +96,7 @@
         * Tiny bonus in villages or near altars/chapels you define.
 * All super small percentages so it’s mostly flavor, but it rewards paying attention to environment.
 
-# Environmental Hazards Awareness
+## Environmental Hazards Awareness
 * Companions call out dangers
     * Lines + subtle behavior tweaks when:
         * Near lava lakes
@@ -100,7 +104,7 @@
         * Entering the deep dark
 * Maybe a config: “Cautious Mode” where they avoid walking close to obvious hazards.
 
-# Idle Chatter & Context Lines
+## Idle Chatter & Context Lines
 * Biome/structure lines:
     * “These mountains remind me of my training days…”
     * “Ugh, it’s so humid in this jungle.”
@@ -111,7 +115,7 @@
 * Weather Reactions - Companions seek shelter during storms, dry off near fires, or comment on environmental conditions. Stormcaller could gain visible energy crackling in thunderstorms.
 * Simple timed random line system with cooldown so it doesn’t spam.
 
-# Barracks / Banner Anchor
+## Barracks / Banner Anchor
 * A dedicated block or item that acts as a home base:
     * Place a Companion Banner / Barracks Block:
         * “Set as home” for selected companions via GUI.
@@ -122,7 +126,7 @@
         * Interact with training dummies (see below)
     * This complements your companion houses and worldgen; lets players build a “party HQ.”
 
-# The "Tavern" & Mercenary System
+## The "Tavern" & Mercenary System
 * Currently, we have to find specific houses to get specific classes. A hub system would solve bad RNG.
     * Structure: The Wayfarer's Inn:
         * A rare, larger structure (Village style) that spawns in Plains or Meadows.
@@ -131,39 +135,39 @@
         * Instead of taming with random items, Tavern companions require a Mercenary Contract (crafted with Paper, Gold, and Feather).
         * Gold Upkeep: Higher-level mercenaries found here might require a daily "wage" of 1 Gold Nugget (automatically taken from their inventory), or they stop following.
 
-# The "Runner" Behavior (Auto-Sell):
+## The "Runner" Behavior (Auto-Sell):
 * Give a companion a Bundle/backpack
     * Action: When full, the companion can be commanded to "Return to Town." They teleport to the nearest Village (or the Rally Banner), dump their inventory into a linked chest, and teleport back.
 
-# Morale System
+## Morale System
 * Companions have hidden morale affected by wins/losses, gear quality, hunger, and how often they nearly die. High morale = small stat buffs and cheerful dialogue; low morale = performance penalties and complaints.
 
-# Transformation Items 
+## Transformation Items 
 * Ultra-rare items that permanently transform a companion into a new class (Knight → Paladin, Scout → Assassin). Maintains level but changes abilities and appearance.
 
-# Dedicated area for equipped gear 
+## Dedicated area for equipped gear 
 * Minecraft Player style paperdoll
 
-# Cosmetic Armor Slots
+## Cosmetic Armor Slots
 * Set Armors to show instead of what they are actually wearing.
 
-# Mule Companion
+## Mule Companion
 * Larger inventory?
 * Avoids combat?
 
-# Resource gathering
+## Resource gathering
 * Self explanitory.
 
-# War
+## War
 * FTB Teams integration - opposing team companions will fight eachother as if they are hostile mobs
 
-# Relics Compat
+## Relics Compat
 * Add slot to equip relics
 
-# Curio Compat
+## Curio Compat
 * Add slot to equip Curios
 
-# Artifacts Compat
+## Artifacts Compat
 * Add slot to equip Artifacts
 
-# Invaders
+## Invaders

@@ -6,6 +6,7 @@ import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import com.majorbonghits.moderncompanions.network.CompanionActionPayload;
 import com.majorbonghits.moderncompanions.network.SetPatrolRadiusPayload;
 import com.majorbonghits.moderncompanions.network.ToggleFlagPayload;
+import com.majorbonghits.moderncompanions.network.OpenCompanionCuriosPayload;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.neoforged.fml.ModList;
 
 import java.util.Optional;
 
@@ -58,6 +60,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private CompanionButton releaseButton;
     private CompanionButton radiusMinus;
     private CompanionButton radiusPlus;
+    private Button curiosButton;
 
     private int sidebarX;
 
@@ -97,6 +100,14 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         ResourceLocation radiusTex = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/gui/radiusbutton.png");
         radiusMinus = addRenderableWidget(new CompanionButton("radius-", leftPos + sidebarX + 3, radiusY, 16, 12, 17, 0, 13, radiusTex, () -> adjustRadius(-2), false));
         radiusPlus = addRenderableWidget(new CompanionButton("radius+", leftPos + sidebarX + 21, radiusY, 16, 12, 0, 0, 13, radiusTex, () -> adjustRadius(2), false));
+
+        if (ModList.get().isLoaded("curios")) {
+            int curiosY = topPos + 200; // align with Curios screen Back button position
+            curiosButton = addRenderableWidget(Button.builder(Component.literal("Curios"), b -> openCurios())
+                    .pos(leftPos + sidebarX + 2, curiosY)
+                    .size(38, 16)
+                    .build());
+        }
     }
 
     @Override
@@ -154,6 +165,12 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         super.containerTick();
     }
 
+    @Override
+    public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
+        super.render(gfx, mouseX, mouseY, partialTick);
+        this.renderTooltip(gfx, mouseX, mouseY);
+    }
+
     /* ---------- Button actions ---------- */
 
     private void sendToggle(String flag) {
@@ -180,6 +197,12 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             mc.getConnection().send(new ServerboundCustomPayloadPacket(new SetPatrolRadiusPayload(menu.getCompanionId(), target)));
             companion.setPatrolRadius(target);
         });
+    }
+
+    private void openCurios() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.getConnection() == null) return;
+        mc.getConnection().send(new ServerboundCustomPayloadPacket(new OpenCompanionCuriosPayload(menu.getCompanionId())));
     }
 
     private Optional<AbstractHumanCompanionEntity> safeCompanion() {

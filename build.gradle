@@ -16,6 +16,7 @@ java {
 repositories {
     maven { url = "https://maven.neoforged.net/releases" }
     maven { url = "https://maven.parchmentmc.org" }
+    maven { url = "https://maven.theillusivec4.top/" }
     maven {
         url = "https://api.modrinth.com/maven"
         content { includeGroup("maven.modrinth") }
@@ -50,6 +51,10 @@ dependencies {
     // Mod runtime + compile dep; resolved via the NeoForge maven above.
     implementation "net.neoforged:neoforge:${project.findProperty("neo_version")}"
 
+    // Curios API for companion equipment integration (optional at runtime)
+    compileOnly "top.theillusivec4.curios:curios-neoforge:${project.findProperty("curios_version")}"
+    runtimeOnly "top.theillusivec4.curios:curios-neoforge:${project.findProperty("curios_version")}"
+
     // Optional HUD integrations (Jade / WTHIT). Kept compileOnly so the mod remains optional; runtimeOnly enables local dev runs.
     compileOnly "maven.modrinth:jade:${project.findProperty("jade_version")}" 
     compileOnly "maven.modrinth:wthit:${project.findProperty("wthit_version")}" 
@@ -64,6 +69,16 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 tasks.processResources.configure {
+    // Re-run when any expanded property changes (e.g., version/mod_id).
+    inputs.properties([
+            version            : project.version,
+            mod_id             : project.findProperty("mod_id"),
+            mod_name           : project.findProperty("mod_name"),
+            mod_author         : project.findProperty("mod_author"),
+            minecraft_version  : project.findProperty("minecraft_version"),
+            neo_version        : project.findProperty("neo_version")
+    ])
+
     // Inject project properties into mod metadata.
     filesMatching("META-INF/neoforge.mods.toml") {
         expand(project.properties)
