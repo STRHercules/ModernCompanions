@@ -161,13 +161,4 @@
 ## War
 * FTB Teams integration - opposing team companions will fight eachother as if they are hostile mobs
 
-## Relics Compat
-* Add slot to equip relics
-
-## Curio Compat
-* Add slot to equip Curios
-
-## Artifacts Compat
-* Add slot to equip Artifacts
-
 ## Invaders
