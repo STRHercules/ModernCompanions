@@ -16,3 +16,4 @@
     * Curio visiblity is toggleable
 * Added Optional Sophisticated Backpack support/feature
     * If companion is wearing a Sophisticated Backpack, they will fill it before their inventory.
+* 
