@@ -136,9 +136,6 @@
 * Give a companion a Bundle/backpack
     * Action: When full, the companion can be commanded to "Return to Town." They teleport to the nearest Village (or the Rally Banner), dump their inventory into a linked chest, and teleport back.
 
-## Morale System
-* Companions have hidden morale affected by wins/losses, gear quality, hunger, and how often they nearly die. High morale = small stat buffs and cheerful dialogue; low morale = performance penalties and complaints.
-
 ## Transformation Items 
 * Ultra-rare items that permanently transform a companion into a new class (Knight → Paladin, Scout → Assassin). Maintains level but changes abilities and appearance.
 
