@@ -1727,3 +1727,21 @@
   - Bumped version to 1.1.16 and rebuilt; verified packaged mods.toml reflects the change.
 - Rationale: NeoForge ignores the legacy `mandatory` flag; using the modern `type` field ensures Curios stays optional in dependency resolution.
 - Build/Test: `./gradlew clean build` ✔️
+
+## 2025-12-03 (Docs: Curio/Journal features)
+- Prompt/task: "update the README and DESCRIPTION documents to include information about these changes/additions;"
+- Steps:
+  - Added explicit Curio/Backpack support section and Journal/Bio section to README (traits/backstory/morale/bond/age, legacy backfill rules).
+  - Mirrored Curio/Backpack, preferred-weapon/shield improvements, and personality/journal details into DESCRIPTION with technical wording.
+  - Bumped version to 1.1.19 and rebuilt.
+- Rationale: Keep top-level docs current with recent systems (optional integrations, personality/journal) for users and pack makers.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-12-03 (Docs: Morale/Bond/Traits detail)
+- Prompt/task: "Expand upon Morale and Bond in README and DESCRIPTION documents. Also, detail each trait and what they do."
+- Steps:
+  - Expanded README with Morale/Bond mechanics and a concise trait effects list; added Curio/Backpack section.
+  - Expanded DESCRIPTION with Morale/Bond summary and per-trait effects list.
+  - Bumped version to 1.1.20 and rebuilt.
+- Rationale: Provide clear, technical docs for the personality systems so users and pack makers understand the exact effects and optional integrations.
+- Build/Test: `./gradlew build -x test` ✔️

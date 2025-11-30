@@ -1,18 +1,20 @@
 # Modern Companions (NeoForge 1.21.1)
 
-![](https://i.imgur.com/V29Cq8E.jpeg)
+![Header](https://i.imgur.com/V29Cq8E.jpeg)
 
 Modern Companions is a faithful NeoForge 1.21.1 port/rebrand of [*Human Companions*](https://www.curseforge.com/minecraft/mc-mods/human-companions) with new branding, soul gems, summoning wand, a bundled BasicWeapons-inspired arsenal, and expanded class kit flavor. Hire RPG-flavored human followers, gear them up, and command them with a clear stance UI.
 
 ## What You Get
 
-![](https://i.imgur.com/EESbQTj.png)
+![Inventory/Curio](https://i.imgur.com/NRLqCWk.gif)
+
 
 - **Fourteen Recruitable Roles:** Knight, Vanguard, Axeguard, Berserker, Scout, Archer, Arbalist, Beastmaster, Cleric, Alchemist, Stormcaller, Fire Mage, Lightning Mage, Necromancer—each with tailored AI, weapon prefs, and perks.
 - **Spawn Gems:** All spawn eggs are class-colored gems on the Modern Companions creative tab; they still behave like eggs but match the new branding.
 - **Soul Gems:** Soul Gems are obtained by using the **Companion Mover** on a recruited Companion, converting them into an item preserving their stats and inventories, which can then be used to convert them back into an entity.
 - **Custom Weapons:** Daggers, clubs, hammers, spears, quarterstaves, and glaives in every vanilla material (plus bronze if that mod is present). Standard crafting recipes (JEI/REI friendly); companions auto-prefer their class weapon type.
 - **RPG Stats & Leveling:** STR/DEX/INT/END shape damage, speed, XP gain, and bulk. A superlinear XP curve makes high levels meaningful; health scales with END and level.
+- **Custom Names:** Use a nametag on a Companion to change their name!
 - **Limits:** There is **no level cap** and **no hard limit on party size**—you can level companions indefinitely and command as many as you can gather; only performance/server rules apply.
 - **Commands in the GUI:** Follow ↔ Patrol ↔ Guard cycle, alert/hunt toggles, **sprint toggle** (on = sprint, off = jog), auto-pickup, patrol radius +/- (2–32), clear target, release. Shift+right-click to sit/stand, right-click to open the screen.
 - **Deep Taming Loop:** Each untamed companion demands two specific foods/resources; supply both stacks to tame. They self-heal from food in their 6×9 inventory and politely ping you when hurt and empty.
@@ -21,6 +23,13 @@ Modern Companions is a faithful NeoForge 1.21.1 port/rebrand of [*Human Companio
 - **Self-care:** Along with regular veggies and cooked foods, Companions also eat enchanted golden foods/honey and will drink beneficial potions (regen/instant health, etc.), applying the effects and holding onto empty bottles when they can, dropping them when they can't.
 - **Staying close:** Follow AI recalls companions that drift ~35 blocks away on the same dimension to a safe spot near you, when set to follow.
 - **Custom Skins:** You can assign specific companions any skin you want! Using the command `/companionskin "NAME" URL` you can assign skins to your companions like so; `/companionskin "Daniel George" https://i.imgur.com/FWADR65.png`
+- **Curios + Sophisticated Backpacks (optional):** Curio rendering is toggleable per companion. If a companion wears a Sophisticated Backpack in the Curios back slot, picked-up items fill the backpack before the companion inventory.
+- **Preferred weapons & shields:** Preferred weapon types grant +2 damage; companions fall back to any available weapon if preferred gear is missing; Vanguard shield handling improved (modded shields, no double-shield bug).
+- **Personality & Journal:** Companions roll 1–2 traits, a backstory, morale, and a Bond track (XP from travel/feeding/resurrection). A Journal/Bio button shows traits with effect blurbs, backstory, morale, bond, kills/major kills, resurrections, distance traveled, and age. Companions start age 18–35 and age +1 year every ~90 in-game days (visual only). Legacy companions with missing traits/backstory/age are backfilled once.
+- **Morale & Bond:** Morale [-1,1] gives tiny buffs (+0.5 dmg/armor) when high and matching penalties when low; feeds, bond level-ups, and traits can raise/soften it; near-death/resurrection lowers it. Bond XP comes from time-with-owner ticks, feeding, and resurrection; Devoted/Glutton boost bond XP. Bond levels raise the morale floor.
+- **Trait effects:** Brave (+dmg, closer follow); Cautious (farther follow, slower); Guardian (+armor); Reckless (+speed, closer); Stalwart (KB resist); Quickstep (+speed/follow speed); Glutton (bonus bond XP from feeding); Disciplined (+XP gain, softer morale loss); Lucky (duplicate drop chance); Night Owl (small night dmg/speed); Sun-Blessed (small day dmg/speed); Jokester (softer morale loss); Melancholic (minor dmg penalty when morale low); Devoted (+armor, bonus bond XP).
+
+  ![Bio Page](https://i.imgur.com/oo3xrUR.png)
 
 ## Worldgen & Spawns
 

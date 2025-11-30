@@ -34,35 +34,9 @@
         * https://www.minecraftskins.com/skin/23669864/silco-inspired-mage/
     
 
-## Companion Depth & Personality
-* Personality Traits System
-    * Give each companion 1–2 lightweight traits rolled at spawn:
-    * Examples:
-        * Brave (+small KB resist, more likely to push into melee)
-        * Cautious (keeps slightly larger follow distance, kites more)
-        * Glutton (asks for food more often, gets bonus healing)
-        * Disciplined (+XP gain from kills, less idle wandering)
-    * Traits could just be NBT flags + flavor lines in the GUI; no need for full mood simulation.
-    * Synergy with your random names + stat rolls, adds replay value and “this one is special” feeling.
-    * Bond / Loyalty Track
-        * We already have XP and levels—this would be parallel, very light:
-    * Bond XP gained from:
-        * Keeping them alive a long time
-        * Feeding them when they ask
-        * Bringing them back via resurrection scroll
-    * Small rewards at bond milestones:
-        * +1 to a core stat
-        * Unique cosmetic particle on them
-        * Unlock a special “bond emote” or voice line
-* This plays nicely with the Resurrection Scroll system and reinforces long-term attachment.
-
 ## Lore & Narrative
 * Personal Quests
     * High-level companions occasionally offer personal quests (find their lost sibling, retrieve a family heirloom, defeat a specific boss). Completion grants permanent bonuses and deepens attachment.
-* Backstory System
-    * Companions generate procedural backstories at spawn affecting their personality and occasional dialogue. A former soldier, exiled noble, or wandering scholar.
-* Memory Journal
-    * Auto-logged book tracking each companion's journey—first tame, major kills, death/resurrections, milestones. Readable lore item you can keep.
 
 ## Crafting & Professions
 * Profession System

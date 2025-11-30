@@ -10,7 +10,7 @@
 * Extended Companion is hungry messages
 * Resurrection Scrolls now invulnerable - They resist gravity/fire/lava/explosions and will avoid the void.
 
-## v1.1.5
+## v1.2.0
 * Realigned player inventory in Companion GUI
 * Added Optional Curio support for Companions
     * Curio visiblity is toggleable
