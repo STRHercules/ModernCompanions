@@ -1,5 +1,12 @@
 # Wanted Features
 
+## Achievements/Advancements
+* For crafting the Wand/Mover
+* For Recruiting their first companion
+* When their first companion dies (When they pick up a resurrection scroll for the first time)
+* When they pick up their first soul gem 
+* Recruiting 10/25/50/100 companions
+
 ## Class Additions
 * Sneaky Stealth Rogue Class
 
