@@ -16,4 +16,7 @@
     * Curio visiblity is toggleable
 * Added Optional Sophisticated Backpack support/feature
     * If companion is wearing a Sophisticated Backpack, they will fill it before their inventory.
-* 
+* Added better preferred weapon and fallback support.
+    * Companions using a preferred weapon type will recieve a +2 bonus to their damage.
+    * Companions will now use whatever weapon is available if they do not have their preferred weapon.
+    * Hopefully increased Shield support for Vanguards - should equip modded shields now.
