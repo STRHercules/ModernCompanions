@@ -107,17 +107,28 @@ public abstract class AbstractMageCompanion extends AbstractHumanCompanionEntity
 
     private void equipCasterWeapon() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
+        ItemStack preferred = ItemStack.EMPTY;
+        ItemStack fallback = !hand.isEmpty() && !isShieldItem(hand) ? hand : ItemStack.EMPTY;
+
         if (!hand.isEmpty() && !isPreferredWeapon(hand)) {
             this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
             hand = ItemStack.EMPTY;
         }
         for (int i = 0; i < this.inventory.getContainerSize(); i++) {
             ItemStack stack = this.inventory.getItem(i);
-            if (isPreferredWeapon(stack) && hand.isEmpty()) {
-                this.setItemSlot(EquipmentSlot.MAINHAND, stack);
-                hand = stack;
+            if (stack.isEmpty()) continue;
+            if (preferred.isEmpty() && isPreferredWeapon(stack)) {
+                preferred = stack;
+            }
+            if (fallback.isEmpty() && !isShieldItem(stack)) {
+                fallback = stack;
             }
         }
+        ItemStack desired = !preferred.isEmpty() ? preferred : fallback;
+        if (!ItemStack.isSameItemSameComponents(hand, desired)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, desired);
+        }
+        setPreferredWeaponBonus(!preferred.isEmpty() && ItemStack.isSameItemSameComponents(desired, preferred));
     }
 
     private boolean isPreferredWeapon(ItemStack stack) {

@@ -100,3 +100,5 @@
 - 2025-11-29 (Curios absence UX): When Curios isn’t installed, show a short tooltip or disabled-state hint near the missing Curios button so players know the feature is optional and how to enable it.
 - 2025-11-29 (metadata guard): Add a small CI check (or Gradle verification task) that inspects the packaged `neoforge.mods.toml` for the current version and optional Curios flag, failing the build if they drift from `gradle.properties`.
 - 2025-11-29 (schema drift): Audit other optional dependencies (Jade/WTHIT) and migrate their metadata blocks to `type = optional` to prevent future breakage if NeoForge drops support for `mandatory` entirely.
+- 2025-11-29 (weapon fallback tuning): Consider a config-driven priority list per class so companions still prefer their weapon archetypes but avoid equipping consumables when no ideal gear is available; optional filter for “usable in combat” tags could keep food/potions out of main hand.
+- 2025-11-29 (shield tag hardening): Add a tiny helper for tag creation that rejects malformed paths at dev time, preventing crashes if a tag name accidentally contains a namespace delimiter.

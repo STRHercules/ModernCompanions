@@ -50,6 +50,7 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -60,6 +61,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import com.majorbonghits.moderncompanions.entity.SummonedWitherSkeleton;
+import com.majorbonghits.moderncompanions.core.TagsInit;
 
 /**
  * Port of the original AbstractHumanCompanionEntity with taming, leveling,
@@ -142,6 +144,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     // Client-side tracking of the last swing tick we already applied locally.
     private int lastAppliedSwingTick = -1;
+
+    private static final ResourceLocation PREFERRED_WEAPON_MOD = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "preferred_weapon_bonus");
 
     protected AbstractHumanCompanionEntity(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
@@ -1356,6 +1361,29 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                     item.setItem(leftover);
                 }
             }
+        }
+    }
+
+    /**
+     * Common shield detector so we don't place shields into the main hand when falling back.
+     */
+    protected boolean isShieldItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(Items.SHIELD) || stack.is(TagsInit.Items.SHIELDS)) return true;
+        return stack.getItem().builtInRegistryHolder().unwrapKey()
+                .map(key -> key.location().getPath().toLowerCase(Locale.ROOT).contains("shield"))
+                .orElse(false);
+    }
+
+    /**
+     * Apply or remove the flat preferred-weapon bonus.
+     */
+    protected void setPreferredWeaponBonus(boolean enabled) {
+        var damage = this.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (damage == null) return;
+        damage.removeModifier(PREFERRED_WEAPON_MOD);
+        if (enabled) {
+            damage.addTransientModifier(new AttributeModifier(PREFERRED_WEAPON_MOD, 2.0D, AttributeModifier.Operation.ADD_VALUE));
         }
     }
 

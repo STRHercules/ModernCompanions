@@ -25,6 +25,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ServerLevelAccessor;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.entity.monster.RangedAttackMob;
+import com.majorbonghits.moderncompanions.core.TagsInit;
 
 /**
  * Shield-first tank that soaks projectiles and pulls threats off the player.
@@ -115,14 +116,23 @@ public class Vanguard extends Knight {
 
     private void checkShield() {
         ItemStack offhand = this.getItemBySlot(EquipmentSlot.OFFHAND);
+        if (!isShield(offhand)) {
+            offhand = ItemStack.EMPTY;
+            this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+        }
         for (int i = 0; i < this.inventory.getContainerSize(); i++) {
             ItemStack stack = this.inventory.getItem(i);
-            if (stack.is(Items.SHIELD)) {
+            if (isShield(stack)) {
                 if (offhand.isEmpty()) {
                     this.setItemSlot(EquipmentSlot.OFFHAND, stack);
                     offhand = stack;
                 }
             }
+        }
+        // Prevent mirror-wielding shields: clear main-hand shield if we just assigned offhand.
+        ItemStack main = this.getItemBySlot(EquipmentSlot.MAINHAND);
+        if (isShield(main)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         }
     }
 
@@ -136,7 +146,7 @@ public class Vanguard extends Knight {
             return;
         }
 
-        if (!this.getItemBySlot(EquipmentSlot.OFFHAND).is(Items.SHIELD)) {
+        if (!isShield(this.getItemBySlot(EquipmentSlot.OFFHAND))) {
             stopUsingShield();
             return;
         }
@@ -177,13 +187,22 @@ public class Vanguard extends Knight {
     }
 
     private boolean isShieldRaised() {
-        return this.isUsingItem() && this.getUseItem().is(Items.SHIELD);
+        return this.isUsingItem() && isShield(this.getUseItem());
     }
 
     private void stopUsingShield() {
         if (isShieldRaised()) {
             this.stopUsingItem();
         }
+    }
+
+    private boolean isShield(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(Items.SHIELD) || stack.is(TagsInit.Items.SHIELDS)) return true;
+        // Fallback: treat any item whose registry path contains "shield" as a shield (e.g., modded uniques without tags).
+        return stack.getItem().builtInRegistryHolder().unwrapKey()
+                .map(key -> key.location().getPath().contains("shield"))
+                .orElse(false);
     }
 
     private void tickDefenseAura() {

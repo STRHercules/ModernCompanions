@@ -1,5 +1,5 @@
 {
   "order": 190,
-  "icon": "curios:slot/empty_feet_slot",
+  "icon": "minecraft:item/empty_armor_slot_boots",
   "validators": ["curios:tag"]
 }

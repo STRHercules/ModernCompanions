@@ -1633,6 +1633,18 @@
   - Build/Test: `./gradlew build` ✔️
 - Rationale: Use the actual backpack item capability registration to reliably route pickups into the worn backpack when present.
 
+## 2025-11-29 (weapon preference fallback + shield tags)
+- Prompt/task: "Classes will PREFER their preferred weapons, but will use anything given to them - using their preferred weapons first falling back to whatever they may have. I also want to be sure that vanguard can use shields from other mods, so make sure they are not looking specifically for the minecraft shield, rather a shield tag perhaps."
+- Steps:
+  - Updated weapon selection routines for Knight, Berserker, Axeguard, Archer, Arbalist, Beastmaster, Scout, and Cleric to pick a preferred weapon when available but otherwise equip the first available inventory item as a fallback.
+  - Added a shared `forge:shields` tag constant and updated Vanguard shield handling to treat vanilla or tagged shields as valid for equipping, raising, and persistence rather than hard-coding `Items.SHIELD`.
+  - Fixed tag creation to use a proper namespace/path (`ResourceLocation.fromNamespaceAndPath("forge", "shields")`) after a crash surfaced when loading worlds with modded shields.
+  - Added a registry-name fallback so any item whose id path contains "shield" is treated as a shield (covers untagged modded shields like `arsenal:unique_shield_1`), prevents dual-wielding shields, and extended weapon selection to skip shields when falling back.
+  - Added a flat +2 attack damage bonus while wielding a preferred weapon across all classes; casters now fall back to any non-shield item when no preferred weapon is present.
+  - Bumped project version to 1.1.9, logged follow-up tuning ideas in `SUGGESTIONS.md`, and verified with `./gradlew build`.
+- Rationale: Companions should stay armed even when only given off-meta items, while Vanguards must recognize modded shields via tags for better compatibility.
+- Build/Test: `./gradlew build` ✔️
+
 ## 2025-12-01 (Sophisticated Backpacks insert fallback)
 - Prompt/task: "Still bypassing backpack on pickup"
 - Steps:

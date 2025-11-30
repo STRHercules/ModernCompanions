@@ -210,32 +210,30 @@ public class Beastmaster extends AbstractHumanCompanionEntity implements RangedA
 
     private void checkBow() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
-
-        // If the current weapon is not preferred or no longer present, clear it to
-        // allow reassignment.
-        if (!hand.isEmpty() && (!isPreferredWeapon(hand) || !inventoryContains(hand.getItem()))) {
-            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            hand = ItemStack.EMPTY;
-        }
-
-        // Prefer bows first; fall back to clubs/hammers/spears.
-        ItemStack candidate = ItemStack.EMPTY;
+        ItemStack bow = ItemStack.EMPTY;
+        ItemStack meleePreferred = ItemStack.EMPTY;
+        ItemStack fallback = !hand.isEmpty() && inventoryContains(hand.getItem()) && !isShieldItem(hand) ? hand : ItemStack.EMPTY;
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (stack.getItem() instanceof BowItem) {
-                candidate = stack;
-                break;
-            }
-            if (candidate.isEmpty() && (stack.getItem() instanceof ClubItem
+            if (stack.isEmpty()) continue;
+            if (bow.isEmpty() && stack.getItem() instanceof BowItem) {
+                bow = stack;
+            } else if (meleePreferred.isEmpty() && (stack.getItem() instanceof ClubItem
                     || stack.getItem() instanceof HammerItem
                     || stack.getItem() instanceof SpearItem)) {
-                candidate = stack;
+                meleePreferred = stack;
+            }
+            if (fallback.isEmpty() && !isShieldItem(stack)) {
+                fallback = stack;
             }
         }
-
-        if (hand.isEmpty() && !candidate.isEmpty()) {
-            this.setItemSlot(EquipmentSlot.MAINHAND, candidate);
+        ItemStack desired = !bow.isEmpty() ? bow : (!meleePreferred.isEmpty() ? meleePreferred : fallback);
+        if (!ItemStack.isSameItemSameComponents(hand, desired)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, desired);
         }
+        boolean preferredHit = (!bow.isEmpty() && ItemStack.isSameItemSameComponents(desired, bow))
+                || (!meleePreferred.isEmpty() && ItemStack.isSameItemSameComponents(desired, meleePreferred));
+        setPreferredWeaponBonus(preferredHit);
     }
 
     private boolean isPreferredWeapon(ItemStack stack) {

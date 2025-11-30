@@ -15,6 +15,7 @@ public final class TagsInit {
     public static final class Items {
         public static final TagKey<Item> AXES = ItemTags.create(ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "axes"));
         public static final TagKey<Item> SWORDS = ItemTags.create(ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "swords"));
+        public static final TagKey<Item> SHIELDS = ItemTags.create(ResourceLocation.fromNamespaceAndPath("forge", "shields"));
 
         private Items() {}
     }

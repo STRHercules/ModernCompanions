@@ -31,14 +31,23 @@ public class Archer extends AbstractHumanCompanionEntity implements RangedAttack
 
     public void checkBow() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
+        ItemStack preferred = ItemStack.EMPTY;
+        ItemStack fallback = !hand.isEmpty() && !isShieldItem(hand) ? hand : ItemStack.EMPTY;
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (stack.getItem() instanceof BowItem) {
-                if (hand.isEmpty()) {
-                    this.setItemSlot(EquipmentSlot.MAINHAND, stack);
-                }
+            if (stack.isEmpty()) continue;
+            if (preferred.isEmpty() && stack.getItem() instanceof BowItem) {
+                preferred = stack;
+            }
+            if (fallback.isEmpty() && !isShieldItem(stack)) {
+                fallback = stack;
             }
         }
+        ItemStack desired = !preferred.isEmpty() ? preferred : fallback;
+        if (!ItemStack.isSameItemSameComponents(hand, desired)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, desired);
+        }
+        setPreferredWeaponBonus(!preferred.isEmpty() && ItemStack.isSameItemSameComponents(desired, preferred));
     }
 
     @Override

@@ -39,20 +39,23 @@ public class Knight extends AbstractHumanCompanionEntity {
 
     public void checkSword() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
-        // If the held item is no longer preferred or no longer in inventory, clear it to allow re-equip.
-        if (!hand.isEmpty() && (!isPreferredWeapon(hand) || !inventoryContains(hand.getItem()))) {
-            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            hand = ItemStack.EMPTY;
-        }
+        ItemStack preferred = ItemStack.EMPTY;
+        ItemStack fallback = !hand.isEmpty() && inventoryContains(hand.getItem()) && !isShieldItem(hand) ? hand : ItemStack.EMPTY;
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack itemstack = this.inventory.getItem(i);
-            if (isPreferredWeapon(itemstack)) {
-                if (hand.isEmpty()) {
-                    this.setItemSlot(EquipmentSlot.MAINHAND, itemstack);
-                    hand = itemstack;
-                }
+            if (itemstack.isEmpty()) continue;
+            if (preferred.isEmpty() && isPreferredWeapon(itemstack)) {
+                preferred = itemstack;
+            }
+            if (fallback.isEmpty() && !isShieldItem(itemstack)) {
+                fallback = itemstack;
             }
         }
+        ItemStack desired = !preferred.isEmpty() ? preferred : fallback;
+        if (!ItemStack.isSameItemSameComponents(hand, desired)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, desired);
+        }
+        setPreferredWeaponBonus(!preferred.isEmpty() && ItemStack.isSameItemSameComponents(desired, preferred));
     }
 
     private boolean inventoryContains(net.minecraft.world.item.Item item) {

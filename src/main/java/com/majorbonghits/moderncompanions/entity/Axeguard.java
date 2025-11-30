@@ -30,15 +30,23 @@ public class Axeguard extends AbstractHumanCompanionEntity {
 
     public void checkAxe() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
+        ItemStack preferred = ItemStack.EMPTY;
+        ItemStack fallback = !hand.isEmpty() && !isShieldItem(hand) ? hand : ItemStack.EMPTY;
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack itemstack = this.inventory.getItem(i);
-            if (isAxe(itemstack)) {
-                if (hand.isEmpty()) {
-                    this.setItemSlot(EquipmentSlot.MAINHAND, itemstack);
-                    hand = itemstack;
-                }
+            if (itemstack.isEmpty()) continue;
+            if (preferred.isEmpty() && isAxe(itemstack)) {
+                preferred = itemstack;
+            }
+            if (fallback.isEmpty() && !isShieldItem(itemstack)) {
+                fallback = itemstack;
             }
         }
+        ItemStack desired = !preferred.isEmpty() ? preferred : fallback;
+        if (!ItemStack.isSameItemSameComponents(hand, desired)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, desired);
+        }
+        setPreferredWeaponBonus(!preferred.isEmpty() && ItemStack.isSameItemSameComponents(desired, preferred));
     }
 
     @Override

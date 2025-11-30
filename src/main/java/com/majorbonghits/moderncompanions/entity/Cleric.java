@@ -60,15 +60,23 @@ public class Cleric extends AbstractHumanCompanionEntity {
 
     private void checkStaff() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
+        ItemStack preferred = ItemStack.EMPTY;
+        ItemStack fallback = !hand.isEmpty() && !isShieldItem(hand) ? hand : ItemStack.EMPTY;
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (stack.is(Items.GOLDEN_SWORD) || stack.getItem() instanceof BowItem || stack.getItem() instanceof QuarterstaffItem) { // keep totem visuals golden-themed
-                if (hand.isEmpty()) {
-                    this.setItemSlot(EquipmentSlot.MAINHAND, stack);
-                    hand = stack;
-                }
+            if (stack.isEmpty()) continue;
+            if (preferred.isEmpty() && (stack.is(Items.GOLDEN_SWORD) || stack.getItem() instanceof BowItem || stack.getItem() instanceof QuarterstaffItem)) { // keep totem visuals golden-themed
+                preferred = stack;
+            }
+            if (fallback.isEmpty() && !isShieldItem(stack)) {
+                fallback = stack;
             }
         }
+        ItemStack desired = !preferred.isEmpty() ? preferred : fallback;
+        if (!ItemStack.isSameItemSameComponents(hand, desired)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, desired);
+        }
+        setPreferredWeaponBonus(!preferred.isEmpty() && ItemStack.isSameItemSameComponents(desired, preferred));
         ItemStack offhand = this.getItemBySlot(EquipmentSlot.OFFHAND);
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);

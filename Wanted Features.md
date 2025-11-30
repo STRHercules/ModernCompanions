@@ -7,9 +7,25 @@
 * Classes will PREFER their preferred weapons, but will use anything given to them - using their preferred weapons first.
 
 ## New Races
-* Orcs
-* Elves
-    * Strictly skin based, maybe specific names if rolled with a unique skin
+* Strictly skin based, maybe specific names if rolled with a unique skin.
+    * Orcs
+        * https://www.minecraftskins.com/skin/1893133/orc/
+        * https://www.minecraftskins.com/skin/12121318/orc/
+        * https://www.minecraftskins.com/skin/12536405/female-orc/
+        * https://www.minecraftskins.com/skin/8658568/orc-warrior/
+    * Dwarves
+        * https://www.minecraftskins.com/skin/21495508/rudolfrednose-dwarf/
+        * https://www.minecraftskins.com/skin/4725638/dwarf-warrior/
+        * https://www.minecraftskins.com/skin/3733060/dwarf/
+        * https://www.minecraftskins.com/skin/22255891/fancy-dwarf-female---avain-stonehammer/
+    * Honorable Mentions
+        * https://www.minecraftskins.com/skin/23660082/the-wizard/
+        * https://www.minecraftskins.com/skin/23630436/dark-wanderer/
+        * https://www.minecraftskins.com/skin/23624972/null-and-entity303/
+        * https://www.minecraftskins.com/skin/18293594/end-wizard/
+        * https://www.minecraftskins.com/skin/23610300/another-arcane-inspired-mage/
+        * https://www.minecraftskins.com/skin/23669864/silco-inspired-mage/
+    
 
 ## Companion Depth & Personality
 * Personality Traits System

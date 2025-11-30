@@ -79,15 +79,23 @@ public class Scout extends AbstractHumanCompanionEntity {
 
     private void checkDagger() {
         ItemStack hand = this.getItemBySlot(EquipmentSlot.MAINHAND);
+        ItemStack preferred = ItemStack.EMPTY;
+        ItemStack fallback = !hand.isEmpty() && !isShieldItem(hand) ? hand : ItemStack.EMPTY;
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
-            if (stack.getItem() instanceof DaggerItem || stack.is(Items.STONE_SWORD) || stack.is(Items.IRON_SWORD)) {
-                if (hand.isEmpty()) {
-                    this.setItemSlot(EquipmentSlot.MAINHAND, stack);
-                    hand = stack;
-                }
+            if (stack.isEmpty()) continue;
+            if (preferred.isEmpty() && (stack.getItem() instanceof DaggerItem || stack.is(Items.STONE_SWORD) || stack.is(Items.IRON_SWORD))) {
+                preferred = stack;
+            }
+            if (fallback.isEmpty() && !isShieldItem(stack)) {
+                fallback = stack;
             }
         }
+        ItemStack desired = !preferred.isEmpty() ? preferred : fallback;
+        if (!ItemStack.isSameItemSameComponents(hand, desired)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, desired);
+        }
+        setPreferredWeaponBonus(!preferred.isEmpty() && ItemStack.isSameItemSameComponents(desired, preferred));
     }
 
     private boolean isBackstab(LivingEntity target) {
