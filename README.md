@@ -9,6 +9,23 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
 - Worldgen JSON/template/tag data and all companion structure NBTs/textures/models/lang/sounds have been migrated into the new namespace.
 - Rendering + advanced gameplay behavior remain placeholder-only until the remaining AI/entity/renderer work is finished.
 
+## Gameplay Overview
+
+![Inventory/Curio](https://i.imgur.com/NRLqCWk.gif)
+
+- **Finding companions:** Companion houses generate across the Overworld in houses/buildings (spacing is config-driven, default ~20 chunks). Residents spawn untamed with random name, sex, skin, base health variance, and RPG stats (STR/DEX/INT/END; a rare “specialist” rolls +5 in one stat).
+- **Taming & upkeep:** Right-click an untamed companion with the exact items they request (two food/resource stacks chosen at spawn); once both reach zero they tame, follow, and unlock their GUI. Tamed companions heal with a wide pantry — cooked foods, veggies, fruits, enchanted golden foods, honey, and beneficial potions (regen/instant health, etc.), applying the effects and returning empty bottles when possible—plus they still ping the owner for food when low.
+- **Commands & stances:** Shift + right-click toggles sit. Right-click opens the companion screen: follow/patrol/guard cycle, alert (hostile blacklist focus), hunt (farm animals), **sprint toggle** (on = sprint with you; off = normal run), auto-pickup toggle, clear target, release back to the wild, and patrol-radius +/- (2–32, saved per companion). Patrol/guard anchor at your current block.
+- **Staying close:** Follow AI now mirrors vanilla pet recall—companions on the same dimension teleport to the nearest safe spot around you when they drift ~35 blocks away, with navigation fallback if no space is open.
+- **Inventory & gear:** 6×9 personal inventory, item-magnet pickup when enabled, automatic best-armor selection, and class-aware weapon selection each tick. Friendly-fire and fall damage respect config toggles.
+- **Progression:** Companions earn XP from kills; an MMO-style curve gates levels. Health scales with level and END; STR boosts damage/knockback, DEX boosts move/attack speed + light KB resist, INT speeds XP gain, END adds health + physical reduction. Kill count and XP bar show in the GUI.
+- **Progression:** Companions earn XP from kills; an MMO-style curve gates levels. Health scales with level and END; STR boosts damage/knockback, DEX boosts move/attack speed + light KB resist, INT speeds XP gain, END adds health + physical reduction. Kill count and XP bar show in the GUI.
+- **Limits:** There is **no level cap** and **no hard party-size limit**—you can keep leveling companions and control as many as you can recruit; practical limits are only your hardware/server performance.
+- **Resurrection:** Tamed companions drop a Resurrection Scroll containing full NBT/gear instead of loose items. Activate it by right-clicking with a nether star in off-hand; then use on a block or fluid face to respawn the companion exactly at that spot with inventory intact (pet cleared for Beastmasters). Scrolls are ignored by the auto-loot magnet.
+- **Spawn Gems:** All companion spawn eggs are reskinned as class-colored gems. They still behave like eggs but visually match the new branding; find them on the creative tab.
+- **Custom weapons & recipes:** Modern Companions bundles a BasicWeapons-style arsenal (dagger, club, hammer, spear, quarterstaff, glaive) in every vanilla material plus optional bronze when that mod is loaded. Each weapon has a standard crafting recipe in the data pack (JEI-compatible) matching its material tier; companions auto-prefer their class weapons.
+- **Custom Skins:** You can assign specific companions any skin you want! Using the command `/companionskin "NAME" URL` you can assign skins to your companions like so; `/companionskin "Daniel George" https://i.imgur.com/FWADR65.png`
+
 ## Curio / Backpack Support
 - **Curios (optional)**: If Curios is installed, companions expose Curio slots and a render toggle so you can hide/show equipped curios per companion. Metadata marks Curios as optional; the mod runs fine without it.
 - **Sophisticated Backpacks (optional)**: When a companion wears a sophisticated backpack in the Curios back slot, all picked-up items are inserted into the backpack before the companion’s own 6×9 inventory (uses SB’s backpack IO wrapper with capability fallback).
@@ -45,25 +62,6 @@ Modern Companions is a NeoForge 1.21.1 port and rebrand of the Human Companions 
   - Journey stats: kills, major kills, resurrections, distance traveled with owner, first hired day.
   - Age: rolled 18–35 at spawn; ages +1 year every ~90 in-game days (visual only).
 - Legacy companions (zero traits) are backfilled **once** on load with traits/backstory/age—no rerolls after the initial backfill.
-
-## Gameplay Overview
-
-![Inventory/Curio](https://i.imgur.com/NRLqCWk.gif)
-
-- **Finding companions:** Companion houses generate across the Overworld in houses/buildings (spacing is config-driven, default ~20 chunks). Residents spawn untamed with random name, sex, skin, base health variance, and RPG stats (STR/DEX/INT/END; a rare “specialist” rolls +5 in one stat).
-- **Taming & upkeep:** Right-click an untamed companion with the exact items they request (two food/resource stacks chosen at spawn); once both reach zero they tame, follow, and unlock their GUI. Tamed companions heal with a wide pantry — cooked foods, veggies, fruits, enchanted golden foods, honey, and beneficial potions (regen/instant health, etc.), applying the effects and returning empty bottles when possible—plus they still ping the owner for food when low.
-- **Commands & stances:** Shift + right-click toggles sit. Right-click opens the companion screen: follow/patrol/guard cycle, alert (hostile blacklist focus), hunt (farm animals), **sprint toggle** (on = sprint with you; off = normal run), auto-pickup toggle, clear target, release back to the wild, and patrol-radius +/- (2–32, saved per companion). Patrol/guard anchor at your current block.
-- **Staying close:** Follow AI now mirrors vanilla pet recall—companions on the same dimension teleport to the nearest safe spot around you when they drift ~35 blocks away, with navigation fallback if no space is open.
-- **Inventory & gear:** 6×9 personal inventory, item-magnet pickup when enabled, automatic best-armor selection, and class-aware weapon selection each tick. Friendly-fire and fall damage respect config toggles.
-- **Progression:** Companions earn XP from kills; an MMO-style curve gates levels. Health scales with level and END; STR boosts damage/knockback, DEX boosts move/attack speed + light KB resist, INT speeds XP gain, END adds health + physical reduction. Kill count and XP bar show in the GUI.
-- **Progression:** Companions earn XP from kills; an MMO-style curve gates levels. Health scales with level and END; STR boosts damage/knockback, DEX boosts move/attack speed + light KB resist, INT speeds XP gain, END adds health + physical reduction. Kill count and XP bar show in the GUI.
-- **Limits:** There is **no level cap** and **no hard party-size limit**—you can keep leveling companions and control as many as you can recruit; practical limits are only your hardware/server performance.
-- **Resurrection:** Tamed companions drop a Resurrection Scroll containing full NBT/gear instead of loose items. Activate it by right-clicking with a nether star in off-hand; then use on a block or fluid face to respawn the companion exactly at that spot with inventory intact (pet cleared for Beastmasters). Scrolls are ignored by the auto-loot magnet.
-- **Spawn Gems:** All companion spawn eggs are reskinned as class-colored gems. They still behave like eggs but visually match the new branding; find them on the creative tab.
-- **Custom weapons & recipes:** Modern Companions bundles a BasicWeapons-style arsenal (dagger, club, hammer, spear, quarterstaff, glaive) in every vanilla material plus optional bronze when that mod is loaded. Each weapon has a standard crafting recipe in the data pack (JEI-compatible) matching its material tier; companions auto-prefer their class weapons.
-- **Custom Skins:** You can assign specific companions any skin you want! Using the command `/companionskin "NAME" URL` you can assign skins to your companions like so; `/companionskin "Daniel George" https://i.imgur.com/FWADR65.png`
-
-
 
 ## Worldgen & Spawns
 
