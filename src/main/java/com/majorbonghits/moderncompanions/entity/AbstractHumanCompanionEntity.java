@@ -3,6 +3,7 @@ package com.majorbonghits.moderncompanions.entity;
 import com.majorbonghits.moderncompanions.core.ModConfig;
 import com.majorbonghits.moderncompanions.core.ModMenuTypes;
 import com.majorbonghits.moderncompanions.entity.ai.*;
+import com.majorbonghits.moderncompanions.entity.personality.CompanionPersonality;
 import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import com.majorbonghits.moderncompanions.core.ModItems;
 import com.majorbonghits.moderncompanions.core.ModEnchantments;
@@ -122,6 +123,54 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> SPECIALIST = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> PRIMARY_TRAIT = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> SECONDARY_TRAIT = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> BOND_LEVEL = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> BOND_XP = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> BACKSTORY_ID = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Float> MORALE = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> RESURRECT_COUNT = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Long> FIRST_TAMED_TIME = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.LONG);
+    private static final EntityDataAccessor<Long> DIST_TRAVELED = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.LONG);
+    private static final EntityDataAccessor<Integer> MAJOR_KILLS = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> AGE_YEARS = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final ResourceLocation MOD_MORALE_DAMAGE = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "morale_damage");
+    private static final ResourceLocation MOD_MORALE_ARMOR = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "morale_armor");
+    private static final ResourceLocation MOD_TRAIT_QUICKSTEP = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_quickstep_speed");
+    private static final ResourceLocation MOD_TRAIT_STALWART = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_stalwart_kb");
+    private static final ResourceLocation MOD_TRAIT_RECKLESS = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_reckless_speed");
+    private static final ResourceLocation MOD_TRAIT_BRAVE = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_brave_damage");
+    private static final ResourceLocation MOD_TRAIT_GUARDIAN = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_guardian_armor");
+    private static final ResourceLocation MOD_TRAIT_DEVOTED = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_devoted_armor");
+    private static final ResourceLocation MOD_TRAIT_NIGHT_OWL_DAMAGE = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_night_owl_damage");
+    private static final ResourceLocation MOD_TRAIT_NIGHT_OWL_SPEED = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_night_owl_speed");
+    private static final ResourceLocation MOD_TRAIT_SUN_DAMAGE = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_sun_damage");
+    private static final ResourceLocation MOD_TRAIT_SUN_SPEED = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_sun_speed");
+    private static final ResourceLocation MOD_TRAIT_MELANCHOLIC = ResourceLocation.fromNamespaceAndPath(
+            com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "trait_melancholic_penalty");
     private static final int FOOD_REQUEST_COOLDOWN_TICKS = 600; // ~30s between requests
 
     protected final SimpleContainer inventory = new SimpleContainer(54);
@@ -136,6 +185,16 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private int totalExperience;
     private float experienceProgress;
     private int lastLevelUpTime;
+
+    private final CompanionPersonality personality = new CompanionPersonality();
+    private int bondTickCounter = 0;
+    private int lastNearDeathTick = -200;
+    private int personalityRefreshTicker = 0;
+    private double lastTrackX;
+    private double lastTrackY;
+    private double lastTrackZ;
+    private double distanceAccumulator;
+    private static final long AGE_INTERVAL_TICKS = 90L * 24000L; // 90 in-game days (~3 months) per year
 
     private int equipmentStrengthBonus;
     private int equipmentDexterityBonus;
@@ -200,6 +259,17 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(END, 4);
         builder.define(SPECIALIST, -1);
         builder.define(KILL_COUNT, 0);
+        builder.define(PRIMARY_TRAIT, "");
+        builder.define(SECONDARY_TRAIT, "");
+        builder.define(BOND_LEVEL, 0);
+        builder.define(BOND_XP, 0);
+        builder.define(BACKSTORY_ID, "");
+        builder.define(MORALE, 0.0F);
+        builder.define(RESURRECT_COUNT, 0);
+        builder.define(FIRST_TAMED_TIME, -1L);
+        builder.define(DIST_TRAVELED, 0L);
+        builder.define(MAJOR_KILLS, 0);
+        builder.define(AGE_YEARS, 0);
         builder.define(CUSTOM_SKIN_URL, "");
         builder.define(LAST_SWING_TICK, 0);
     }
@@ -227,7 +297,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
         this.goalSelector.addGoal(2, new AvoidCreeperGoal(this, 1.5D, 1.5D));
         this.goalSelector.addGoal(3, new MoveBackToGuardGoal(this));
-        this.goalSelector.addGoal(3, new CustomFollowOwnerGoal(this, 1.3D, 8.0F, 2.5F, true));
+        this.goalSelector.addGoal(3, new CustomFollowOwnerGoal(this, followSpeed(), followStartDistance(), followStopDistance(), true));
         this.goalSelector.addGoal(4, new CustomWaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
@@ -243,6 +313,33 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.targetSelector.addGoal(3, new CustomHurtByTargetGoal(this));
         this.targetSelector.addGoal(4, new HuntGoal(this));
         this.targetSelector.addGoal(5, new AlertGoal(this));
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (level().isClientSide) {
+            if (key.equals(PRIMARY_TRAIT) || key.equals(SECONDARY_TRAIT) || key.equals(BOND_XP)
+                    || key.equals(BOND_LEVEL) || key.equals(BACKSTORY_ID) || key.equals(MORALE)
+                    || key.equals(RESURRECT_COUNT) || key.equals(FIRST_TAMED_TIME) || key.equals(DIST_TRAVELED)
+                    || key.equals(MAJOR_KILLS) || key.equals(AGE_YEARS)) {
+                personality.setPrimaryTrait(this.entityData.get(PRIMARY_TRAIT));
+                personality.setSecondaryTrait(this.entityData.get(SECONDARY_TRAIT));
+                personality.setBondXp(this.entityData.get(BOND_XP));
+                personality.setBondLevel(this.entityData.get(BOND_LEVEL));
+                personality.setBackstoryId(this.entityData.get(BACKSTORY_ID));
+                personality.setMorale(this.entityData.get(MORALE));
+                personality.setFirstTamedGameTime(this.entityData.get(FIRST_TAMED_TIME));
+                personality.addDistanceTraveled(this.entityData.get(DIST_TRAVELED) - personality.getDistanceTraveledWithOwner());
+                personality.setMajorKills(this.entityData.get(MAJOR_KILLS));
+                personality.setAgeYears(this.entityData.get(AGE_YEARS));
+                // sync resurrection count (monotonic)
+                int target = this.entityData.get(RESURRECT_COUNT);
+                while (personality.getTimesResurrected() < target) {
+                    personality.noteResurrection();
+                }
+            }
+        }
     }
 
     /* ---------- Flags & helpers ---------- */
@@ -463,6 +560,188 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     public void incrementKillCount() {
         if (!this.level().isClientSide) {
             setKillCount(getKillCount() + 1);
+            personality.incrementTotalKills(false);
+        }
+    }
+
+    public void recordKill(LivingEntity victim) {
+        boolean major = isMajorKill(victim);
+        incrementKillCount();
+        personality.incrementTotalKills(major);
+        if (major) {
+            this.entityData.set(MAJOR_KILLS, personality.getMajorKills());
+        }
+        syncPersonalityToData();
+    }
+
+    private boolean isMajorKill(LivingEntity victim) {
+        var type = victim.getType();
+        return type == EntityType.ENDER_DRAGON
+                || type == EntityType.WITHER
+                || type == EntityType.WARDEN
+                || type == EntityType.ELDER_GUARDIAN;
+    }
+
+    public CompanionPersonality getPersonality() {
+        return personality;
+    }
+
+    public String getPrimaryTraitId() {
+        return this.entityData.get(PRIMARY_TRAIT);
+    }
+
+    public String getSecondaryTraitId() {
+        return this.entityData.get(SECONDARY_TRAIT);
+    }
+
+    public String getBackstoryId() {
+        return this.entityData.get(BACKSTORY_ID);
+    }
+
+    public int getBondLevel() {
+        return this.entityData.get(BOND_LEVEL);
+    }
+
+    public int getBondXp() {
+        return this.entityData.get(BOND_XP);
+    }
+
+    public float getMorale() {
+        return this.entityData.get(MORALE);
+    }
+
+    public String getMoraleDescriptorKey() {
+        return personality.moraleDescriptorKey();
+    }
+
+    public int getTimesResurrected() {
+        return this.entityData.get(RESURRECT_COUNT);
+    }
+
+    public long getFirstTamedGameTime() {
+        return this.entityData.get(FIRST_TAMED_TIME);
+    }
+
+    public long getDistanceTraveledWithOwner() {
+        return this.entityData.get(DIST_TRAVELED);
+    }
+
+    public int getMajorKills() {
+        return this.entityData.get(MAJOR_KILLS);
+    }
+
+    public int getAgeYears() {
+        return this.entityData.get(AGE_YEARS);
+    }
+
+    public void setPrimaryTraitId(String trait) {
+        personality.setPrimaryTrait(trait);
+        this.entityData.set(PRIMARY_TRAIT, trait == null ? "" : trait);
+    }
+
+    public void setSecondaryTraitId(String trait) {
+        personality.setSecondaryTrait(trait);
+        this.entityData.set(SECONDARY_TRAIT, trait == null ? "" : trait);
+    }
+
+    public void setBackstoryId(String id) {
+        personality.setBackstoryId(id);
+        this.entityData.set(BACKSTORY_ID, id == null ? "" : id);
+    }
+
+    public void setBondXp(int xp) {
+        personality.setBondXp(xp);
+        this.entityData.set(BOND_XP, personality.getBondXp());
+        this.entityData.set(BOND_LEVEL, personality.getBondLevel());
+    }
+
+    public void awardBondXp(int amount) {
+        if (!ModConfig.safeGet(ModConfig.BOND_ENABLED) || amount <= 0) return;
+        int before = personality.getBondLevel();
+        personality.awardBondXp(amount);
+        this.entityData.set(BOND_XP, personality.getBondXp());
+        this.entityData.set(BOND_LEVEL, personality.getBondLevel());
+        if (personality.getBondLevel() > before && ModConfig.safeGet(ModConfig.MORALE_ENABLED)) {
+            adjustMorale(ModConfig.safeGet(ModConfig.MORALE_BOND_LEVEL_DELTA).floatValue());
+        }
+    }
+
+    public void setMorale(float morale) {
+        personality.setMorale(morale);
+        this.entityData.set(MORALE, personality.getMorale());
+    }
+
+    public void adjustMorale(float delta) {
+        float adjusted = delta;
+        if (delta < 0) {
+            if (hasTrait("trait_disciplined")) adjusted *= 0.7F;
+            if (hasTrait("trait_jokester")) adjusted *= 0.7F;
+        }
+        personality.adjustMorale(adjusted);
+        float floor = getMoraleFloor();
+        if (personality.getMorale() < floor) {
+            personality.setMorale(floor);
+        }
+        this.entityData.set(MORALE, personality.getMorale());
+    }
+
+    private float getMoraleFloor() {
+        if (!ModConfig.safeGet(ModConfig.BOND_ENABLED)) return -1.0F;
+        float floor = -0.5F + (getBondLevel() * 0.05F);
+        return Mth.clamp(floor, -0.2F, 0.2F);
+    }
+
+    public void incrementResurrections() {
+        personality.noteResurrection();
+        this.entityData.set(RESURRECT_COUNT, personality.getTimesResurrected());
+    }
+
+    public void setFirstTamedGameTime(long gameTime) {
+        personality.setFirstTamedGameTime(gameTime);
+        this.entityData.set(FIRST_TAMED_TIME, personality.getFirstTamedGameTime());
+    }
+
+    public void addDistanceTraveled(long delta) {
+        personality.addDistanceTraveled(delta);
+        this.entityData.set(DIST_TRAVELED, personality.getDistanceTraveledWithOwner());
+    }
+
+    public void setAgeYears(int years) {
+        personality.setAgeYears(years);
+        this.entityData.set(AGE_YEARS, personality.getAgeYears());
+    }
+
+    public void setMajorKills(int value) {
+        personality.setMajorKills(value);
+        this.entityData.set(MAJOR_KILLS, personality.getMajorKills());
+    }
+
+    private void syncPersonalityToData() {
+        this.entityData.set(PRIMARY_TRAIT, personality.getPrimaryTrait());
+        this.entityData.set(SECONDARY_TRAIT, personality.getSecondaryTrait());
+        this.entityData.set(BOND_XP, personality.getBondXp());
+        this.entityData.set(BOND_LEVEL, personality.getBondLevel());
+        this.entityData.set(BACKSTORY_ID, personality.getBackstoryId());
+        this.entityData.set(MORALE, personality.getMorale());
+        this.entityData.set(RESURRECT_COUNT, personality.getTimesResurrected());
+        this.entityData.set(FIRST_TAMED_TIME, personality.getFirstTamedGameTime());
+        this.entityData.set(DIST_TRAVELED, personality.getDistanceTraveledWithOwner());
+        this.entityData.set(MAJOR_KILLS, personality.getMajorKills());
+        this.entityData.set(AGE_YEARS, personality.getAgeYears());
+    }
+
+    public void noteResurrection() {
+        incrementResurrections();
+    }
+
+    public void onResurrectedEvent() {
+        noteResurrection();
+        if (ModConfig.safeGet(ModConfig.BOND_ENABLED)) {
+            int resXp = applyBondTraitMultiplier(ModConfig.safeGet(ModConfig.BOND_RESURRECT_XP), false, false, true);
+            awardBondXp(resXp);
+        }
+        if (ModConfig.safeGet(ModConfig.MORALE_ENABLED)) {
+            adjustMorale(ModConfig.safeGet(ModConfig.MORALE_RESURRECT_DELTA).floatValue());
         }
     }
 
@@ -690,6 +969,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                         syncFoodRequirements();
                         if (foodRequirements.values().stream().allMatch(v -> v <= 0)) {
                             this.tame(player);
+                            setFirstTamedGameTime(this.level().getGameTime());
+                            syncPersonalityToData();
                             player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(),
                                     Component.literal("Thanks!")));
                             player.sendSystemMessage(Component.literal("Companion added"));
@@ -721,6 +1002,18 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             } else {
                 if (this.isAlliedTo(player)) {
+                    if (!this.level().isClientSide() && CompanionData.isFood(held) && this.getHealth() < this.getMaxHealth() - 0.1F) {
+                        ItemStack single = held.copyWithCount(1);
+                        if (healFromFoodStack(single)) {
+                            held.shrink(1);
+                            int feedXp = applyBondTraitMultiplier(ModConfig.safeGet(ModConfig.BOND_FEED_XP), true, false, false);
+                            awardBondXp(feedXp);
+                            if (ModConfig.safeGet(ModConfig.MORALE_ENABLED)) {
+                                adjustMorale(ModConfig.safeGet(ModConfig.MORALE_FEED_DELTA).floatValue());
+                            }
+                            return InteractionResult.CONSUME;
+                        }
+                    }
                     // Let the Companion Mover handle interaction (even when sneaking) to avoid
                     // triggering sit/GUI.
                     if (held.is(ModItems.COMPANION_MOVER.get())) {
@@ -849,6 +1142,11 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                     this.getPatrolPos().get().getZ() };
             tag.putIntArray("patrol_pos", patrolPos);
         }
+        CompoundTag personalityTag = new CompoundTag();
+        personality.saveTo(personalityTag);
+        tag.put("Personality", personalityTag);
+        tag.putInt("AgeYears", personality.getAgeYears());
+        tag.putLong("AgeLastCheck", personality.getLastAgeCheckGameTime());
     }
 
     @Override
@@ -894,9 +1192,39 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             this.setBaseHealth(tag.getInt("baseHealth"));
         }
         setSpecialistAttributeIndex(tag.contains("SpecialistAttr") ? tag.getInt("SpecialistAttr") : -1);
+        if (tag.contains("Personality", 10)) {
+            personality.loadFrom(tag.getCompound("Personality"));
+        } else {
+            // backward compatibility if older saves carry individual keys
+            personality.setPrimaryTrait(tag.getString(CompanionPersonality.KEY_PRIMARY));
+            personality.setSecondaryTrait(tag.getString(CompanionPersonality.KEY_SECONDARY));
+            personality.setBondXp(tag.getInt(CompanionPersonality.KEY_BOND_XP));
+            personality.setBondLevel(tag.getInt(CompanionPersonality.KEY_BOND_LEVEL));
+            personality.setBackstoryId(tag.getString(CompanionPersonality.KEY_BACKSTORY));
+            personality.setMorale(tag.getFloat(CompanionPersonality.KEY_MORALE));
+            if (tag.contains(CompanionPersonality.KEY_FIRST_TAMED)) {
+                personality.setFirstTamedGameTime(tag.getLong(CompanionPersonality.KEY_FIRST_TAMED));
+            }
+        }
+        if (!tag.contains("Personality", 10) && tag.contains("DistanceTravel")) {
+            personality.setDistanceTraveled(tag.getLong("DistanceTravel"));
+        }
+        if (tag.contains("AgeYears")) {
+            personality.setAgeYears(tag.getInt("AgeYears"));
+        }
+        if (tag.contains("AgeLastCheck")) {
+            personality.setLastAgeCheckGameTime(tag.getLong("AgeLastCheck"));
+        }
         if (tag.contains("Inventory", 9)) {
             this.inventory.fromTag(tag.getList("Inventory", 10), this.registryAccess());
         }
+        syncPersonalityToData();
+        // reset tracking anchors post-load
+        this.lastTrackX = this.getX();
+        this.lastTrackY = this.getY();
+        this.lastTrackZ = this.getZ();
+        // Backfill missing flavor data for pre-journal companions
+        rollMissingFlavorData();
         if (tag.contains("patrol_pos")) {
             int[] positions = tag.getIntArray("patrol_pos");
             setPatrolPos(new BlockPos(positions[0], positions[1], positions[2]));
@@ -970,6 +1298,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                 collectNearbyItems();
             }
             updateSprintState();
+            tickBondAndMorale();
             if (this.tickCount % 10 == 0) {
                 checkStats();
                 if (shouldRequestFood())
@@ -979,11 +1308,20 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                     this.setTarget(null);
                 }
             }
+            trackDistanceNearOwner();
+            tickAging();
         }
         boolean equipmentChanged = recomputeEquipmentAttributeBonuses();
         if (equipmentChanged) {
             applyRpgAttributeModifiers();
             clampHealthToMax();
+        }
+        if (!level().isClientSide()) {
+            personalityRefreshTicker++;
+            if (equipmentChanged || personalityRefreshTicker >= 40) {
+                personalityRefreshTicker = 0;
+                refreshPersonalityModifiers();
+            }
         }
         super.tick();
     }
@@ -1022,6 +1360,13 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         moveBackGoal = new MoveBackToPatrolGoal(this, getPatrolRadius());
         this.goalSelector.addGoal(3, moveBackGoal);
         this.goalSelector.addGoal(3, patrolGoal);
+        setAgeYears(this.random.nextInt(18, 36)); // 18-35 inclusive
+        personality.setLastAgeCheckGameTime(level.getLevel().getGameTime());
+        personality.rollTraits(this.random, ModConfig.safeGet(ModConfig.TRAITS_ENABLED),
+                ModConfig.safeGet(ModConfig.SECONDARY_TRAIT_CHANCE));
+        personality.rollBackstory(this.random);
+        personality.setMorale(0.0F);
+        syncPersonalityToData();
         assignFoodRequirements();
 
         if (ModConfig.safeGet(ModConfig.SPAWN_ARMOR)) {
@@ -1037,6 +1382,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         recomputeEquipmentAttributeBonuses();
         applyRpgAttributeModifiers();
         clampHealthToMax();
+        lastTrackX = this.getX();
+        lastTrackY = this.getY();
+        lastTrackZ = this.getZ();
         return super.finalizeSpawn(level, difficulty, reason, spawnDataIn);
     }
 
@@ -1070,6 +1418,27 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public void toggleSprint() {
         setSprintEnabled(!isSprintEnabled());
+    }
+
+    private double followSpeed() {
+        double base = 1.3D;
+        if (hasTrait("trait_quickstep")) base += 0.05D;
+        if (hasTrait("trait_cautious")) base -= 0.05D;
+        return Math.max(1.05D, base);
+    }
+
+    private float followStartDistance() {
+        float start = 8.0F;
+        if (hasTrait("trait_cautious")) start = 10.0F;
+        if (hasTrait("trait_guardian")) start = 7.0F;
+        return start;
+    }
+
+    private float followStopDistance() {
+        float stop = 2.5F;
+        if (hasTrait("trait_cautious")) stop = 3.5F;
+        if (hasTrait("trait_brave") || hasTrait("trait_guardian")) stop = 2.0F;
+        return stop;
     }
 
     public void release() {
@@ -1176,8 +1545,16 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         if (source.is(net.minecraft.tags.DamageTypeTags.IS_FALL) && !ModConfig.safeGet(ModConfig.FALL_DAMAGE)) {
             return false;
         }
+        float before = this.getHealth();
         float adjusted = applyEnduranceResistance(source, amount);
         hurtArmor(source, adjusted);
+        if (ModConfig.safeGet(ModConfig.MORALE_ENABLED)) {
+            float projected = before - adjusted;
+            if (projected <= this.getMaxHealth() * 0.25F && this.tickCount - lastNearDeathTick > 200) {
+                adjustMorale(ModConfig.safeGet(ModConfig.MORALE_NEAR_DEATH_DELTA).floatValue());
+                lastNearDeathTick = this.tickCount;
+            }
+        }
         return super.hurt(source, adjusted);
     }
 
@@ -1503,6 +1880,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         applyEnduranceModifiers();
         // intelligence currently drives XP gain inside giveExperiencePoints; no
         // attribute modifier needed
+        refreshPersonalityModifiers();
     }
 
     private void applyStrengthModifiers() {
@@ -1539,6 +1917,94 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         double kbResist = Math.min(0.6D, (getEndurance() - 4) * 0.02D);
         applyModifier(Attributes.KNOCKBACK_RESISTANCE, "rpg_end_kb_resist", kbResist,
                 AttributeModifier.Operation.ADD_VALUE);
+    }
+
+    private void refreshPersonalityModifiers() {
+        if (level().isClientSide()) return;
+        var damage = this.getAttribute(Attributes.ATTACK_DAMAGE);
+        var armor = this.getAttribute(Attributes.ARMOR);
+        var speed = this.getAttribute(Attributes.MOVEMENT_SPEED);
+        var kb = this.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+        if (damage != null) damage.removeModifier(MOD_MORALE_DAMAGE);
+        if (armor != null) armor.removeModifier(MOD_MORALE_ARMOR);
+        if (speed != null) speed.removeModifier(MOD_TRAIT_QUICKSTEP);
+        if (speed != null) speed.removeModifier(MOD_TRAIT_RECKLESS);
+        if (kb != null) kb.removeModifier(MOD_TRAIT_STALWART);
+        if (damage != null) damage.removeModifier(MOD_TRAIT_BRAVE);
+        if (armor != null) armor.removeModifier(MOD_TRAIT_GUARDIAN);
+        if (armor != null) armor.removeModifier(MOD_TRAIT_DEVOTED);
+        if (damage != null) {
+            damage.removeModifier(MOD_TRAIT_NIGHT_OWL_DAMAGE);
+            damage.removeModifier(MOD_TRAIT_SUN_DAMAGE);
+            damage.removeModifier(MOD_TRAIT_MELANCHOLIC);
+        }
+        if (speed != null) {
+            speed.removeModifier(MOD_TRAIT_NIGHT_OWL_SPEED);
+            speed.removeModifier(MOD_TRAIT_SUN_SPEED);
+        }
+
+        float morale = getMorale();
+        if (morale > 0.5f) {
+            if (damage != null) {
+                damage.addTransientModifier(new AttributeModifier(MOD_MORALE_DAMAGE, 0.5D, AttributeModifier.Operation.ADD_VALUE));
+            }
+            if (armor != null) {
+                armor.addTransientModifier(new AttributeModifier(MOD_MORALE_ARMOR, 0.5D, AttributeModifier.Operation.ADD_VALUE));
+            }
+        } else if (morale < -0.5f) {
+            if (damage != null) {
+                damage.addTransientModifier(new AttributeModifier(MOD_MORALE_DAMAGE, -0.5D, AttributeModifier.Operation.ADD_VALUE));
+            }
+            if (armor != null) {
+                armor.addTransientModifier(new AttributeModifier(MOD_MORALE_ARMOR, -0.5D, AttributeModifier.Operation.ADD_VALUE));
+            }
+        }
+
+        if (hasTrait("trait_quickstep") && speed != null) {
+            speed.addTransientModifier(new AttributeModifier(MOD_TRAIT_QUICKSTEP, 0.02D, AttributeModifier.Operation.ADD_VALUE));
+        }
+        if (hasTrait("trait_reckless") && speed != null) {
+            speed.addTransientModifier(new AttributeModifier(MOD_TRAIT_RECKLESS, 0.01D, AttributeModifier.Operation.ADD_VALUE));
+        }
+        if (hasTrait("trait_stalwart") && kb != null) {
+            kb.addTransientModifier(new AttributeModifier(MOD_TRAIT_STALWART, 0.05D, AttributeModifier.Operation.ADD_VALUE));
+        }
+        if (hasTrait("trait_brave") && damage != null) {
+            damage.addTransientModifier(new AttributeModifier(MOD_TRAIT_BRAVE, 0.25D, AttributeModifier.Operation.ADD_VALUE));
+        }
+        if (hasTrait("trait_guardian") && armor != null) {
+            armor.addTransientModifier(new AttributeModifier(MOD_TRAIT_GUARDIAN, 0.25D, AttributeModifier.Operation.ADD_VALUE));
+        }
+        if (hasTrait("trait_devoted") && armor != null) {
+            armor.addTransientModifier(new AttributeModifier(MOD_TRAIT_DEVOTED, 0.15D, AttributeModifier.Operation.ADD_VALUE));
+        }
+
+        // Time-of-day traits
+        if (this.level() != null) {
+            boolean isDay = this.level().isDay();
+            boolean isNight = !isDay;
+            if (isNight && hasTrait("trait_night_owl")) {
+                if (damage != null) {
+                    damage.addTransientModifier(new AttributeModifier(MOD_TRAIT_NIGHT_OWL_DAMAGE, 0.25D, AttributeModifier.Operation.ADD_VALUE));
+                }
+                if (speed != null) {
+                    speed.addTransientModifier(new AttributeModifier(MOD_TRAIT_NIGHT_OWL_SPEED, 0.01D, AttributeModifier.Operation.ADD_VALUE));
+                }
+            }
+            if (isDay && hasTrait("trait_sun_blessed")) {
+                if (damage != null) {
+                    damage.addTransientModifier(new AttributeModifier(MOD_TRAIT_SUN_DAMAGE, 0.25D, AttributeModifier.Operation.ADD_VALUE));
+                }
+                if (speed != null) {
+                    speed.addTransientModifier(new AttributeModifier(MOD_TRAIT_SUN_SPEED, 0.01D, AttributeModifier.Operation.ADD_VALUE));
+                }
+            }
+        }
+
+        // Melancholic: minor penalty when morale is low
+        if (hasTrait("trait_melancholic") && damage != null && getMorale() < -0.2f) {
+            damage.addTransientModifier(new AttributeModifier(MOD_TRAIT_MELANCHOLIC, -0.2D, AttributeModifier.Operation.ADD_VALUE));
+        }
     }
 
     private int getEnduranceBonusHealth() {
@@ -1579,7 +2045,16 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     private float getExperienceGainMultiplier() {
-        return 1.0F + (float) ((getIntelligence() - 4) * 0.03D);
+        float mult = 1.0F + (float) ((getIntelligence() - 4) * 0.03D);
+        if (hasTrait("trait_disciplined")) {
+            mult += 0.05F;
+        }
+        return mult;
+    }
+
+    public boolean hasTrait(String traitId) {
+        if (traitId == null || traitId.isEmpty()) return false;
+        return traitId.equals(getPrimaryTraitId()) || traitId.equals(getSecondaryTraitId());
     }
 
     private boolean shouldRequestFood() {
@@ -1599,6 +2074,92 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             Component text = Component.literal(randomFoodRequestLine());
             player.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(), text));
         }
+    }
+
+    private void tickBondAndMorale() {
+        if (!ModConfig.safeGet(ModConfig.BOND_ENABLED))
+            return;
+        if (!this.isTame())
+            return;
+        LivingEntity owner = this.getOwner();
+        if (!(owner instanceof Player))
+            return;
+        double dist2 = this.distanceToSqr(owner);
+        if (dist2 > 24 * 24)
+            return;
+        bondTickCounter++;
+        int interval = ModConfig.safeGet(ModConfig.BOND_TICK_INTERVAL);
+        if (bondTickCounter >= Math.max(20, interval)) {
+            int base = ModConfig.safeGet(ModConfig.BOND_TIME_XP);
+            awardBondXp(applyBondTraitMultiplier(base, false, true, false));
+            bondTickCounter = 0;
+        }
+    }
+
+    private int applyBondTraitMultiplier(int base, boolean feeding, boolean passive, boolean resurrect) {
+        double mult = 1.0D;
+        if (hasTrait("trait_devoted")) mult += 0.2D;
+        if (feeding && hasTrait("trait_glutton")) mult += 0.15D;
+        if (base <= 0) return 0;
+        return Math.max(1, (int) Math.round(base * mult));
+    }
+
+    private void trackDistanceNearOwner() {
+        double dx = this.getX() - lastTrackX;
+        double dz = this.getZ() - lastTrackZ;
+        double moved = Math.sqrt(dx * dx + dz * dz);
+        lastTrackX = this.getX();
+        lastTrackY = this.getY();
+        lastTrackZ = this.getZ();
+        if (!this.isTame()) return;
+        LivingEntity owner = this.getOwner();
+        if (owner == null) return;
+        if (this.distanceToSqr(owner) > 24 * 24) return;
+        if (moved > 0.0001D) {
+            distanceAccumulator += moved;
+            long whole = (long) distanceAccumulator;
+            if (whole > 0) {
+                addDistanceTraveled(whole);
+                distanceAccumulator -= whole;
+            }
+        }
+    }
+
+    private void tickAging() {
+        if (this.level().isClientSide()) return;
+        long now = this.level().getGameTime();
+        if (personality.getLastAgeCheckGameTime() < 0) {
+            personality.setLastAgeCheckGameTime(now);
+            return;
+        }
+        long elapsed = now - personality.getLastAgeCheckGameTime();
+        if (elapsed >= AGE_INTERVAL_TICKS) {
+            long years = elapsed / AGE_INTERVAL_TICKS;
+            if (years > 0) {
+                setAgeYears(personality.getAgeYears() + (int) years);
+                long remainder = elapsed - years * AGE_INTERVAL_TICKS;
+                personality.setLastAgeCheckGameTime(now - remainder);
+            }
+        }
+    }
+
+    /**
+     * For older companions without newly-added flavor data, roll safe defaults.
+     */
+    private void rollMissingFlavorData() {
+        if (personality.getPrimaryTrait().isEmpty() && personality.getSecondaryTrait().isEmpty()) {
+            // Only roll traits once for legacy companions that had none.
+            personality.rollTraits(this.random, ModConfig.safeGet(ModConfig.TRAITS_ENABLED),
+                    ModConfig.safeGet(ModConfig.SECONDARY_TRAIT_CHANCE));
+        }
+        if (personality.getBackstoryId().isEmpty()) {
+            personality.rollBackstory(this.random);
+        }
+        if (personality.getAgeYears() <= 0) {
+            setAgeYears(this.random.nextInt(18, 36));
+            personality.setLastAgeCheckGameTime(this.level().getGameTime());
+        }
+        syncPersonalityToData();
     }
 
     private String randomFoodRequestLine() {

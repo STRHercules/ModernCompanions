@@ -229,6 +229,7 @@ public class ResurrectionScrollItem extends Item {
         CompoundTag tag = storedData.copyTag();
 
         companion.load(tag);
+        companion.onResurrectedEvent();
         double safeY = Math.max(pos.y(), level.getMinBuildHeight() + 0.01D);
         companion.moveTo(pos.x(), safeY, pos.z(), level.random.nextFloat() * 360.0F, 0.0F);
         companion.setHealth(companion.getMaxHealth());

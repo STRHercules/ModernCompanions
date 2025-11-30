@@ -200,6 +200,49 @@
 - Rationale: Provides at-a-glance leveling status comparable to the original mod’s experience cues.
 - Build/Test: `./gradlew build -x test` ✔️
 
+## 2025-11-30
+- Prompt/task: "Consult TASK.md and get started."
+- Steps:
+  - Added a centralized `CompanionPersonality` model (traits, bond, morale, backstory, memory counters) with NBT save/load and data-parameter sync.
+  - Wired spawn/tame flows to roll and persist traits/backstories, capture first-tame time, and increment resurrection/kills into the memory journal; exposed bond/morale getters for future hooks.
+  - Surfaced traits/backstory/bond/morale on the companion GUI with localized labels; added translation stubs in all lang files and new config toggles for traits/bond/morale. Bumped version to 1.1.10.
+- Rationale: Establishes the personality/bond foundation from TASK.md so later passes can attach event-driven XP/morale effects without rewriting persistence or UI plumbing.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-11-30 (later)
+- Prompt/task: "Continue with the next steps."
+- Steps:
+  - Added bond/morale config knobs and passive bond ticking near the owner; feeding and resurrection now grant bond XP and apply morale deltas with clamps.
+  - Implemented near-death morale drops, synced first-tamed time/resurrection count, and wired resurrection scroll revive to award bond XP and morale adjustments.
+  - Expanded the companion GUI with a Memory Journal block (join day, total kills, resurrections) and trait/backstory/morale text; localized new strings and bumped version to 1.1.11.
+- Rationale: Moves personality/Bond systems from storage into gameplay hooks and player-visible UI, aligning with TASK sections 3–5 while keeping effects lightweight and configurable.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-12-01
+- Prompt/task: "Continue with the next steps."
+- Steps:
+  - Added distance-traveled tracking near the owner and synced to the Memory Journal, plus major-kill detection on boss-tier mobs; kill logging now uses `recordKill` so totals stay consistent.
+  - Wired trait-aware AI tweaks (cautious/brave/guardian follow distances, quickstep/reckless movement) and morale/trait attribute nudges with small modifiers and bond-level morale floors.
+  - Added bond XP multipliers for Glutton/Devoted, refreshed personality modifiers periodically, and localized new Memory Journal distance line; bumped version to 1.1.12.
+- Rationale: Brings personality effects into movement and stats while surfacing more journey stats, edging closer to TASK sections 2–5 without heavy mechanics.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-12-01 (later)
+- Prompt/task: "Continue with the next steps."
+- Steps:
+  - Added tracked distance and major-kill counts to synced data and GUI, formatting distance to meters/kilometers; expanded Memory Journal lines and localization.
+  - Implemented Lucky trait bonus on drops via LivingDropsEvent (configurable chance), switched major-kill detection to boss tag fallback, and kept trait-aware follow tuning.
+  - Added new config for Lucky drop chance and bumped version to 1.1.13.
+- Rationale: Rounds out Memory Journal stats and delivers the Lucky trait’s loot hook while keeping effects small and configurable.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-12-01 (blur fix)
+- Prompt/task: "Everything on the journal page is blurred?"
+- Steps:
+  - Replaced the journal screen background with a simple dark tint to avoid the default blur effect behind the GUI.
+- Rationale: Keeps the journal readable while showing the new background asset.
+- Build/Test: `./gradlew build -x test` ✔️
+
 ## 2025-11-20 (Original GUI textures)
 - Prompt/task: "We need to incorporate the assets [...] construct the GUI exactly how they did."
 - Steps:

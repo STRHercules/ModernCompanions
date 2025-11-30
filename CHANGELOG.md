@@ -15,8 +15,18 @@
 * Added Optional Curio support for Companions
     * Curio visiblity is toggleable
 * Added Optional Sophisticated Backpack support/feature
-    * If companion is wearing a Sophisticated Backpack, they will fill it before their inventory.
+    * If a Companion is wearing a Sophisticated Backpack, they will fill it before their inventory.
 * Added better preferred weapon and fallback support.
     * Companions using a preferred weapon type will recieve a +2 bonus to their damage.
     * Companions will now use whatever weapon is available if they do not have their preferred weapon.
     * Hopefully increased Shield support for Vanguards - should equip modded shields now.
+    * Fixed bug where Vanguard equipped 2 shields.
+* Companion Traits, Backgrounds, Morale, Bonds and additional Stats, and more!
+    * Companions now spawn with 1-2 random traits which will grant small bonuses.
+    * Companions will now spawn with a small backstory.
+    * Companions now have a 'Morale' level - taking care of them raises this while neglecting them will drain it.
+    * The more you travel, heal, and revive you companion the stronger their Bond will grow. This will grant benefits to the Companion.
+    * There is now an additional button in the Companion GUI that will lead you to a new Biography page.
+    * Companions now have ages assigned to them, and will age 1 year every 3 in-game months.
+        * Aging is only a visual string in the Bio page.
+    * Existing Companions will have missing values (Backstory, Age, Traits) assigned to them.

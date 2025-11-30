@@ -61,6 +61,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private CompanionButton radiusMinus;
     private CompanionButton radiusPlus;
     private Button curiosButton;
+    private Button journalButton;
 
     private int sidebarX;
 
@@ -101,13 +102,19 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         radiusMinus = addRenderableWidget(new CompanionButton("radius-", leftPos + sidebarX + 3, radiusY, 16, 12, 17, 0, 13, radiusTex, () -> adjustRadius(-2), false));
         radiusPlus = addRenderableWidget(new CompanionButton("radius+", leftPos + sidebarX + 21, radiusY, 16, 12, 0, 0, 13, radiusTex, () -> adjustRadius(2), false));
 
+        int curiosY = topPos + 180; // move curios up
         if (ModList.get().isLoaded("curios")) {
-            int curiosY = topPos + 200; // align with Curios screen Back button position
             curiosButton = addRenderableWidget(Button.builder(Component.literal("Curios"), b -> openCurios())
                     .pos(leftPos + sidebarX + 2, curiosY)
                     .size(38, 16)
                     .build());
         }
+
+        int journalY = topPos + 200;
+        journalButton = addRenderableWidget(Button.builder(Component.translatable("button.modern_companions.journal"), b -> openJournal())
+                .pos(leftPos + sidebarX + 2, journalY)
+                .size(38, 16)
+                .build());
     }
 
     @Override
@@ -203,6 +210,12 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         Minecraft mc = Minecraft.getInstance();
         if (mc == null || mc.getConnection() == null) return;
         mc.getConnection().send(new ServerboundCustomPayloadPacket(new OpenCompanionCuriosPayload(menu.getCompanionId())));
+    }
+
+    private void openJournal() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null) return;
+        mc.setScreen(new CompanionJournalScreen(this, menu.getCompanionId()));
     }
 
     private Optional<AbstractHumanCompanionEntity> safeCompanion() {
@@ -323,4 +336,18 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
             if (foodY > FOOD_BOTTOM) break; // stay inside strip
         }
     }
+
+    private int drawWrappedLine(GuiGraphics gfx, Component text, int x, int y, int width) {
+        int currentY = y;
+        for (FormattedCharSequence seq : this.font.split(text, width)) {
+            gfx.drawString(this.font, seq, x, currentY, 0x000000, false);
+            currentY += 10;
+        }
+        return currentY;
+    }
+
+    private Component traitName(String id) { return Component.empty(); }
+    private Component backstoryName(String id) { return Component.empty(); }
+    private String formatFirstTamed(AbstractHumanCompanionEntity companion) { return ""; }
+    private String formatDistance(long meters) { return ""; }
 }

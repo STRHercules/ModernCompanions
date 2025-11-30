@@ -19,6 +19,19 @@ public final class ModConfig {
     public static ModConfigSpec.IntValue BASE_HEALTH;
     public static ModConfigSpec.BooleanValue LOW_HEALTH_FOOD;
     public static ModConfigSpec.BooleanValue CREEPER_WARNING;
+    public static ModConfigSpec.BooleanValue TRAITS_ENABLED;
+    public static ModConfigSpec.IntValue SECONDARY_TRAIT_CHANCE;
+    public static ModConfigSpec.BooleanValue BOND_ENABLED;
+    public static ModConfigSpec.BooleanValue MORALE_ENABLED;
+    public static ModConfigSpec.IntValue BOND_TICK_INTERVAL;
+    public static ModConfigSpec.IntValue BOND_TIME_XP;
+    public static ModConfigSpec.IntValue BOND_FEED_XP;
+    public static ModConfigSpec.IntValue BOND_RESURRECT_XP;
+    public static ModConfigSpec.DoubleValue MORALE_FEED_DELTA;
+    public static ModConfigSpec.DoubleValue MORALE_NEAR_DEATH_DELTA;
+    public static ModConfigSpec.DoubleValue MORALE_RESURRECT_DELTA;
+    public static ModConfigSpec.DoubleValue MORALE_BOND_LEVEL_DELTA;
+    public static ModConfigSpec.DoubleValue LUCKY_EXTRA_DROP_CHANCE;
 
     /**
      * Safely read a config value even during very early lifecycle (e.g., attribute construction) by
@@ -66,6 +79,48 @@ public final class ModConfig {
         CREEPER_WARNING = builder
                 .comment("If true, companions warn the player about nearby creepers")
                 .define("creeperWarning", true);
+        builder.pop();
+
+        builder.push("personality");
+        TRAITS_ENABLED = builder
+                .comment("Enable birth traits for companions (Primary/Secondary).")
+                .define("traitsEnabled", true);
+        SECONDARY_TRAIT_CHANCE = builder
+                .comment("Chance (percent) for a companion to roll a secondary trait at spawn.")
+                .defineInRange("secondaryTraitChance", 40, 0, 100);
+        BOND_ENABLED = builder
+                .comment("Enable the Bond/Loyalty track.")
+                .define("bondEnabled", true);
+        MORALE_ENABLED = builder
+                .comment("Enable morale tracking and small performance nudges.")
+                .define("moraleEnabled", true);
+        BOND_TICK_INTERVAL = builder
+                .comment("Ticks between passive bond XP awards while near the owner (20 ticks = 1 second).")
+                .defineInRange("bondTickInterval", 1200, 20, Integer.MAX_VALUE);
+        BOND_TIME_XP = builder
+                .comment("Bond XP granted each interval when alive near the owner.")
+                .defineInRange("bondTimeXp", 5, 0, 10000);
+        BOND_FEED_XP = builder
+                .comment("Bond XP granted when the owner feeds the companion.")
+                .defineInRange("bondFeedXp", 15, 0, 10000);
+        BOND_RESURRECT_XP = builder
+                .comment("Bond XP granted when resurrecting a companion.")
+                .defineInRange("bondResurrectXp", 80, 0, 100000);
+        MORALE_FEED_DELTA = builder
+                .comment("Morale change applied when the companion is fed by the owner.")
+                .defineInRange("moraleFeedDelta", 0.05D, -1.0D, 1.0D);
+        MORALE_NEAR_DEATH_DELTA = builder
+                .comment("Morale change applied when the companion nearly dies.")
+                .defineInRange("moraleNearDeathDelta", -0.07D, -1.0D, 1.0D);
+        MORALE_RESURRECT_DELTA = builder
+                .comment("Morale change applied when resurrected.")
+                .defineInRange("moraleResurrectDelta", -0.1D, -1.0D, 1.0D);
+        MORALE_BOND_LEVEL_DELTA = builder
+                .comment("Morale change applied on bond level up.")
+                .defineInRange("moraleBondLevelDelta", 0.05D, -1.0D, 1.0D);
+        LUCKY_EXTRA_DROP_CHANCE = builder
+                .comment("Chance for Lucky trait companions to duplicate one dropped item on a kill (0.0-1.0).")
+                .defineInRange("luckyExtraDropChance", 0.05D, 0.0D, 1.0D);
         builder.pop();
 
         ModLoadingContext.get().getActiveContainer()
