@@ -1,5 +1,8 @@
 # Wanted Features
 
+## Companions will have Favorite Foods
+* These foods will give additional healing and increase mood/bond
+
 ## Achievements/Advancements
 * For crafting the Wand/Mover
 * For Recruiting their first companion
