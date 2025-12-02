@@ -192,7 +192,7 @@ public class MinerJobGoal extends Goal {
         if (companion.getJob() != CompanionJob.MINER) return false;
         if (companion.isOrderedToSit() || !companion.isTame()) return false;
         if (!hasPickaxe()) return false;
-        return isWithinWorkArea(16.0D);
+        return isWithinWorkArea(16.0D) || isWithinPatrolArea();
     }
 
     private void loadConfigBlockLists() {
@@ -236,6 +236,10 @@ public class MinerJobGoal extends Goal {
         if (owner != null && companion.distanceToSqr(owner) <= ownerMax * ownerMax) {
             return true;
         }
+        return false;
+    }
+
+    private boolean isWithinPatrolArea() {
         return companion.isPatrolling() && companion.getPatrolPos().isPresent()
                 && companion.getPatrolPos().get().distSqr(companion.blockPosition()) <= Math.pow(Math.max(8.0D, companion.getPatrolRadius() + 4), 2);
     }

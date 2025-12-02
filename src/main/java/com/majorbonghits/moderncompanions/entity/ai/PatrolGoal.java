@@ -1,6 +1,7 @@
 package com.majorbonghits.moderncompanions.entity.ai;
 
 import com.majorbonghits.moderncompanions.entity.AbstractHumanCompanionEntity;
+import com.majorbonghits.moderncompanions.entity.job.CompanionJob;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.phys.Vec3;
@@ -31,6 +32,10 @@ public class PatrolGoal extends RandomStrollGoal {
     @Override
     public boolean canUse() {
         if (companion.getPatrolPos().isEmpty() || !companion.isPatrolling()) {
+            return false;
+        }
+        // If the companion has an active job, let the job goals drive movement instead of patrol strolling.
+        if (companion.getJob() != CompanionJob.NONE) {
             return false;
         }
         this.patrolVec = Vec3.atBottomCenterOf(companion.getPatrolPos().orElse(companion.blockPosition()));

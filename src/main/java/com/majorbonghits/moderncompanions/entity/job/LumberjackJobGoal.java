@@ -151,7 +151,7 @@ public class LumberjackJobGoal extends Goal {
         if (companion.getJob() != CompanionJob.LUMBERJACK) return false;
         if (companion.isOrderedToSit() || !companion.isTame()) return false;
         if (!hasAxe()) return false;
-        return isWithinWorkArea(20.0D);
+        return isWithinWorkArea(20.0D) || isWithinPatrolArea();
     }
 
     private boolean prepareTreeTargets() {
@@ -382,6 +382,10 @@ public class LumberjackJobGoal extends Goal {
         if (owner != null && companion.distanceToSqr(owner) <= ownerMax * ownerMax) {
             return true;
         }
+        return false;
+    }
+
+    private boolean isWithinPatrolArea() {
         return companion.isPatrolling() && companion.getPatrolPos().isPresent()
                 && companion.getPatrolPos().get().distSqr(companion.blockPosition()) <= Math.pow(Math.max(8.0D, companion.getPatrolRadius() + 4), 2);
     }

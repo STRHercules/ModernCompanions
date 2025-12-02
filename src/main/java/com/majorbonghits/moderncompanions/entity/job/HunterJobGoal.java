@@ -74,8 +74,7 @@ public class HunterJobGoal extends Goal {
         var owner = companion.getOwner();
         double max = Math.max(8.0D, searchRadius);
         if (owner != null && companion.distanceToSqr(owner) <= max * max) return true;
-        return companion.isPatrolling() && companion.getPatrolPos().isPresent()
-                && companion.getPatrolPos().get().distSqr(companion.blockPosition()) <= Math.pow(Math.max(8.0D, companion.getPatrolRadius() + 4), 2);
+        return isWithinPatrolArea();
     }
 
     private boolean hasWeapon() {
@@ -93,5 +92,10 @@ public class HunterJobGoal extends Goal {
             }
         }
         return false;
+    }
+
+    private boolean isWithinPatrolArea() {
+        return companion.isPatrolling() && companion.getPatrolPos().isPresent()
+                && companion.getPatrolPos().get().distSqr(companion.blockPosition()) <= Math.pow(Math.max(8.0D, companion.getPatrolRadius() + 4), 2);
     }
 }
