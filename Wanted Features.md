@@ -13,9 +13,6 @@
 ## Class Additions
 * Sneaky Stealth Rogue Class
 
-## Weapon Usage Expansion
-* Classes will PREFER their preferred weapons, but will use anything given to them - using their preferred weapons first.
-
 ## New Races
 * Strictly skin based, maybe specific names if rolled with a unique skin.
     * Orcs
