@@ -40,23 +40,15 @@ public class PatrolGoal extends RandomStrollGoal {
     @Nullable
     @Override
     protected Vec3 getPosition() {
-        Vec3 vec = getRawPosition();
-        if (vec != null) {
-            double distance = vec.distanceTo(patrolVec);
-            if (distance > radius) {
-                vec = null;
-            }
+        Vec3 candidate = this.mob.getRandom().nextFloat() >= this.probability ? getRandomAroundPatrol() : super.getPosition();
+        if (candidate == null) {
+            candidate = super.getPosition();
         }
-        return vec;
+        return candidate;
     }
 
-    public Vec3 getRawPosition() {
-        if (this.mob.isInWaterOrBubble()) {
-            Vec3 vec3 = LandRandomPos.getPos(this.mob, radius, 7);
-            return vec3 == null ? super.getPosition() : vec3;
-        } else {
-            return this.mob.getRandom().nextFloat() >= this.probability ? LandRandomPos.getPos(this.mob, radius, 7) :
-                    super.getPosition();
-        }
+    private Vec3 getRandomAroundPatrol() {
+        if (patrolVec == null) return null;
+        return LandRandomPos.getPosTowards(this.mob, radius, 7, patrolVec);
     }
 }

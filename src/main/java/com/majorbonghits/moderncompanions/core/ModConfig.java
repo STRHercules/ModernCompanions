@@ -3,6 +3,8 @@ package com.majorbonghits.moderncompanions.core;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
+import java.util.List;
+
 /**
  * Port of the original Human Companions common configuration.
  * TODO: reconnect the values to gameplay once entity logic is fully ported.
@@ -32,6 +34,18 @@ public final class ModConfig {
     public static ModConfigSpec.DoubleValue MORALE_RESURRECT_DELTA;
     public static ModConfigSpec.DoubleValue MORALE_BOND_LEVEL_DELTA;
     public static ModConfigSpec.DoubleValue LUCKY_EXTRA_DROP_CHANCE;
+    public static ModConfigSpec.BooleanValue JOB_LUMBERJACK_ENABLED;
+    public static ModConfigSpec.IntValue JOB_LUMBERJACK_RADIUS;
+    public static ModConfigSpec.BooleanValue JOB_HUNTER_ENABLED;
+    public static ModConfigSpec.IntValue JOB_HUNTER_RADIUS;
+    public static ModConfigSpec.BooleanValue JOB_MINER_ENABLED;
+    public static ModConfigSpec.IntValue JOB_MINER_RADIUS;
+    public static ModConfigSpec.BooleanValue JOB_FISHER_ENABLED;
+    public static ModConfigSpec.IntValue JOB_FISHER_RADIUS;
+    public static ModConfigSpec.BooleanValue JOB_CHEF_ENABLED;
+    public static ModConfigSpec.IntValue JOB_CHEF_RADIUS;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> JOB_MINER_ALLOW_BLOCKS;
+    public static ModConfigSpec.ConfigValue<List<? extends String>> JOB_MINER_DENY_BLOCKS;
 
     /**
      * Safely read a config value even during very early lifecycle (e.g., attribute construction) by
@@ -121,6 +135,45 @@ public final class ModConfig {
         LUCKY_EXTRA_DROP_CHANCE = builder
                 .comment("Chance for Lucky trait companions to duplicate one dropped item on a kill (0.0-1.0).")
                 .defineInRange("luckyExtraDropChance", 0.05D, 0.0D, 1.0D);
+        builder.pop();
+
+        builder.push("jobs");
+        JOB_LUMBERJACK_ENABLED = builder
+                .comment("Enable the Lumberjack job behaviors.")
+                .define("lumberjackEnabled", true);
+        JOB_LUMBERJACK_RADIUS = builder
+                .comment("Search radius for Lumberjack log scans.")
+                .defineInRange("lumberjackRadius", 10, 4, 64);
+        JOB_HUNTER_ENABLED = builder
+                .comment("Enable the Hunter job behaviors.")
+                .define("hunterEnabled", true);
+        JOB_HUNTER_RADIUS = builder
+                .comment("Search radius for Hunter target scans.")
+                .defineInRange("hunterRadius", 20, 6, 64);
+        JOB_MINER_ENABLED = builder
+                .comment("Enable the Miner job behaviors.")
+                .define("minerEnabled", true);
+        JOB_MINER_RADIUS = builder
+                .comment("Search radius for Miner exposed block scans.")
+                .defineInRange("minerRadius", 8, 4, 32);
+        JOB_MINER_ALLOW_BLOCKS = builder
+                .comment("Optional whitelist of block ids the Miner may break (empty uses default tags).")
+                .defineList("minerAllowBlocks", List::of, o -> o instanceof String);
+        JOB_MINER_DENY_BLOCKS = builder
+                .comment("Blacklist of block ids the Miner should never break.")
+                .defineList("minerDenyBlocks", () -> List.of("minecraft:chest", "minecraft:spawner"), o -> o instanceof String);
+        JOB_FISHER_ENABLED = builder
+                .comment("Enable the Fisher job behaviors.")
+                .define("fisherEnabled", true);
+        JOB_FISHER_RADIUS = builder
+                .comment("Search radius for Fisher water spot scans.")
+                .defineInRange("fisherRadius", 10, 4, 32);
+        JOB_CHEF_ENABLED = builder
+                .comment("Enable the Chef job behaviors.")
+                .define("chefEnabled", true);
+        JOB_CHEF_RADIUS = builder
+                .comment("Search radius for Chef heat source scans.")
+                .defineInRange("chefRadius", 8, 3, 24);
         builder.pop();
 
         ModLoadingContext.get().getActiveContainer()

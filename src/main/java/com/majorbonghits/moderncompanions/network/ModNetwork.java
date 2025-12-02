@@ -2,6 +2,7 @@ package com.majorbonghits.moderncompanions.network;
 
 import com.majorbonghits.moderncompanions.ModernCompanions;
 import com.majorbonghits.moderncompanions.entity.AbstractHumanCompanionEntity;
+import com.majorbonghits.moderncompanions.entity.job.CompanionJob;
 import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import com.majorbonghits.moderncompanions.network.OpenCompanionInventoryPayload;
 import net.minecraft.network.chat.Component;
@@ -23,6 +24,7 @@ public final class ModNetwork {
                 .playToServer(ToggleFlagPayload.TYPE, ToggleFlagPayload.CODEC, ModNetwork::handleToggleFlag)
                 .playToServer(CompanionActionPayload.TYPE, CompanionActionPayload.CODEC, ModNetwork::handleAction)
                 .playToServer(SetPatrolRadiusPayload.TYPE, SetPatrolRadiusPayload.CODEC, ModNetwork::handlePatrolRadius)
+                .playToServer(SetCompanionJobPayload.TYPE, SetCompanionJobPayload.CODEC, ModNetwork::handleSetJob)
                 .playToServer(OpenCompanionInventoryPayload.TYPE, OpenCompanionInventoryPayload.CODEC, ModNetwork::handleOpenInventory);
     }
 
@@ -83,6 +85,19 @@ public final class ModNetwork {
             Entity entity = serverPlayer.level().getEntity(payload.entityId());
             if (entity instanceof AbstractHumanCompanionEntity companion && companion.isOwnedBy(serverPlayer)) {
                 companion.setPatrolRadius(payload.radius());
+            }
+        });
+    }
+
+    private static void handleSetJob(SetCompanionJobPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (!(ctx.player() instanceof ServerPlayer serverPlayer)) {
+                return;
+            }
+            Entity entity = serverPlayer.level().getEntity(payload.entityId());
+            if (entity instanceof AbstractHumanCompanionEntity companion && companion.isOwnedBy(serverPlayer)) {
+                companion.setJob(CompanionJob.fromId(payload.jobId()));
+                companion.onJobChanged();
             }
         });
     }

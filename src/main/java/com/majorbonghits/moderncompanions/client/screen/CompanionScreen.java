@@ -2,11 +2,13 @@ package com.majorbonghits.moderncompanions.client.screen;
 
 import com.majorbonghits.moderncompanions.ModernCompanions;
 import com.majorbonghits.moderncompanions.entity.AbstractHumanCompanionEntity;
+import com.majorbonghits.moderncompanions.entity.job.CompanionJob;
 import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import com.majorbonghits.moderncompanions.network.CompanionActionPayload;
 import com.majorbonghits.moderncompanions.network.SetPatrolRadiusPayload;
 import com.majorbonghits.moderncompanions.network.ToggleFlagPayload;
 import com.majorbonghits.moderncompanions.network.OpenCompanionCuriosPayload;
+import com.majorbonghits.moderncompanions.client.screen.job.CompanionJobScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -61,6 +63,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
     private CompanionButton radiusMinus;
     private CompanionButton radiusPlus;
     private Button curiosButton;
+    private Button jobInfoButton;
     private Button journalButton;
 
     private int sidebarX;
@@ -79,11 +82,12 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         // Nudge whole GUI down by 1px to align with texture shadow
         this.topPos += 1;
         int rowHeight = 15;
-        int row1 = topPos + 66;
-        int row2 = row1 + rowHeight;
-        int row3 = row2 + rowHeight;
         int col1 = leftPos + sidebarX + 3;
         int col2 = col1 + 19;
+
+        int row1 = topPos + 50;
+        int row2 = row1 + rowHeight;
+        int row3 = row2 + rowHeight;
 
         alertButton = addRenderableWidget(new CompanionButton("alert", col1, row1, 16, 12, 0, 0, 13, ALERT_BTN, () -> sendToggle("alert"), true));
         huntButton = addRenderableWidget(new CompanionButton("hunting", col2, row1, 16, 12, 0, 0, 13, HUNT_BTN, () -> sendToggle("hunt"), true));
@@ -92,17 +96,17 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         clearButton = addRenderableWidget(new CompanionButton("clear", leftPos + sidebarX + 5, row3, 31, 12, 0, 0, 13, CLEAR_BTN, () -> sendAction("clear_target"), false));
         int row4 = row3 + rowHeight;
         pickupButton = addRenderableWidget(new CompanionButton("pickup", leftPos + sidebarX + 3, row4, 34, 12, 0, 0, 0, PICKUP_BTN, () -> sendToggle("pickup"), true));
-        releaseButton = addRenderableWidget(new CompanionButton("release", leftPos + sidebarX + 3, topPos + 148, 34, 12, 0, 0, 13, RELEASE_BTN, () -> {
+        releaseButton = addRenderableWidget(new CompanionButton("release", leftPos + sidebarX + 3, topPos + 120, 34, 12, 0, 0, 13, RELEASE_BTN, () -> {
             sendAction("release");
             this.onClose();
         }, false));
 
-        int radiusY = topPos + 148 + 16;
+        int radiusY = topPos + 120 + 16;
         ResourceLocation radiusTex = ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, "textures/gui/radiusbutton.png");
         radiusMinus = addRenderableWidget(new CompanionButton("radius-", leftPos + sidebarX + 3, radiusY, 16, 12, 17, 0, 13, radiusTex, () -> adjustRadius(-2), false));
         radiusPlus = addRenderableWidget(new CompanionButton("radius+", leftPos + sidebarX + 21, radiusY, 16, 12, 0, 0, 13, radiusTex, () -> adjustRadius(2), false));
 
-        int curiosY = topPos + 180; // move curios up
+        int curiosY = topPos + 152; // move curios up
         if (ModList.get().isLoaded("curios")) {
             curiosButton = addRenderableWidget(Button.builder(Component.literal("Curios"), b -> openCurios())
                     .pos(leftPos + sidebarX + 2, curiosY)
@@ -110,7 +114,13 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
                     .build());
         }
 
-        int journalY = topPos + 200;
+        int jobInfoY = curiosY + 18;
+        jobInfoButton = addRenderableWidget(Button.builder(Component.literal("Job"), b -> openJobInfo())
+                .pos(leftPos + sidebarX + 2, jobInfoY)
+                .size(38, 16)
+                .build());
+
+        int journalY = jobInfoY + 18;
         journalButton = addRenderableWidget(Button.builder(Component.translatable("button.modern_companions.journal"), b -> openJournal())
                 .pos(leftPos + sidebarX + 2, journalY)
                 .size(38, 16)
@@ -200,7 +210,7 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         Minecraft mc = Minecraft.getInstance();
         if (mc == null || mc.getConnection() == null) return;
         safeCompanion().ifPresent(companion -> {
-            int target = Math.max(2, Math.min(32, companion.getPatrolRadius() + delta));
+            int target = Math.max(2, Math.min(48, companion.getPatrolRadius() + delta));
             mc.getConnection().send(new ServerboundCustomPayloadPacket(new SetPatrolRadiusPayload(menu.getCompanionId(), target)));
             companion.setPatrolRadius(target);
         });
@@ -210,6 +220,12 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         Minecraft mc = Minecraft.getInstance();
         if (mc == null || mc.getConnection() == null) return;
         mc.getConnection().send(new ServerboundCustomPayloadPacket(new OpenCompanionCuriosPayload(menu.getCompanionId())));
+    }
+
+    private void openJobInfo() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null) return;
+        mc.setScreen(new CompanionJobScreen(this, menu.getCompanionId()));
     }
 
     private void openJournal() {

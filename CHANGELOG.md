@@ -30,3 +30,11 @@
     * Companions now have ages assigned to them, and will age 1 year every 3 in-game months.
         * Aging is only a visual string in the Bio page.
     * Existing Companions will have missing values (Backstory, Age, Traits) assigned to them.
+
+# v1.2.1
+* Introduced Jobs
+    * Fisher
+    * Miner
+    * Lumberjack
+    * Chef
+* Improved patrol logic

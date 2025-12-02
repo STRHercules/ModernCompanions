@@ -4,6 +4,7 @@ import com.majorbonghits.moderncompanions.core.ModConfig;
 import com.majorbonghits.moderncompanions.core.ModMenuTypes;
 import com.majorbonghits.moderncompanions.entity.ai.*;
 import com.majorbonghits.moderncompanions.entity.personality.CompanionPersonality;
+import com.majorbonghits.moderncompanions.entity.job.CompanionJob;
 import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import com.majorbonghits.moderncompanions.core.ModItems;
 import com.majorbonghits.moderncompanions.core.ModEnchantments;
@@ -63,6 +64,11 @@ import java.util.*;
 
 import com.majorbonghits.moderncompanions.entity.SummonedWitherSkeleton;
 import com.majorbonghits.moderncompanions.core.TagsInit;
+import com.majorbonghits.moderncompanions.entity.job.LumberjackJobGoal;
+import com.majorbonghits.moderncompanions.entity.job.HunterJobGoal;
+import com.majorbonghits.moderncompanions.entity.job.MinerJobGoal;
+import com.majorbonghits.moderncompanions.entity.job.FisherJobGoal;
+import com.majorbonghits.moderncompanions.entity.job.ChefJobGoal;
 
 /**
  * Port of the original AbstractHumanCompanionEntity with taming, leveling,
@@ -145,6 +151,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> AGE_YEARS = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> JOB_ID = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
     private static final ResourceLocation MOD_MORALE_DAMAGE = ResourceLocation.fromNamespaceAndPath(
             com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "morale_damage");
     private static final ResourceLocation MOD_MORALE_ARMOR = ResourceLocation.fromNamespaceAndPath(
@@ -272,6 +280,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(AGE_YEARS, 0);
         builder.define(CUSTOM_SKIN_URL, "");
         builder.define(LAST_SWING_TICK, 0);
+        builder.define(JOB_ID, CompanionJob.NONE.id());
     }
 
     @Override
@@ -298,11 +307,31 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.goalSelector.addGoal(2, new AvoidCreeperGoal(this, 1.5D, 1.5D));
         this.goalSelector.addGoal(3, new MoveBackToGuardGoal(this));
         this.goalSelector.addGoal(3, new CustomFollowOwnerGoal(this, followSpeed(), followStartDistance(), followStopDistance(), true));
-        this.goalSelector.addGoal(4, new CustomWaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(7, new OpenDoorGoal(this, true));
-        this.goalSelector.addGoal(8, new LowHealthGoal(this));
+        if (ModConfig.safeGet(ModConfig.JOB_LUMBERJACK_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_LUMBERJACK_RADIUS);
+            this.goalSelector.addGoal(4, new LumberjackJobGoal(this, radius, true));
+        }
+        if (ModConfig.safeGet(ModConfig.JOB_MINER_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_MINER_RADIUS);
+            this.goalSelector.addGoal(5, new MinerJobGoal(this, radius, true));
+        }
+        if (ModConfig.safeGet(ModConfig.JOB_FISHER_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_FISHER_RADIUS);
+            this.goalSelector.addGoal(6, new FisherJobGoal(this, radius, true));
+        }
+        if (ModConfig.safeGet(ModConfig.JOB_CHEF_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_CHEF_RADIUS);
+            this.goalSelector.addGoal(7, new ChefJobGoal(this, radius, true));
+        }
+        if (ModConfig.safeGet(ModConfig.JOB_HUNTER_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_HUNTER_RADIUS);
+            this.goalSelector.addGoal(8, new HunterJobGoal(this, radius, true));
+        }
+        this.goalSelector.addGoal(9, new CustomWaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(11, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(12, new OpenDoorGoal(this, true));
+        this.goalSelector.addGoal(13, new LowHealthGoal(this));
         patrolGoal = new PatrolGoal(this, 60, getPatrolRadius());
         moveBackGoal = new MoveBackToPatrolGoal(this, getPatrolRadius());
         this.goalSelector.addGoal(3, moveBackGoal);
@@ -343,6 +372,38 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     /* ---------- Flags & helpers ---------- */
+
+    /**
+     * Current job assignment. Job enum lives in a dedicated package so UI, NBT,
+     * and AI goals can share the same identifiers. Set via SetCompanionJobPayload
+     * from the CompanionScreen cycle button.
+     */
+    public CompanionJob getJob() {
+        return CompanionJob.fromId(this.entityData.get(JOB_ID));
+    }
+
+    public void setJob(CompanionJob job) {
+        CompanionJob safeJob = job == null ? CompanionJob.NONE : job;
+        this.entityData.set(JOB_ID, safeJob.id());
+    }
+
+    /**
+     * Re-sync any secondary flags that depend on job selection. This keeps legacy
+     * hunt/alert toggles aligned with the new job pipeline until the dedicated job
+     * goals take over more behavior.
+     */
+    public void onJobChanged() {
+        if (this.level() == null || this.level().isClientSide()) {
+            return;
+        }
+        CompanionJob job = getJob();
+        if (job == CompanionJob.HUNTER && ModConfig.safeGet(ModConfig.JOB_HUNTER_ENABLED) && !isHunting()) {
+            setHunting(true);
+        }
+        if (job != CompanionJob.HUNTER && isHunting()) {
+            setHunting(false);
+        }
+    }
 
     public boolean isFollowing() {
         return this.entityData.get(FOLLOWING);
@@ -430,11 +491,12 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public void setPatrolRadius(int radius) {
-        this.entityData.set(PATROL_RADIUS, Mth.clamp(radius, 1, 64));
+        int clamped = Mth.clamp(radius, 1, 48);
+        this.entityData.set(PATROL_RADIUS, clamped);
         if (patrolGoal != null)
-            patrolGoal.radius = radius;
+            patrolGoal.radius = clamped;
         if (moveBackGoal != null)
-            moveBackGoal.radius = radius;
+            moveBackGoal.radius = clamped;
     }
 
     public void clearPatrol() {
@@ -1123,6 +1185,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putBoolean("Pickup", this.isPickupEnabled());
         tag.putInt("radius", this.getPatrolRadius());
         tag.putInt("sex", this.getSex());
+        tag.putString("JobId", this.getJob().id());
         tag.putInt("baseHealth", this.getBaseHealth());
         tag.putFloat("XpP", this.experienceProgress);
         tag.putInt("XpLevel", this.getExpLvl());
@@ -1172,6 +1235,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.setPickupEnabled(tag.contains("Pickup") ? tag.getBoolean("Pickup") : true);
         this.setPatrolRadius(tag.getInt("radius"));
         this.setSex(tag.getInt("sex"));
+        this.setJob(CompanionJob.fromId(tag.getString("JobId")));
+        this.onJobChanged();
         this.experienceProgress = tag.getFloat("XpP");
         this.totalExperience = tag.getInt("XpTotal");
         this.setExpLvl(tag.getInt("XpLevel"));
