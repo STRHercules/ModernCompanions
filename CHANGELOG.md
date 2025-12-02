@@ -38,3 +38,5 @@
     * Lumberjack
     * Chef
 * Improved patrol logic
+    * Pathing now extends to 48 blocks
+    * Companions with Jobs will now work when on patrol
