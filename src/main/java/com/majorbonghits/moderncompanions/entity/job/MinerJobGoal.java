@@ -50,7 +50,8 @@ public class MinerJobGoal extends Goal {
     private final Set<Block> denyBlocks = new HashSet<>();
     private BlockPos target;
     private int searchCooldown;
-    private int breakCooldown;
+    private int breakTicksRemaining;
+    private int swingCooldown;
 
     public MinerJobGoal(AbstractHumanCompanionEntity companion, int searchRadius, boolean enabled) {
         this.companion = companion;
@@ -86,6 +87,8 @@ public class MinerJobGoal extends Goal {
     public void stop() {
         target = null;
         companion.getNavigation().stop();
+        breakTicksRemaining = 0;
+        swingCooldown = 0;
     }
 
     @Override
@@ -99,10 +102,19 @@ public class MinerJobGoal extends Goal {
             moveToTarget();
             return;
         }
-        if (breakCooldown-- > 0) return;
-        breakCooldown = BREAK_COOLDOWN;
-        mine(target);
-        target = findAdjacentMineable(target);
+        if (breakTicksRemaining <= 0) {
+            breakTicksRemaining = computeBreakTicks(target);
+            swingCooldown = 0;
+        }
+        if (swingCooldown-- <= 0) {
+            companion.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
+            swingCooldown = 6;
+        }
+        breakTicksRemaining--;
+        if (breakTicksRemaining <= 0) {
+            mine(target);
+            target = findAdjacentMineable(target);
+        }
     }
 
     private BlockPos findTargetBlock() {
@@ -190,6 +202,7 @@ public class MinerJobGoal extends Goal {
     private boolean isActiveJob() {
         if (!enabled) return false;
         if (companion.getJob() != CompanionJob.MINER) return false;
+        if (!companion.isPatrolling()) return false;
         if (companion.isOrderedToSit() || !companion.isTame()) return false;
         if (!hasPickaxe()) return false;
         return isWithinWorkArea(16.0D) || isWithinPatrolArea();
@@ -242,5 +255,21 @@ public class MinerJobGoal extends Goal {
     private boolean isWithinPatrolArea() {
         return companion.isPatrolling() && companion.getPatrolPos().isPresent()
                 && companion.getPatrolPos().get().distSqr(companion.blockPosition()) <= Math.pow(Math.max(8.0D, companion.getPatrolRadius() + 4), 2);
+    }
+
+    private int computeBreakTicks(BlockPos pos) {
+        Level level = companion.level();
+        BlockState state = level.getBlockState(pos);
+        ItemStack tool = companion.getMainHandItem();
+        float hardness = state.getDestroySpeed(level, pos);
+        if (hardness < 0) return 20;
+        float speed = tool.getDestroySpeed(state);
+        if (!tool.isCorrectToolForDrops(state)) {
+            speed = Math.max(1.0F, speed / 3.0F);
+        }
+        float relative = speed > 0 ? (speed / hardness) : 0.05F;
+        int ticks = (int) Math.ceil(20.0F / Math.max(0.05F, relative));
+        ticks *= 2;
+        return Math.max(20, Math.min(120, ticks));
     }
 }

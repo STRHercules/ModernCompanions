@@ -219,15 +219,12 @@ public class ChefJobGoal extends Goal {
     private boolean isActiveJob() {
         if (!enabled) return false;
         if (companion.getJob() != CompanionJob.CHEF) return false;
+        if (!companion.isPatrolling()) return false;
         if (companion.isOrderedToSit() || !companion.isTame()) return false;
-        return isWithinWorkArea(Math.max(8.0D, searchRadius + 2));
+        return isWithinPatrolArea();
     }
 
-    private boolean isWithinWorkArea(double ownerMax) {
-        LivingEntity owner = companion.getOwner();
-        if (owner != null && companion.distanceToSqr(owner) <= ownerMax * ownerMax) {
-            return true;
-        }
+    private boolean isWithinPatrolArea() {
         return companion.isPatrolling() && companion.getPatrolPos().isPresent()
                 && companion.getPatrolPos().get().distSqr(companion.blockPosition()) <= Math.pow(Math.max(8.0D, companion.getPatrolRadius() + 4), 2);
     }

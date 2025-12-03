@@ -17,7 +17,6 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
@@ -27,7 +26,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  * spam.
  */
 public class FisherJobGoal extends Goal {
-    private static final int FISH_INTERVAL = 80;
+    private static final int FISH_INTERVAL = 120;
+    private static final int SEARCH_COOLDOWN = 20;
 
     private final AbstractHumanCompanionEntity companion;
     private final int searchRadius;
@@ -36,6 +36,7 @@ public class FisherJobGoal extends Goal {
     private BlockPos waterSpot;
     private BlockPos standPos;
     private int fishCooldown;
+    private int searchCooldown;
 
     public FisherJobGoal(AbstractHumanCompanionEntity companion, int searchRadius, boolean enabled) {
         this.companion = companion;
@@ -47,7 +48,16 @@ public class FisherJobGoal extends Goal {
     @Override
     public boolean canUse() {
         if (!isActiveJob()) return false;
-        return findWaterAndStand();
+        if (searchCooldown > 0) {
+            searchCooldown--;
+            return false;
+        }
+        boolean found = findWaterAndStand();
+        if (found) {
+            moveToStand();
+        }
+        searchCooldown = SEARCH_COOLDOWN;
+        return found;
     }
 
     @Override
@@ -78,9 +88,16 @@ public class FisherJobGoal extends Goal {
             return;
         }
         double dist = companion.distanceToSqr(Vec3.atCenterOf(standPos));
-        if (dist > 4.0D) {
+        if (dist > 9.0D) {
             moveToStand();
             return;
+        }
+        // If pathing failed for a while, rescan.
+        if (companion.getNavigation().isDone() && dist > 1.5D) {
+            if (findWaterAndStand()) {
+                moveToStand();
+                return;
+            }
         }
         if (fishCooldown-- > 0) return;
         fishCooldown = FISH_INTERVAL + random.nextInt(40);
@@ -103,15 +120,17 @@ public class FisherJobGoal extends Goal {
         if (!(companion.level() instanceof ServerLevel server)) {
             return ItemStack.EMPTY;
         }
-        var lootHolder = server.getServer().registryAccess()
-                .lookupOrThrow(Registries.LOOT_TABLE)
-                .get(BuiltInLootTables.FISHING)
-                .orElse(null);
-        LootTable lootTable = lootHolder != null ? lootHolder.value() : LootTable.EMPTY;
+        LootTable lootTable = server.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING);
+        if (lootTable == null) {
+            return new ItemStack(Items.COD);
+        }
+        double luck = companion.getAttributes().hasAttribute(Attributes.LUCK)
+                ? companion.getAttributeValue(Attributes.LUCK)
+                : 0.0D;
         LootParams params = new LootParams.Builder(server)
                 .withParameter(LootContextParams.ORIGIN, companion.position())
                 .withParameter(LootContextParams.TOOL, companion.getMainHandItem())
-                .withLuck((float) companion.getAttributeValue(Attributes.LUCK))
+                .withLuck((float) luck)
                 .create(LootContextParamSets.FISHING);
         var list = lootTable.getRandomItems(params);
         if (!list.isEmpty()) {
@@ -121,17 +140,21 @@ public class FisherJobGoal extends Goal {
     }
 
     private boolean findWaterAndStand() {
-        BlockPos origin = companion.blockPosition();
+        BlockPos origin = companion.isPatrolling() && companion.getPatrolPos().isPresent()
+                ? companion.getPatrolPos().get()
+                : companion.blockPosition();
         Level level = companion.level();
         BlockPos bestStand = null;
         BlockPos bestWater = null;
         double bestDist = Double.MAX_VALUE;
 
-        for (BlockPos candidate : BlockPos.betweenClosed(origin.offset(-searchRadius, -2, -searchRadius),
-                origin.offset(searchRadius, 2, searchRadius))) {
+        int radius = Math.min(128, Math.max(searchRadius, companion.getPatrolRadius()));
+        for (BlockPos candidate : BlockPos.betweenClosed(origin.offset(-radius, -6, -radius),
+                origin.offset(radius, 6, radius))) {
             if (!isStandValid(candidate)) continue;
             BlockPos water = adjacentWater(candidate);
             if (water == null) continue;
+            if (companion.getNavigation().createPath(candidate, 0) == null) continue;
             double dist = candidate.distSqr(origin);
             if (dist < bestDist) {
                 bestDist = dist;
@@ -152,34 +175,39 @@ public class FisherJobGoal extends Goal {
     }
 
     private boolean isWater(BlockPos pos) {
-        return companion.level().getBlockState(pos).is(Blocks.WATER);
+        var state = companion.level().getBlockState(pos);
+        return state.is(Blocks.WATER) || state.getFluidState().isSource() && state.getFluidState().is(net.minecraft.tags.FluidTags.WATER);
     }
 
     private BlockPos adjacentWater(BlockPos stand) {
-        for (BlockPos side : new BlockPos[]{stand.north(), stand.south(), stand.east(), stand.west()}) {
-            if (isWater(side)) {
-                return side;
-            }
+        // Favor horizontal adjacency first, then vertical within reach.
+        for (BlockPos side : BlockPos.betweenClosed(stand.offset(-1, 0, -1), stand.offset(1, 0, 1))) {
+            if (isWater(side)) return side.immutable();
+        }
+        for (BlockPos side : BlockPos.betweenClosed(stand.offset(-1, -1, -1), stand.offset(1, 1, 1))) {
+            if (isWater(side)) return side.immutable();
         }
         return null;
     }
 
     private boolean isStandValid(BlockPos pos) {
         Level level = companion.level();
-        return level.getBlockState(pos).isAir()
-                && level.getBlockState(pos.above()).isAir()
-                && level.getBlockState(pos.below()).isSolid()
-                && !level.getBlockState(pos).liquid();
+        var state = level.getBlockState(pos);
+        // Need a solid block to stand on, with headroom.
+        return state.isSolid()
+                && !state.liquid()
+                && level.getBlockState(pos.above()).isAir();
     }
 
     private void moveToStand() {
         if (standPos == null) return;
-        companion.getNavigation().moveTo(standPos.getX() + 0.5D, standPos.getY(), standPos.getZ() + 0.5D, 1.0D);
+        companion.getNavigation().moveTo(standPos.getX() + 0.5D, standPos.getY() + 1.0D, standPos.getZ() + 0.5D, 1.0D);
     }
 
     private boolean isActiveJob() {
         if (!enabled) return false;
         if (companion.getJob() != CompanionJob.FISHER) return false;
+        if (!companion.isPatrolling()) return false;
         if (companion.isOrderedToSit() || !companion.isTame()) return false;
         if (!hasRod()) return false;
         return isWithinWorkArea(Math.max(8.0D, searchRadius + 2)) || isWithinPatrolArea();

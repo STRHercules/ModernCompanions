@@ -69,11 +69,9 @@ public class HunterJobGoal extends Goal {
     private boolean isActiveJob() {
         if (!enabled) return false;
         if (companion.getJob() != CompanionJob.HUNTER) return false;
+        if (!companion.isPatrolling()) return false;
         if (companion.isOrderedToSit() || !companion.isTame()) return false;
         if (!hasWeapon()) return false;
-        var owner = companion.getOwner();
-        double max = Math.max(8.0D, searchRadius);
-        if (owner != null && companion.distanceToSqr(owner) <= max * max) return true;
         return isWithinPatrolArea();
     }
 

@@ -149,6 +149,7 @@ public class LumberjackJobGoal extends Goal {
     private boolean isActiveJob() {
         if (!enabled) return false;
         if (companion.getJob() != CompanionJob.LUMBERJACK) return false;
+        if (!companion.isPatrolling()) return false;
         if (companion.isOrderedToSit() || !companion.isTame()) return false;
         if (!hasAxe()) return false;
         return isWithinWorkArea(20.0D) || isWithinPatrolArea();
@@ -160,12 +161,15 @@ public class LumberjackJobGoal extends Goal {
         targetLog = null;
 
         Level level = companion.level();
-        BlockPos origin = companion.blockPosition();
+        BlockPos origin = companion.isPatrolling() && companion.getPatrolPos().isPresent()
+                ? companion.getPatrolPos().get()
+                : companion.blockPosition();
+        int effectiveRadius = Math.min(128, Math.max(searchRadius, companion.getPatrolRadius()));
         BlockPos start = null;
         double best = Double.MAX_VALUE;
 
-        for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-searchRadius, -2, -searchRadius),
-                origin.offset(searchRadius, 6, searchRadius))) {
+        for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-effectiveRadius, -2, -effectiveRadius),
+                origin.offset(effectiveRadius, 6, effectiveRadius))) {
             if (!isNaturalTreeLog(pos)) continue;
             double dist = pos.distSqr(origin);
             if (dist < best) {

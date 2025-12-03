@@ -210,7 +210,8 @@ public class CompanionScreen extends AbstractContainerScreen<CompanionMenu> {
         Minecraft mc = Minecraft.getInstance();
         if (mc == null || mc.getConnection() == null) return;
         safeCompanion().ifPresent(companion -> {
-            int target = Math.max(2, Math.min(48, companion.getPatrolRadius() + delta));
+            int step = hasShiftDown() ? 10 : 2;
+            int target = Math.max(2, Math.min(128, companion.getPatrolRadius() + (delta > 0 ? step : -step)));
             mc.getConnection().send(new ServerboundCustomPayloadPacket(new SetPatrolRadiusPayload(menu.getCompanionId(), target)));
             companion.setPatrolRadius(target);
         });

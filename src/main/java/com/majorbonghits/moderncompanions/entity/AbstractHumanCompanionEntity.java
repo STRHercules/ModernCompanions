@@ -206,6 +206,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     private int equipmentStrengthBonus;
     private int equipmentDexterityBonus;
+    private ItemStack cachedPatrolWeapon = ItemStack.EMPTY; // weapon the companion held before swapping to job tool
+    private ItemStack cachedPatrolTool = ItemStack.EMPTY;   // tool currently borrowed from inventory while patrolling
+    private int cachedPatrolToolSlot = -1;                  // original slot of the borrowed tool so we can return it
     private int equipmentIntelligenceBonus;
     private int equipmentEnduranceBonus;
 
@@ -418,7 +421,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public void setPatrolling(boolean value) {
+        boolean was = this.entityData.get(PATROLLING);
         this.entityData.set(PATROLLING, value);
+        if (!was && value) {
+            cachePatrolWeapon();
+            equipJobToolIfNeeded();
+        } else if (was && !value) {
+            restoreCachedWeapon();
+        }
     }
 
     public boolean isGuarding() {
@@ -427,6 +437,84 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public void setGuarding(boolean value) {
         this.entityData.set(GUARDING, value);
+    }
+
+    private void cachePatrolWeapon() {
+        ItemStack main = this.getMainHandItem();
+        cachedPatrolWeapon = main.isEmpty() ? ItemStack.EMPTY : main.copy();
+        if (!main.isEmpty()) {
+            // Hold onto a copy while we visually equip tools; clear the hand.
+            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        }
+    }
+
+    private void restoreCachedWeapon() {
+        // Tool stayed in inventory; just clear cached refs.
+        cachedPatrolTool = ItemStack.EMPTY;
+        cachedPatrolToolSlot = -1;
+
+        if (!cachedPatrolWeapon.isEmpty()) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, cachedPatrolWeapon);
+            cachedPatrolWeapon = ItemStack.EMPTY;
+        }
+    }
+
+    private void equipJobToolIfNeeded() {
+        CompanionJob job = getJob();
+        if (job == CompanionJob.NONE || !isPatrolling()) return;
+        ItemStack current = this.getMainHandItem();
+        if (isJobTool(current, job)) {
+            // Already holding a tool; remember it so we can return it later if we missed caching.
+            if (cachedPatrolTool.isEmpty()) {
+                cachedPatrolTool = current;
+            }
+            return;
+        }
+        int slot = findJobToolSlot(job);
+        if (slot < 0) return;
+
+        ItemStack tool = this.getInventory().getItem(slot);
+        if (tool.isEmpty()) return;
+
+        // Place the same stack in hand without removing it from the inventory slot.
+        // Sharing the instance keeps durability updates visible while leaving the tool visible in the GUI.
+        this.setItemSlot(EquipmentSlot.MAINHAND, tool);
+        cachedPatrolToolSlot = slot;
+        cachedPatrolTool = tool;
+    }
+
+    private boolean isJobTool(ItemStack stack, CompanionJob job) {
+        return switch (job) {
+            case LUMBERJACK -> stack.getItem() instanceof net.minecraft.world.item.AxeItem;
+            case MINER -> stack.getItem() instanceof net.minecraft.world.item.PickaxeItem;
+            case FISHER -> stack.getItem() instanceof net.minecraft.world.item.FishingRodItem;
+            default -> false;
+        };
+    }
+
+    /**
+     * Remove a single matching stack from the companion inventory so we avoid duplicating
+     * weapons/tools when swapping in and out of patrol mode.
+     */
+    private boolean removeOneMatchingFromInventory(ItemStack match) {
+        for (int i = 0; i < this.getInventory().getContainerSize(); i++) {
+            ItemStack stack = this.getInventory().getItem(i);
+            if (ItemStack.isSameItemSameComponents(stack, match)) {
+                this.getInventory().removeItem(i, 1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int findJobToolSlot(CompanionJob job) {
+        for (int i = 0; i < this.getInventory().getContainerSize(); i++) {
+            ItemStack stack = this.getInventory().getItem(i);
+            if (isJobTool(stack, job)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public boolean isPickupEnabled() {
@@ -491,7 +579,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public void setPatrolRadius(int radius) {
-        int clamped = Mth.clamp(radius, 1, 48);
+        int clamped = Mth.clamp(radius, 1, 128);
         this.entityData.set(PATROL_RADIUS, clamped);
         if (patrolGoal != null)
             patrolGoal.radius = clamped;
@@ -1375,6 +1463,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             }
             trackDistanceNearOwner();
             tickAging();
+            if (isPatrolling()) {
+                equipJobToolIfNeeded();
+            }
         }
         boolean equipmentChanged = recomputeEquipmentAttributeBonuses();
         if (equipmentChanged) {

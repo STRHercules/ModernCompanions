@@ -38,5 +38,7 @@
     * Lumberjack
     * Chef
 * Improved patrol logic
-    * Pathing now extends to 48 blocks
+    * Pathing now extends to 128 blocks
+    * Shift-Clicking now advances radius by 10
     * Companions with Jobs will now work when on patrol
+* Companions will switch to their desired tool when set to patrol, and back to their weapons when taken off patrol.
