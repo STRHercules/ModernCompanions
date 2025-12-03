@@ -153,6 +153,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<String> JOB_ID = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> MINER_ORES_COUNTED = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> MINER_ORES_MINED = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final ResourceLocation MOD_MORALE_DAMAGE = ResourceLocation.fromNamespaceAndPath(
             com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "morale_damage");
     private static final ResourceLocation MOD_MORALE_ARMOR = ResourceLocation.fromNamespaceAndPath(
@@ -214,6 +218,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     // Miner persistent memory: ore positions catalogued during patrol session
     private java.util.List<BlockPos> minerOreMemory = new java.util.ArrayList<>();
     private int minerOreIndex = 0;
+    private BlockPos minerPlanCenter = BlockPos.ZERO;
+    private int minerPlanRadius = 0;
+    private int minerPlanUp = 0;
+    private int minerPlanDown = 0;
 
     // Client-side tracking of the last swing tick we already applied locally.
     private int lastAppliedSwingTick = -1;
@@ -290,6 +298,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(CUSTOM_SKIN_URL, "");
         builder.define(LAST_SWING_TICK, 0);
         builder.define(JOB_ID, CompanionJob.NONE.id());
+        builder.define(MINER_ORES_COUNTED, 0);
+        builder.define(MINER_ORES_MINED, 0);
     }
 
     @Override
@@ -719,6 +729,68 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public void setMinerOreIndex(int idx) {
         this.minerOreIndex = Math.max(0, idx);
+    }
+
+    public void overwriteMinerOreMemory(java.util.List<BlockPos> newMemory) {
+        minerOreMemory.clear();
+        minerOreMemory.addAll(newMemory);
+    }
+
+    public void resetMinerOreMemory() {
+        minerOreMemory.clear();
+        minerOreIndex = 0;
+    }
+
+    public int getMinerOresCounted() {
+        return this.entityData.get(MINER_ORES_COUNTED);
+    }
+
+    public void setMinerOresCounted(int counted) {
+        this.entityData.set(MINER_ORES_COUNTED, Math.max(0, counted));
+    }
+
+    public int getMinerOresMined() {
+        return this.entityData.get(MINER_ORES_MINED);
+    }
+
+    public void setMinerOresMined(int mined) {
+        this.entityData.set(MINER_ORES_MINED, Math.max(0, mined));
+    }
+
+    public void incrementMinerOresMined() {
+        setMinerOresMined(getMinerOresMined() + 1);
+    }
+
+    public BlockPos getMinerPlanCenter() {
+        return minerPlanCenter == null ? BlockPos.ZERO : minerPlanCenter;
+    }
+
+    public void setMinerPlanCenter(BlockPos center) {
+        this.minerPlanCenter = center == null ? BlockPos.ZERO : center;
+    }
+
+    public int getMinerPlanRadius() {
+        return minerPlanRadius;
+    }
+
+    public void setMinerPlanRadius(int radius) {
+        this.minerPlanRadius = Math.max(0, radius);
+    }
+
+    public int getMinerPlanUp() {
+        return minerPlanUp;
+    }
+
+    public void setMinerPlanUp(int up) {
+        this.minerPlanUp = Math.max(0, up);
+    }
+
+    public int getMinerPlanDown() {
+        return minerPlanDown;
+    }
+
+    public void setMinerPlanDown(int down) {
+        this.minerPlanDown = Math.max(0, down);
     }
 
     public void setKillCount(int kills) {
@@ -1309,6 +1381,12 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         long[] oreArr = minerOreMemory.stream().mapToLong(BlockPos::asLong).toArray();
         tag.putLongArray("MinerOreMemory", oreArr);
         tag.putInt("MinerOreIndex", minerOreIndex);
+        tag.putInt("MinerOresCounted", getMinerOresCounted());
+        tag.putInt("MinerOresMined", getMinerOresMined());
+        tag.putIntArray("MinerPlanCenter", new int[] { getMinerPlanCenter().getX(), getMinerPlanCenter().getY(), getMinerPlanCenter().getZ() });
+        tag.putInt("MinerPlanRadius", getMinerPlanRadius());
+        tag.putInt("MinerPlanUp", getMinerPlanUp());
+        tag.putInt("MinerPlanDown", getMinerPlanDown());
         if (this.getPatrolPos().isPresent()) {
             int[] patrolPos = { this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(),
                     this.getPatrolPos().get().getZ() };
@@ -1374,6 +1452,27 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             }
         }
         minerOreIndex = tag.getInt("MinerOreIndex");
+        if (tag.contains("MinerOresCounted")) {
+            setMinerOresCounted(tag.getInt("MinerOresCounted"));
+        }
+        if (tag.contains("MinerOresMined")) {
+            setMinerOresMined(tag.getInt("MinerOresMined"));
+        }
+        if (tag.contains("MinerPlanCenter")) {
+            int[] arr = tag.getIntArray("MinerPlanCenter");
+            if (arr.length == 3) {
+                setMinerPlanCenter(new BlockPos(arr[0], arr[1], arr[2]));
+            }
+        }
+        if (tag.contains("MinerPlanRadius")) {
+            setMinerPlanRadius(tag.getInt("MinerPlanRadius"));
+        }
+        if (tag.contains("MinerPlanUp")) {
+            setMinerPlanUp(tag.getInt("MinerPlanUp"));
+        }
+        if (tag.contains("MinerPlanDown")) {
+            setMinerPlanDown(tag.getInt("MinerPlanDown"));
+        }
         if (tag.contains("Personality", 10)) {
             personality.loadFrom(tag.getCompound("Personality"));
         } else {

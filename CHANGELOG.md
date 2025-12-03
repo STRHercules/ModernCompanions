@@ -31,14 +31,30 @@
         * Aging is only a visual string in the Bio page.
     * Existing Companions will have missing values (Backstory, Age, Traits) assigned to them.
 
-# v1.2.1
+# v1.3.0
 * Introduced Jobs
-    * Fisher
-    * Miner
-    * Lumberjack
-    * Chef
-* Improved patrol logic
-    * Pathing now extends to 128 blocks
+    * Implemented Jobs
+        * Fisher
+            * Fisher will path to nearest water, and begin fishing until taken off patrol.
+            * Fisher will produce random fishing loot, as if the player were fishing.
+        * Miner
+            * Miners will catalogue all ores in their work radius, path to them and retrieve them. (Modded ores included!)
+            * Miners will break all stone-like blocks, dirt, grass and gravel in their way, collecting the blocks along the way.
+        * Lumberjack
+            * Lumberjack will path around their work radius and chop down trees, replanting saplings in their place when done (if saplings available in inventory).
+            * Lumberjacks will break leaves to access logs.
+        * Chef
+            * Chefs will take any raw meats placed in their inventory to the nearest Furnace -> Campfire in that order, preferring furnaces if campfires are available and falling back to campfire only when there is no furnace present in their work radius.
+            * Chefs will place fuel into the furnace if needed (and present in inventory) such as coal, charcoal, wood.
+        * Hunter
+            * Hunters will seek out and kill passive mobs within their work radius, collecting their loot.
+            * This functions the same as setting them to hunt passive mobs, except while on patrol they have a much larger radius in which they hunt.
+    * Courier Functionality
+        * Companions with Jobs will deliver their inventory (minus their equipped gear) to their assigned chest.
+        * If the assigned chest is not chunk loaded, the Companion will alert you that they cannot reach the area.
+        * Optional config to enable all assigned chests to chunk load to prevent misdelivery.
+* Improved Patrol Logic
+    * Pathing Radius now extends to 128 blocks
     * Shift-Clicking now advances radius by 10
-    * Companions with Jobs will now work when on patrol
-* Companions will switch to their desired tool when set to patrol, and back to their weapons when taken off patrol.
+    * Companions with Jobs will only work when on patrol
+    * Companions will switch to their desired tool when set to patrol, and back to their weapons when taken off patrol.

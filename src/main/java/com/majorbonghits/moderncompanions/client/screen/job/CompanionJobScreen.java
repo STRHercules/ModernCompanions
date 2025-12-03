@@ -104,6 +104,14 @@ public class CompanionJobScreen extends Screen {
                     y += 10;
                 }
             }
+
+            if (job == CompanionJob.MINER) {
+                y += 6;
+                y = drawLine(gfx, Component.translatable("job.modern_companions.miner.stats.counted", companion.getMinerOresCounted()), x, y, width);
+                y = drawLine(gfx, Component.translatable("job.modern_companions.miner.stats.mined", companion.getMinerOresMined()), x, y, width);
+                int remaining = Math.max(0, companion.getMinerOresCounted() - companion.getMinerOresMined());
+                y = drawLine(gfx, Component.translatable("job.modern_companions.miner.stats.remaining", remaining), x, y, width);
+            }
         });
 
         super.render(gfx, mouseX, mouseY, partialTick);

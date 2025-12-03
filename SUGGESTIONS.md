@@ -106,3 +106,4 @@
 - 2025-11-30 (follow-up): Implement trait-specific stat/AI nudges and morale floors from Bond levels, and expand the Memory Journal with major kills/distance traveled once those metrics are tracked.
 - 2025-12-01: Refine trait hooks (Guardian target weighting, Reckless chase radius, Lucky loot bumps) and add configurable thresholds; surface major kills separately and show distance traveled in more readable units (km) with formatting.
 - 2025-12-01 (next): Tune Lucky drop bonus to roll an extra loot-table pass instead of duplicating an existing drop; add target weighting for Guardian (prefer mobs targeting owner) and a modest chase radius bump for Reckless, all behind config toggles.
+- 2025-12-03: Add a lightweight debug overlay/toggle for miners that renders their current surveyed cube and ore waypoints, plus a config to throttle rescan frequency for large patrol radii to keep server load predictable.

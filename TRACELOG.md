@@ -1745,3 +1745,20 @@
   - Bumped version to 1.1.20 and rebuilt.
 - Rationale: Provide clear, technical docs for the personality systems so users and pack makers understand the exact effects and optional integrations.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-12-03 (1.2.10 Miner shift planning/persistence)
+- Prompt/task: "We need to redesign how the miners locate, path to, and retrieve ores within their patrol radius." Add shift-long planning, persistence across reloads, 3D patrol cube, and no-idle behavior.
+- Steps:
+  - Added persisted miner survey metadata (ore list/index, counted/mined totals, planned work cube) to the companion entity with NBT + data parameters.
+  - Reworked `MinerJobGoal` to survey the full cube at shift start, merge new ore discoveries, tunnel with the existing staircase rules, and continuously advance until every ore is cleared or none remain—plus owner chat when the area is empty.
+  - Surfaced live miner stats (mapped/mined/remaining ores) in the Job screen and updated localization; bumped version to 1.2.10.
+- Rationale: Miners now pre-plan their quarry, remember progress through reloads, and avoid stalling while ore remains inside their 3D patrol volume, matching the requested quarry-like behavior and player feedback hooks.
+- Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-12-03 (Miner debug logging & stall tracing)
+- Prompt/task: "The miner is still pausing... add a bunch of debug logging for these miners so we can diagnose what is going on."
+- Steps:
+  - Added tagged SLF4J debug/info logging throughout `MinerJobGoal` (survey, path planning, pruning, mining, stall recovery, force-move) to trace why plans abort or miners pause.
+  - Count missing-but-queued ores as mined during prune so remaining totals advance; kept fallback tunneling when no path is found.
+- Rationale: Provide granular diagnostics in logs to pinpoint stall causes and confirm ore counters progress even when blocks disappear externally.
+- Build/Test: `./gradlew build -x test` ✔️
