@@ -1263,3 +1263,8 @@ SophisticatedBackpacks-1.21.x
 .gradle-temp/caches/8.10.2/fileHashes/fileHashes.bin
 .gradle-temp/caches/8.10.2/fileContent/fileContent.lock
 .gradle-temp/caches/8.10.2/file-changes/last-build.bin
+.gradle-temp/caches/modules-2/gc.properties
+.gradle-temp/caches/jars-9/gc.properties
+.gradle-temp/caches/8.10.2/transforms/gc.properties
+.gradle-temp/caches/8.10.2/groovy-dsl/gc.properties
+.gradle-temp/caches/8.10.2/gc.properties

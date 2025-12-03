@@ -211,6 +211,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private int cachedPatrolToolSlot = -1;                  // original slot of the borrowed tool so we can return it
     private int equipmentIntelligenceBonus;
     private int equipmentEnduranceBonus;
+    // Miner persistent memory: ore positions catalogued during patrol session
+    private java.util.List<BlockPos> minerOreMemory = new java.util.ArrayList<>();
+    private int minerOreIndex = 0;
 
     // Client-side tracking of the last swing tick we already applied locally.
     private int lastAppliedSwingTick = -1;
@@ -259,6 +262,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(PICKUP_ITEMS, true);
         builder.define(PATROL_POS, Optional.empty());
         builder.define(PATROL_RADIUS, 10);
+        if (minerOreMemory == null) minerOreMemory = new java.util.ArrayList<>();
+        minerOreMemory.clear();
+        minerOreIndex = 0;
         builder.define(FOOD1, "");
         builder.define(FOOD2, "");
         builder.define(FOOD1_AMT, 0);
@@ -701,6 +707,18 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public int getKillCount() {
         return this.entityData.get(KILL_COUNT);
+    }
+
+    public java.util.List<BlockPos> getMinerOreMemory() {
+        return minerOreMemory;
+    }
+
+    public int getMinerOreIndex() {
+        return minerOreIndex;
+    }
+
+    public void setMinerOreIndex(int idx) {
+        this.minerOreIndex = Math.max(0, idx);
     }
 
     public void setKillCount(int kills) {
@@ -1288,6 +1306,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putInt("Intelligence", getBaseIntelligence());
         tag.putInt("Endurance", getBaseEndurance());
         tag.putInt("SpecialistAttr", getSpecialistAttributeIndex());
+        long[] oreArr = minerOreMemory.stream().mapToLong(BlockPos::asLong).toArray();
+        tag.putLongArray("MinerOreMemory", oreArr);
+        tag.putInt("MinerOreIndex", minerOreIndex);
         if (this.getPatrolPos().isPresent()) {
             int[] patrolPos = { this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(),
                     this.getPatrolPos().get().getZ() };
@@ -1345,6 +1366,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             this.setBaseHealth(tag.getInt("baseHealth"));
         }
         setSpecialistAttributeIndex(tag.contains("SpecialistAttr") ? tag.getInt("SpecialistAttr") : -1);
+        minerOreMemory.clear();
+        if (tag.contains("MinerOreMemory")) {
+            long[] arr = tag.getLongArray("MinerOreMemory");
+            for (long l : arr) {
+                minerOreMemory.add(BlockPos.of(l));
+            }
+        }
+        minerOreIndex = tag.getInt("MinerOreIndex");
         if (tag.contains("Personality", 10)) {
             personality.loadFrom(tag.getCompound("Personality"));
         } else {
