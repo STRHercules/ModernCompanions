@@ -46,6 +46,7 @@ public final class ModConfig {
     public static ModConfigSpec.IntValue JOB_CHEF_RADIUS;
     public static ModConfigSpec.ConfigValue<List<? extends String>> JOB_MINER_ALLOW_BLOCKS;
     public static ModConfigSpec.ConfigValue<List<? extends String>> JOB_MINER_DENY_BLOCKS;
+    public static ModConfigSpec.BooleanValue JOB_ASSIGNED_CHESTS_CHUNKLOAD;
 
     /**
      * Safely read a config value even during very early lifecycle (e.g., attribute construction) by
@@ -174,6 +175,9 @@ public final class ModConfig {
         JOB_CHEF_RADIUS = builder
                 .comment("Search radius for Chef heat source scans.")
                 .defineInRange("chefRadius", 8, 3, 24);
+        JOB_ASSIGNED_CHESTS_CHUNKLOAD = builder
+                .comment("If true, companions keep their assigned drop-off chests chunk-loaded to prevent courier failures.")
+                .define("assignedChestsChunkload", false);
         builder.pop();
 
         ModLoadingContext.get().getActiveContainer()

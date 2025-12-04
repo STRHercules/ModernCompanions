@@ -66,6 +66,7 @@ public final class ModNetwork {
                 switch (payload.action()) {
                     case "cycle_orders" -> companion.cycleOrders();
                     case "clear_target" -> companion.setTarget(null);
+                    case "deliver_now" -> companion.requestImmediateDelivery(serverPlayer);
                     case "release" -> {
                         companion.release();
                         serverPlayer.sendSystemMessage(Component.literal(companion.getDisplayName().getString().split(" ")[0] +

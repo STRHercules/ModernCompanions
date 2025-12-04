@@ -4,6 +4,7 @@ import com.majorbonghits.moderncompanions.ModernCompanions;
 import com.majorbonghits.moderncompanions.entity.AbstractHumanCompanionEntity;
 import com.majorbonghits.moderncompanions.entity.job.CompanionJob;
 import com.majorbonghits.moderncompanions.network.SetCompanionJobPayload;
+import com.majorbonghits.moderncompanions.network.CompanionActionPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -55,6 +56,11 @@ public class CompanionJobScreen extends Screen {
                 .withInitialValue(safeCompanion().map(AbstractHumanCompanionEntity::getJob).orElse(CompanionJob.NONE))
                 .create(leftPos + 14, topPos + 26, 160, 20, Component.translatable("gui.modern_companions.job"), (btn, job) -> setJob(job)));
 
+        addRenderableWidget(Button.builder(Component.translatable("gui.modern_companions.deposit"), b -> requestDeposit())
+                .pos(leftPos + 10, topPos + BG_H - 24)
+                .size(60, 16)
+                .build());
+
         addRenderableWidget(Button.builder(Component.translatable("gui.back"), b -> closeToParent())
                 .pos(leftPos + BG_W - 60, topPos + BG_H - 24)
                 .size(50, 16)
@@ -75,6 +81,12 @@ public class CompanionJobScreen extends Screen {
         Minecraft mc = Minecraft.getInstance();
         if (mc == null) return;
         mc.setScreen(parent);
+    }
+
+    private void requestDeposit() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.getConnection() == null) return;
+        mc.getConnection().send(new ServerboundCustomPayloadPacket(new CompanionActionPayload(companionId, "deliver_now")));
     }
 
     @Override
@@ -111,6 +123,15 @@ public class CompanionJobScreen extends Screen {
                 y = drawLine(gfx, Component.translatable("job.modern_companions.miner.stats.mined", companion.getMinerOresMined()), x, y, width);
                 int remaining = Math.max(0, companion.getMinerOresCounted() - companion.getMinerOresMined());
                 y = drawLine(gfx, Component.translatable("job.modern_companions.miner.stats.remaining", remaining), x, y, width);
+                y = drawLine(gfx, Component.translatable("job.modern_companions.miner.stats.lifetime", companion.getMinerOresLifetime()), x, y, width);
+            } else if (job == CompanionJob.LUMBERJACK) {
+                y += 6;
+                y = drawLine(gfx, Component.translatable("job.modern_companions.lumberjack.stats.session", companion.getLumberLogsSession()), x, y, width);
+                y = drawLine(gfx, Component.translatable("job.modern_companions.lumberjack.stats.lifetime", companion.getLumberLogsLifetime()), x, y, width);
+            } else if (job == CompanionJob.FISHER) {
+                y += 6;
+                y = drawLine(gfx, Component.translatable("job.modern_companions.fisher.stats.session", companion.getFishCaughtSession()), x, y, width);
+                y = drawLine(gfx, Component.translatable("job.modern_companions.fisher.stats.lifetime", companion.getFishCaughtLifetime()), x, y, width);
             }
         });
 

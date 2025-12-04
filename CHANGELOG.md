@@ -58,3 +58,10 @@
     * Shift-Clicking now advances radius by 10
     * Companions with Jobs will only work when on patrol
     * Companions will switch to their desired tool when set to patrol, and back to their weapons when taken off patrol.
+
+
+
+
+BUGS: 
+
+Lumberjacks spin in place when no trees available to chop.

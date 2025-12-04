@@ -27,7 +27,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  */
 public class FisherJobGoal extends Goal {
     private static final int FISH_INTERVAL = 120;
-    private static final int SEARCH_COOLDOWN = 20;
+    private static final int SEARCH_COOLDOWN = 60; // throttle rescans to ease server load
+    private static final int RESCAN_STUCK_TICKS = 80;
+    private static final int MAX_CANDIDATES_PER_SCAN = 64;
 
     private final AbstractHumanCompanionEntity companion;
     private final int searchRadius;
@@ -37,6 +39,7 @@ public class FisherJobGoal extends Goal {
     private BlockPos standPos;
     private int fishCooldown;
     private int searchCooldown;
+    private int idleNavTicks;
 
     public FisherJobGoal(AbstractHumanCompanionEntity companion, int searchRadius, boolean enabled) {
         this.companion = companion;
@@ -48,15 +51,13 @@ public class FisherJobGoal extends Goal {
     @Override
     public boolean canUse() {
         if (!isActiveJob()) return false;
-        if (searchCooldown > 0) {
-            searchCooldown--;
-            return false;
+        if (waterSpot != null && standPos != null && isWater(waterSpot) && isStandValid(standPos)) {
+            return true;
         }
+        if (searchCooldown-- > 0) return false;
         boolean found = findWaterAndStand();
-        if (found) {
-            moveToStand();
-        }
         searchCooldown = SEARCH_COOLDOWN;
+        if (found) moveToStand();
         return found;
     }
 
@@ -92,16 +93,31 @@ public class FisherJobGoal extends Goal {
             moveToStand();
             return;
         }
-        // If pathing failed for a while, rescan.
         if (companion.getNavigation().isDone() && dist > 1.5D) {
-            if (findWaterAndStand()) {
+            idleNavTicks++;
+            if (idleNavTicks > RESCAN_STUCK_TICKS) {
+                if (findWaterAndStand()) {
+                    moveToStand();
+                    idleNavTicks = 0;
+                    return;
+                }
+                idleNavTicks = 0;
+            } else {
                 moveToStand();
-                return;
             }
+        } else {
+            idleNavTicks = 0;
         }
         if (fishCooldown-- > 0) return;
         fishCooldown = FISH_INTERVAL + random.nextInt(40);
+        faceWater();
         reelIn();
+    }
+
+    private void faceWater() {
+        if (waterSpot == null) return;
+        Vec3 look = Vec3.atCenterOf(waterSpot);
+        companion.getLookControl().setLookAt(look.x, look.y, look.z);
     }
 
     private void reelIn() {
@@ -113,6 +129,7 @@ public class FisherJobGoal extends Goal {
             if (!leftover.isEmpty()) {
                 companion.spawnAtLocation(leftover);
             }
+            companion.incrementFishCaughtSession();
         }
     }
 
@@ -144,48 +161,49 @@ public class FisherJobGoal extends Goal {
                 ? companion.getPatrolPos().get()
                 : companion.blockPosition();
         Level level = companion.level();
-        BlockPos bestStand = null;
-        BlockPos bestWater = null;
-        double bestDist = Double.MAX_VALUE;
+        int radius = Math.min(48, Math.max(searchRadius, companion.getPatrolRadius()));
+        int evaluated = 0;
 
-        int radius = Math.min(128, Math.max(searchRadius, companion.getPatrolRadius()));
-        for (BlockPos candidate : BlockPos.betweenClosed(origin.offset(-radius, -6, -radius),
-                origin.offset(radius, 6, radius))) {
-            if (!isStandValid(candidate)) continue;
-            BlockPos water = adjacentWater(candidate);
-            if (water == null) continue;
-            if (companion.getNavigation().createPath(candidate, 0) == null) continue;
-            double dist = candidate.distSqr(origin);
-            if (dist < bestDist) {
-                bestDist = dist;
-                bestStand = candidate.immutable();
-                bestWater = water.immutable();
+        for (int r = 0; r <= radius && evaluated < MAX_CANDIDATES_PER_SCAN; r++) {
+            for (int dy = -2; dy <= 2 && evaluated < MAX_CANDIDATES_PER_SCAN; dy++) {
+                for (int dx = -r; dx <= r && evaluated < MAX_CANDIDATES_PER_SCAN; dx++) {
+                    for (int dz = -r; dz <= r && evaluated < MAX_CANDIDATES_PER_SCAN; dz++) {
+                        if (Math.abs(dx) != r && Math.abs(dz) != r) continue; // perimeter only
+                        BlockPos candidate = origin.offset(dx, dy, dz);
+                        evaluated++;
+                        if (!isStandValid(candidate)) continue;
+                        BlockPos water = adjacentWater(level, candidate);
+                        if (water == null) continue;
+                        var path = companion.getNavigation().createPath(candidate, 0);
+                        if (path == null) continue;
+                        standPos = candidate.immutable();
+                        waterSpot = water.immutable();
+                        return true;
+                    }
+                }
             }
         }
-
-        if (bestStand != null && bestWater != null) {
-            standPos = bestStand;
-            waterSpot = bestWater;
-            return true;
-        }
-
         waterSpot = null;
         standPos = null;
         return false;
     }
 
     private boolean isWater(BlockPos pos) {
-        var state = companion.level().getBlockState(pos);
+        return isWater(companion.level(), pos);
+    }
+
+    private boolean isWater(Level level, BlockPos pos) {
+        var state = level.getBlockState(pos);
         return state.is(Blocks.WATER) || state.getFluidState().isSource() && state.getFluidState().is(net.minecraft.tags.FluidTags.WATER);
     }
 
-    private BlockPos adjacentWater(BlockPos stand) {
+    private BlockPos adjacentWater(Level level, BlockPos stand) {
         // Favor horizontal adjacency first, then vertical within reach.
         for (BlockPos side : BlockPos.betweenClosed(stand.offset(-1, 0, -1), stand.offset(1, 0, 1))) {
-            if (isWater(side)) return side.immutable();
+            if (isWater(level, side)) return side.immutable();
         }
         for (BlockPos side : BlockPos.betweenClosed(stand.offset(-1, -1, -1), stand.offset(1, 1, 1))) {
-            if (isWater(side)) return side.immutable();
+            if (isWater(level, side)) return side.immutable();
         }
         return null;
     }

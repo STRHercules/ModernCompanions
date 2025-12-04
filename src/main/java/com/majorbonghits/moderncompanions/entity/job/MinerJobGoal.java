@@ -265,6 +265,9 @@ public class MinerJobGoal extends Goal {
         loadPersistedPlan();
         if (oreQueue.isEmpty() || workAreaChanged()) {
             surveyAndPersist(true);
+        } else {
+            companion.setMinerOresCounted(oreQueue.size());
+            companion.setMinerOresMined(0);
         }
         sessionPlanned = true;
     }

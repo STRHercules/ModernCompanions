@@ -1762,3 +1762,174 @@
   - Count missing-but-queued ores as mined during prune so remaining totals advance; kept fallback tunneling when no path is found.
 - Rationale: Provide granular diagnostics in logs to pinpoint stall causes and confirm ore counters progress even when blocks disappear externally.
 - Build/Test: `./gradlew build -x test` ✔️
+
+## 2025-12-03 (Courier chest assignments)
+- Prompt/task: "Let's get to work on a courier system... Assignment Wand ... chests for companions with jobs; chunk-load option and alerts for unloaded chests."
+- Steps:
+  - Added `AssignmentWandItem` that selects a companion then shift-right-click binds a container as its drop-off chest; registered the item/model/recipe/creative tab entry and localization.
+  - Added persistent chest assignment fields to companions (synced + NBT), optional chunk-forcing config, and owner notifications when chunks are unloaded, chests go missing, or target chests are full.
+  - Introduced `DeliverToChestGoal` so job companions courier all inventory except equipped gear to the assigned chest, skipping combat/idle states; refreshed job goal priorities accordingly and bumped version to 1.2.12.
+- Rationale: Implements the requested courier loop with an explicit assignment tool, persistence, and safeguards against unloaded or missing chests to avoid misdelivery.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Assignment wand GUI guard)
+- Prompt/task: "We need to change the interaction of the assignment wand... block the inventory from opening when using the assignment wand."
+- Steps:
+  - Updated `mobInteract` to return PASS when the player holds the Assignment Wand so the wand’s selection logic handles the click instead of opening the companion GUI.
+  - Bumped version to 1.2.13 and rebuilt.
+- Rationale: Prevents accidental GUI opens and ensures the wand can always capture the intended selection chest-binding flow.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Assignment wand selection persistence)
+- Prompt/task: "Using the assignment wand ... after selecting companion, chest click says 'select a companion first'."
+- Steps:
+  - Store the current selection both on the wand (custom data component) and on the player’s persistent data so cross-hand/stack swaps retain the chosen companion until a chest is bound.
+  - Clear both stores after success or invalid ownership/missing companion cases; bumped version to 1.2.14 and rebuilt.
+- Rationale: Ensures the selected companion survives interaction order quirks so chest binding works reliably on the next shift-right-click.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Job GUI deposit button)
+- Prompt/task: "Add a Deposit button to force companions to path to their assigned chest and dump inventory."
+- Steps:
+  - Added a bottom-left "Deposit" button to the Job screen that sends a `deliver_now` companion action.
+  - Wired server handling to set a forced delivery request; companions halt current tasks and immediately path to their assigned chest (even if not currently patrolling) and deposit all non-equipped items; added owner message when no chest is assigned.
+  - Added translations and bumped version to 1.2.15; rebuilt.
+- Rationale: Provides an explicit player-triggered courier run to quickly offload a working companion’s inventory.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Courier cadence guard)
+- Prompt/task: "Only deposit once per MC day or when inventory is full, plus on Deposit button press."
+- Steps:
+  - Added per-companion `lastDeliveryGameTime` tracking and a full-inventory check; courier goal now runs only if inventory is full or 24,000 ticks passed since last drop-off, unless forced by the Deposit button.
+  - Persisted the timestamp to NBT, kept forced delivery path intact, and bumped version to 1.2.16; rebuilt.
+- Rationale: Prevents ping-pong courier loops while keeping predictable daily offloads and a manual override.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Double chest support)
+- Prompt/task: "Double chests reported full when half had space."
+- Steps:
+  - Resolved chest containers via `ChestBlock.getContainer` so both halves of double chests are treated as a single inventory before insertion; bumped version to 1.2.18 and rebuilt.
+- Rationale: Prevents false 'full' reports by writing into either half of a double chest.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Water traversal boost)
+- Prompt/task: "Companions crawl through water—speed them up."
+- Steps:
+  - Added a water-movement helper that toggles swimming, applies brief Dolphin's Grace, and nudges movement when idle in water to keep them crossing rivers faster.
+  - Kept other movement unchanged; bumped version to 1.2.19 and rebuilt.
+- Rationale: Dramatically improves water crossing speed without altering land pathing.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Fisher facing water, lumberjack resume, single chest)
+- Prompt/task: "Fishers should face water, lumberjacks hang after deposit, only one assigned chest."
+- Steps:
+  - Fisher: look at the chosen water block when fishing.
+  - Lumberjack: keep a goal reference and force a rescan after a delivery completes so work resumes immediately.
+  - Chest assignment: releasing old chunk ticket when reassigning ensures only one active drop-off chest.
+- Rationale: Improves job feedback and prevents stale patrol states or multiple chest binds.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Pathing + inventory rules update)
+- Prompt/task: "Water slow; stuck courier; weapon/food/sapling retention; double chests." (combined follow-ups)
+- Steps:
+  - Added Dolphin's Grace water boost and idle swim nudge.
+  - Courier: treats double chests as unified inventory via `ChestBlock.getContainer`; lumberjack rescan hook on deposit.
+  - Retention: companions keep food/healables/primary weapons; lumberjacks keep saplings.
+  - Version bumped to 1.2.20; rebuilt.
+- Rationale: Faster water crossing, reliable double-chest deposits, smarter item retention, and resumed work after deliveries.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Committed swim + delivery persistence)
+- Prompt/task: "Still waffling mid-river; keep deposit command alive."
+- Steps:
+  - Extended committed swim to ~10s, using navigation target direction for push; Dolphin’s Grace refresh less spammy.
+  - Deposit flag now persists until a successful drop-off; lumberjacks idle-nav watchdog repaths to targets after crossings.
+- Rationale: Reduce mid-river turnbacks and ensure forced deposits complete.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Lumberjack post-cross idle fix)
+- Prompt/task: "Lumberjack reaches tree after river, then idles."
+- Steps:
+  - Added a short idle navigation watchdog in LumberjackGoal that reissues a path to the current target if navigation finished unexpectedly (e.g., after a swim).
+  - Version bumped to 1.2.25; rebuilt.
+- Rationale: Keeps lumberjacks chopping immediately after reaching the far bank instead of standing idle.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-03 (Lumberjack debug logging)
+- Prompt/task: "Add miner-level debug logging to lumberjacks; they pause in the same spot."
+- Steps:
+  - Added SLF4J debug logs throughout `LumberjackJobGoal` (scan start, repaths, leaf-clears, breaks, chops, post-deposit rescan, idle repath) to trace pauses.
+  - Version bumped to 1.2.26; rebuilt.
+- Rationale: Provides detailed traces to diagnose pausing/hanging during lumberjack runs.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-04 (Assignment wand GUI block + visible lumberjack logs)
+- Prompt/task: "Stop the Assignment Wand from opening companion inventory; surface lumberjack debug logs."
+- Steps:
+  - Companion interaction now consumes the click when holding the Assignment Wand so the inventory GUI never opens during selection.
+  - Lumberjack trace helper logs at INFO to appear in normal logs (already wired in earlier pass).
+  - Bumped version to 1.2.27.
+- Rationale: Ensures chest assignment flow isn’t interrupted by the companion GUI and makes lumberjack diagnostics visible without debug log level.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-04 (Lumberjack leaf clearing guard)
+- Prompt/task: "Lumberjacks pause/break leaves unnecessarily—only clear when blocked from the target log."
+- Steps:
+  - Leaf clearing now triggers only after repeated path failures with no path and nearby leaves, within close range of the stump, giving a ~2s grace before breaking.
+  - Reduced false-positive clearing that was happening even while the path was valid.
+  - Bumped version to 1.2.28.
+- Rationale: Prevents needless leaf breaking/pausing while still unblocking genuinely leaf-blocked paths.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-04 (Lumberjack stall kickstart)
+- Prompt/task: "Lumberjacks are still pausing while they work; add a kickstart system like miners."
+- Steps:
+  - Added a stall watchdog that counts idle ticks; after ~6 seconds without pathing or chopping it reissues navigation, and if no path exists it skips the stuck log and forces an immediate rescan.
+  - Kept leaf-clearing guard intact while resetting internal timers to avoid repeated idle loops.
+  - Bumped version to 1.2.29.
+- Rationale: Automatically recovers lumberjacks that sit idle at a waypoint by repathing or skipping the blocked log instead of stalling indefinitely.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-04 (Lumberjack ground-level chopping)
+- Prompt/task: "Lumberjacks are attempting to harvest trees by standing on top; keep them at stump level."
+- Steps:
+  - Navigation now searches for a solid ground stand spot near the stump and clamps path height to stump Y, preventing climbs onto canopy/log tops.
+  - Retains leaf-clearing/stall guards while anchoring stance for consistent base-level chopping.
+  - Bumped version to 1.2.30.
+- Rationale: Ensures lumberjacks fell trees from the base instead of perching on crowns, improving reliability and animation realism.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-04 (Lumberjack distance bugfix)
+- Prompt/task: "After ground-stance change, lumberjacks reach trees but don't break logs."
+- Steps:
+  - Fixed distance check to use squared distance correctly (allow ~4 blocks, dist^2 <= 16) so chopping resumes once in range instead of looping navigation.
+  - Version bumped to 1.2.31; no other logic changes.
+- Rationale: Prevents companions from hovering near trunks without swinging after the stance tweak.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-04 (Job stats per session + lifetime)
+- Prompt/task: "Miner mapped/remaining is additive across sessions; make stats per work session and add lifetime totals (apply to other jobs)."
+- Steps:
+  - Miner session stats reset whenever a survey plan loads; mined increments also raise a new lifetime counter. UI now shows session mapped/mined/remaining plus lifetime total.
+  - Added session/lifetime counters for Lumberjack (logs chopped) and Fisher (fish caught) and surfaced them on the job screen.
+  - Synced new stats through entity data + NBT; bumped version to 1.2.32.
+- Rationale: Job panel numbers now describe the current work session while still tracking lifetime productivity separately.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-04 (Fisher lag throttle)
+- Prompt/task: "Fishers seem to be causing massive server lag."
+- Steps:
+  - Throttled water/stand scans to every 3s, capped candidate checks to 64, and reduced search radius to 48 with ring-perimeter probing to avoid whole-cube scans.
+  - Added stuck-path watchdog to re-path or rescan only after ~4s idle, reducing repeated expensive navigation/path builds.
+  - Kept fishing cadence unchanged; version bumped to 1.2.33.
+- Rationale: Greatly cuts per-tick pathfinding/load from fishers while keeping their behavior intact.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-04 (Fisher pathing vertical bands)
+- Prompt/task: "Fishers do not seem to be pathing to water at all now."
+- Steps:
+  - Expanded candidate scan to include a small vertical band (-2..2 Y) while keeping perimeter + capped evaluations, restoring pathable water spots on uneven terrain.
+  - Left throttling/stuck guard in place to keep load low.
+  - Version unchanged (still 1.2.33); rebuilt.
+- Rationale: Restores reliable water acquisition after throttling changes while preserving lag reduction.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
