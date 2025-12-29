@@ -29,7 +29,7 @@ public class FisherJobGoal extends Goal {
     private static final int FISH_INTERVAL = 120;
     private static final int SEARCH_COOLDOWN = 60; // throttle rescans to ease server load
     private static final int RESCAN_STUCK_TICKS = 80;
-    private static final int MAX_CANDIDATES_PER_SCAN = 64;
+    private static final int MAX_CANDIDATES_PER_SCAN = 256;
 
     private final AbstractHumanCompanionEntity companion;
     private final int searchRadius;
@@ -174,6 +174,7 @@ public class FisherJobGoal extends Goal {
                         if (!isStandValid(candidate)) continue;
                         BlockPos water = adjacentWater(level, candidate);
                         if (water == null) continue;
+                        // Path to the solid floor; navigator handles stepping onto the block.
                         var path = companion.getNavigation().createPath(candidate, 0);
                         if (path == null) continue;
                         standPos = candidate.immutable();
@@ -212,9 +213,11 @@ public class FisherJobGoal extends Goal {
         Level level = companion.level();
         var state = level.getBlockState(pos);
         // Need a solid block to stand on, with headroom.
+        var feet = level.getBlockState(pos.above());
         return state.isSolid()
                 && !state.liquid()
-                && level.getBlockState(pos.above()).isAir();
+                && feet.getFluidState().isEmpty()
+                && feet.getCollisionShape(level, pos.above()).isEmpty();
     }
 
     private void moveToStand() {

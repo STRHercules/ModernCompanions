@@ -1933,3 +1933,37 @@
   - Version unchanged (still 1.2.33); rebuilt.
 - Rationale: Restores reliable water acquisition after throttling changes while preserving lag reduction.
 - Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-06 (Fisher stand pathing)
+- Prompt/task: "Fishers are not pathing to the nearest water to initiate fishing."
+- Steps:
+  - Pathfinding now targets the air block above the chosen stand tile so navigation can reach valid fishing spots instead of aiming at the solid floor.
+  - Stand validation requires two blocks of headroom above the floor to prevent paths from being rejected by blocked airspace.
+  - Bumped version to 1.2.34 and rebuilt.
+- Rationale: Ensures the nearest valid water/stand pair produces a reachable path and the fisher walks over to start fishing reliably.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-06 (Fisher stand clearance)
+- Prompt/task: "Fishers are just idling when set to patrol and not sitting. They are not navigating to the water to fish"
+- Steps:
+  - Relaxed stand validation to only require a collision-free space directly above the floor (no longer two air blocks), preventing false negatives under leaves or overhangs.
+  - Kept path target at the feet position above the stand so navigation still reaches the shoreline.
+  - Version bumped to 1.2.35 and rebuilt.
+- Rationale: Avoids over-strict headroom checks that blocked all candidate stands, allowing fishers to acquire nearby water spots and start fishing again.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-06 (Fisher floor target)
+- Prompt/task: "Fisher still is not pathing to any water. They are near it, set to patrol and not sitting yet they remain stationary."
+- Steps:
+  - Navigation now builds paths to the solid stand block itself (floor) instead of the air above it, matching vanilla walk targets and preventing null paths on valid shoreline tiles.
+  - Version bumped to 1.2.36 and rebuilt.
+- Rationale: Pathfinding was failing because targets were set to non-walkable air blocks; directing paths to the ground restores reachable water stands so fishers step to shore and begin fishing.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-06 (Fisher scan breadth)
+- Prompt/task: "Fishers are still just standing idle when they should be pathing to nearby water to fish."
+- Steps:
+  - Raised per-scan candidate cap from 64 to 256 so expanding perimeter rings keep searching outward instead of aborting before reaching water a few blocks away.
+  - Version bumped to 1.2.37 and rebuilt.
+- Rationale: The prior throttle stopped scanning after ~4 rings, missing shoreline water slightly farther out and leaving fishers idle; the higher cap keeps scans lightweight but wide enough to find nearby water reliably.
+- Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
