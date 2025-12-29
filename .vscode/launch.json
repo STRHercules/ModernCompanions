@@ -12,13 +12,13 @@
       "projectName": "ModernCompanions",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@/home/zach/Documents/GitHub/ModernCompanions/build/moddev/clientRunProgramArgs.txt"
+        "@C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\build\\moddev\\clientRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@/home/zach/Documents/GitHub/ModernCompanions/build/moddev/clientRunVmArgs.txt",
-        "-Dfml.modFolders\u003dmodern_companions%%/home/zach/Documents/GitHub/ModernCompanions/bin/main"
+        "@C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dmodern_companions%%C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\bin\\main"
       ],
-      "cwd": "${workspaceFolder}/run",
+      "cwd": "${workspaceFolder}\\run",
       "env": {},
       "console": "internalConsole",
       "shortenCommandLine": "none"
@@ -34,13 +34,13 @@
       "projectName": "ModernCompanions",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@/home/zach/Documents/GitHub/ModernCompanions/build/moddev/dataRunProgramArgs.txt"
+        "@C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\build\\moddev\\dataRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@/home/zach/Documents/GitHub/ModernCompanions/build/moddev/dataRunVmArgs.txt",
-        "-Dfml.modFolders\u003dmodern_companions%%/home/zach/Documents/GitHub/ModernCompanions/bin/main"
+        "@C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\build\\moddev\\dataRunVmArgs.txt",
+        "-Dfml.modFolders\u003dmodern_companions%%C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\bin\\main"
       ],
-      "cwd": "${workspaceFolder}/run",
+      "cwd": "${workspaceFolder}\\run",
       "env": {},
       "console": "internalConsole",
       "shortenCommandLine": "none"
@@ -56,13 +56,13 @@
       "projectName": "ModernCompanions",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@/home/zach/Documents/GitHub/ModernCompanions/build/moddev/serverRunProgramArgs.txt"
+        "@C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\build\\moddev\\serverRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@/home/zach/Documents/GitHub/ModernCompanions/build/moddev/serverRunVmArgs.txt",
-        "-Dfml.modFolders\u003dmodern_companions%%/home/zach/Documents/GitHub/ModernCompanions/bin/main"
+        "@C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\build\\moddev\\serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003dmodern_companions%%C:\\Users\\zkais\\OneDrive\\Documents\\GitHub\\ModernCompanions\\bin\\main"
       ],
-      "cwd": "${workspaceFolder}/run",
+      "cwd": "${workspaceFolder}\\run",
       "env": {},
       "console": "internalConsole",
       "shortenCommandLine": "none"
