@@ -1,6 +1,6 @@
 {
   "pack": {
     "description": "Resources for Modern Companions (port of Human Companions)",
-    "pack_format": 48
+    "pack_format": ${pack_format}
   }
 }

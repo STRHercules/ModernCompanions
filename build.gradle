@@ -1,15 +1,69 @@
 plugins {
     id "java"
-    id "net.neoforged.moddev" version "2.0.76"
+    id "net.neoforged.moddev" version "2.0.76" apply false
+    id "net.neoforged.moddev.legacyforge" version "2.0.76" apply false
 }
 
 group = project.findProperty("group")
 version = project.findProperty("version")
 
+// Select build target based on the requested task name (e.g., `./gradlew build 1.20.1`).
+def requestedTargets = ["1.20.1", "1.21.1"].findAll { gradle.startParameter.taskNames.contains(it) }
+if (requestedTargets.size() > 1) {
+    throw new GradleException("Choose only one Minecraft target per run: ${requestedTargets}")
+}
+
+def targetMinecraft = requestedTargets ? requestedTargets.first() : (project.findProperty("minecraft_version") ?: "1.21.1")
+def targetKey = targetMinecraft.replace(".", "_")
+def isLegacy = targetMinecraft == "1.20.1"
+
+// Apply the correct ModDev plugin for the selected target to avoid configuration conflicts.
+if (isLegacy) {
+    apply plugin: "net.neoforged.moddev.legacyforge"
+} else {
+    apply plugin: "net.neoforged.moddev"
+}
+
+// Resolve per-target properties while keeping the default 1.21.1 values as fallbacks.
+def resolveTargetProperty = { String base ->
+    def key = "${base}_${targetKey}"
+    return project.findProperty(key) ?: project.findProperty(base)
+}
+
+// Export resolved properties so resource expansion and downstream blocks see consistent values.
+def localProperties = new Properties()
+file("gradle.properties").withInputStream { localProperties.load(it) }
+def getLocalProperty = { String name -> localProperties.getProperty(name) }
+
+def legacyForgeVersion = isLegacy
+        ? (project.findProperty("forge_version_1_20_1")
+                ?: getLocalProperty("forge_version_1_20_1")
+                ?: project.findProperty("forge_version")
+                ?: getLocalProperty("forge_version")
+                ?: "1.20.1-47.4.13")
+        : null
+ext.set("minecraft_version", targetMinecraft)
+ext.set("neo_version", resolveTargetProperty("neo_version"))
+ext.set("forge_version", legacyForgeVersion ?: "")
+ext.set("parchment_minecraft", resolveTargetProperty("parchment_minecraft"))
+ext.set("parchment_version", resolveTargetProperty("parchment_version"))
+ext.set("jade_version", resolveTargetProperty("jade_version"))
+ext.set("wthit_version", resolveTargetProperty("wthit_version"))
+ext.set("curios_version", resolveTargetProperty("curios_version"))
+ext.set("curios_artifact", resolveTargetProperty("curios_artifact"))
+ext.set("pack_format", resolveTargetProperty("pack_format"))
+ext.set("loader_version", resolveTargetProperty("loader_version"))
+ext.set("minecraft_version_range", resolveTargetProperty("minecraft_version_range"))
+ext.set("curios_version_range", resolveTargetProperty("curios_version_range"))
+
+if (isLegacy && !legacyForgeVersion && !project.findProperty("forge_version_${targetKey}")) {
+    throw new GradleException("forge_version_1_20_1 is required for the 1.20.1 build.")
+}
+
 java {
     toolchain {
-        // NeoForge 1.21.1 expects Java 21+
-        languageVersion = JavaLanguageVersion.of(21)
+        // NeoForge 1.20.1 expects Java 17; 1.21.1 expects Java 21.
+        languageVersion = JavaLanguageVersion.of(isLegacy ? 17 : 21)
     }
 }
 
@@ -24,48 +78,91 @@ repositories {
     mavenCentral()
 }
 
-neoForge {
-    // Core NeoForge + mappings configuration
-    version = project.findProperty("neo_version")
-    parchment {
-        minecraftVersion = project.findProperty("parchment_minecraft")
-        mappingsVersion = project.findProperty("parchment_version")
-    }
+// Wire NeoForge 1.21.1 or Legacy NeoForge (1.20.1) based on the selected target.
+if (isLegacy) {
+    legacyForge {
+        // NeoForge 1.20.1 tooling expects a Forge-style version string.
+        version = legacyForgeVersion
 
-    runs {
-        // Keep the standard dev run configs; we will wire mod content as it is ported.
-        client { client() }
-        server { server() }
-        data { data() }
-    }
+        runs {
+            // Keep the standard dev run configs; we will wire mod content as it is ported.
+            client { client() }
+            server { server() }
+            data { data() }
+        }
 
-    mods {
-        // Single-mod workspace; hook main source set.
-        "${project.findProperty("mod_id")}" {
-            sourceSet sourceSets.main
+        mods {
+            // Single-mod workspace; hook main source set.
+            "${project.findProperty("mod_id")}" {
+                sourceSet sourceSets.main
+            }
+        }
+    }
+} else {
+    neoForge {
+        // Core NeoForge + mappings configuration
+        version = project.findProperty("neo_version")
+        parchment {
+            minecraftVersion = project.findProperty("parchment_minecraft")
+            mappingsVersion = project.findProperty("parchment_version")
+        }
+
+        runs {
+            // Keep the standard dev run configs; we will wire mod content as it is ported.
+            client { client() }
+            server { server() }
+            data { data() }
+        }
+
+        mods {
+            // Single-mod workspace; hook main source set.
+            "${project.findProperty("mod_id")}" {
+                sourceSet sourceSets.main
+            }
         }
     }
 }
 
 dependencies {
     // Mod runtime + compile dep; resolved via the NeoForge maven above.
-    implementation "net.neoforged:neoforge:${project.findProperty("neo_version")}"
+    if (!isLegacy) {
+        implementation "net.neoforged:neoforge:${project.findProperty("neo_version")}"
+    }
 
-    // Curios API for companion equipment integration (optional at runtime)
-    compileOnly "top.theillusivec4.curios:curios-neoforge:${project.findProperty("curios_version")}"
-    runtimeOnly "top.theillusivec4.curios:curios-neoforge:${project.findProperty("curios_version")}"
+    def compileOnlyConfig = isLegacy ? "modCompileOnly" : "compileOnly"
+    def runtimeOnlyConfig = isLegacy ? "modRuntimeOnly" : "runtimeOnly"
+    def curiosDependency = "top.theillusivec4.curios:${project.findProperty("curios_artifact")}:${project.findProperty("curios_version")}"
 
-    // Optional HUD integrations (Jade / WTHIT). Kept compileOnly so the mod remains optional; runtimeOnly enables local dev runs.
-    compileOnly "maven.modrinth:jade:${project.findProperty("jade_version")}" 
-    compileOnly "maven.modrinth:wthit:${project.findProperty("wthit_version")}" 
+    // Curios API for companion equipment integration (optional at runtime).
+    add(compileOnlyConfig, curiosDependency)
+    add(runtimeOnlyConfig, curiosDependency)
+
+    // Optional HUD integrations (Jade / WTHIT). Kept compileOnly so the mod remains optional.
+    add(compileOnlyConfig, "maven.modrinth:jade:${project.findProperty("jade_version")}")
+    add(compileOnlyConfig, "maven.modrinth:wthit:${project.findProperty("wthit_version")}")
 }
 
 java {
     withSourcesJar()
 }
 
+// Swap Java sources based on the active target to keep version-specific APIs isolated.
+sourceSets {
+    main {
+        java {
+            setSrcDirs(isLegacy ? ["src/legacy/java"] : ["src/main/java"])
+        }
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
+}
+
+// Include the target Minecraft version in output artifact names.
+tasks.withType(AbstractArchiveTask).configureEach {
+    archiveBaseName.set("Modern Companions")
+    archiveVersion.set("${project.version}-${targetMinecraft}")
 }
 
 tasks.processResources.configure {
@@ -76,11 +173,39 @@ tasks.processResources.configure {
             mod_name           : project.findProperty("mod_name"),
             mod_author         : project.findProperty("mod_author"),
             minecraft_version  : project.findProperty("minecraft_version"),
-            neo_version        : project.findProperty("neo_version")
+            neo_version        : project.findProperty("neo_version"),
+            forge_version      : project.findProperty("forge_version"),
+            loader_version     : project.findProperty("loader_version"),
+            minecraft_version_range : project.findProperty("minecraft_version_range"),
+            curios_version_range    : project.findProperty("curios_version_range"),
+            pack_format        : project.findProperty("pack_format")
     ])
 
-    // Inject project properties into mod metadata.
-    filesMatching("META-INF/neoforge.mods.toml") {
+    // Inject project properties into mod metadata + pack format.
+    filesMatching("pack.mcmeta") {
         expand(project.properties)
     }
+
+    if (isLegacy) {
+        exclude("META-INF/neoforge.mods.toml")
+        filesMatching("META-INF/mods.toml") {
+            expand(project.properties)
+        }
+    } else {
+        exclude("META-INF/mods.toml")
+        filesMatching("META-INF/neoforge.mods.toml") {
+            expand(project.properties)
+        }
+    }
+}
+
+// No-op selector tasks so `./gradlew build 1.20.1` or `./gradlew build 1.21.1` works as documented.
+tasks.register("1.20.1") {
+    group = "build"
+    description = "Selects the 1.20.1 target for this Gradle invocation."
+}
+
+tasks.register("1.21.1") {
+    group = "build"
+    description = "Selects the 1.21.1 target for this Gradle invocation."
 }
