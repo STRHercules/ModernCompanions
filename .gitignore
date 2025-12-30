@@ -1,3 +1,6 @@
+# VS Code
+.vscode
+
 # eclipse
 bin
 *.launch
@@ -16,14 +19,15 @@ out
 # gradle
 build
 .gradle
+.gradle-user-home
 
 # other
 eclipse
 run
+.npm-cache
 
 # Files from Forge MDK
 forge*changelog.txt
-
 
 # Support Libs
 OriginalCompanions
@@ -39,5 +43,17 @@ relics-1.21.1
 irons-jewelry-1.21.1
 SophisticatedCore-1.21.x
 SophisticatedBackpacks-1.21.x
-NeoForge-1.20.1
 BetterCombat-1.21.1
+NeoForge-1.20.1
+minecraft-java-decomp
+
+# 1.20.1 Libs
+Curios-1.20.x
+artifacts-1.20.x
+relics-1.20.1
+irons-jewelry-1.20.1
+SophisticatedCore-1.20.x
+SophisticatedBackpacks-1.20.x
+BetterCombat-1.20.1
+minecraft-comes-alive-1.20.1
+minecraft-comes-alive-1.21.1
