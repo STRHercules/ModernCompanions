@@ -19,14 +19,15 @@ out
 # gradle
 build
 .gradle
+.gradle-user-home
 
 # other
 eclipse
 run
+.npm-cache
 
 # Files from Forge MDK
 forge*changelog.txt
-
 
 # Support Libs
 OriginalCompanions
@@ -44,10 +45,9 @@ SophisticatedCore-1.21.x
 SophisticatedBackpacks-1.21.x
 BetterCombat-1.21.1
 NeoForge-1.20.1
-.npm-cache
-.gradle-user-home
 minecraft-java-decomp
 
+# 1.20.1 Libs
 Curios-1.20.x
 artifacts-1.20.x
 relics-1.20.1
