@@ -112,6 +112,12 @@ public final class ModEntityTypes {
                     .sized(0.3125F, 0.3125F)
                     .build(id("soft_wither_skull")));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<com.majorbonghits.moderncompanions.entity.projectile.CompanionFishingHook>> COMPANION_FISHING_HOOK =
+            ENTITY_TYPES.register("companion_fishing_hook", () -> EntityType.Builder.<com.majorbonghits.moderncompanions.entity.projectile.CompanionFishingHook>of(
+                            com.majorbonghits.moderncompanions.entity.projectile.CompanionFishingHook::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F)
+                    .build(id("companion_fishing_hook")));
+
     private static String id(String path) {
         return ResourceLocation.fromNamespaceAndPath(ModernCompanions.MOD_ID, path).toString();
     }

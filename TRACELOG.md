@@ -1967,3 +1967,66 @@
   - Version bumped to 1.2.37 and rebuilt.
 - Rationale: The prior throttle stopped scanning after ~4 rings, missing shoreline water slightly farther out and leaving fishers idle; the higher cap keeps scans lightweight but wide enough to find nearby water reliably.
 - Build/Test: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 GRADLE_USER_HOME=./.gradle ./gradlew build -x test` ✔️
+
+## 2025-12-30 (Fisher water clustering)
+- Prompt/task: "Fisherman when set to patrol and have a fishing rod equipped are not pathing to the nearest water block to fish from. They should be looking for a water block that is surrounded by other water blocks, they should not be fishing in single block 'puddles'."
+- Steps:
+  - Added a fishable-water check that requires a small surface cluster (3x3) so isolated puddles are ignored.
+  - Applied the clustered-water check when acquiring and validating fishing spots.
+  - Bumped version to 1.2.6.
+- Rationale: Ensures fishers choose shoreline spots next to real bodies of water instead of single-block puddles.
+- Build/Test: Not run (not requested).
+
+## 2025-12-30 (Fisher stand targeting)
+- Prompt/task: "Fishers are still just standing still, never actually pathing to the nearest water target. When they do arrive to the water, they should continue with their fishing job."
+- Steps:
+  - Targeted the pathfinder at the actual stand air block while keeping the stand floor for shoreline adjacency checks.
+  - Updated stand validation to use the stand air block with a solid floor below, aligning with navigation.
+  - Reduced the water-neighbor requirement to allow rivers while still rejecting single-block puddles.
+  - Bumped version to 1.2.7.
+- Rationale: Aligns pathfinding with valid stand positions and keeps water selection practical so fishers can reach water and keep fishing.
+- Build/Test: Not run (build failed earlier due to CRLF in `gradlew`).
+
+## 2025-12-30 (Fisher progressive scan)
+- Prompt/task: "Fisher is still standing still and not pathing to the nearest water. When set to Patrol, the Fisher Companion should initiate pathing logic to the nearest water - and when arriving should initiate fishing job logic."
+- Steps:
+  - Centered the water scan on the companion position while constraining results to the patrol radius.
+  - Added a progressive ring scan so the search continues outward over multiple attempts instead of stalling on the first few rings.
+  - Bumped version to 1.2.8.
+- Rationale: Ensures the search reaches nearby water even when it is several blocks away, while keeping patrol bounds and load in check.
+- Build/Test: Not run (build failed earlier due to CRLF in `gradlew`).
+
+## 2025-12-30 (Fisher faster scans)
+- Prompt/task: "tHE FISHER IS STILL JUST STANDING IN PLACE WHEN SET TO PATROL... The fisher eventually did start fishing, but it took a long time for the scan to work and him to find water, and he was within 10 blocks of some."
+- Steps:
+  - Shortened the scan cooldown to try more frequently when no target is found.
+  - Increased the number of scan rings per attempt so nearby water is picked up quickly.
+  - Bumped version to 1.2.9.
+- Rationale: Reduces time-to-first-water for nearby shorelines without removing patrol bounds.
+- Build/Test: Not run (build failed earlier due to CRLF in `gradlew`).
+
+## 2025-12-30 (Fisher visual casting)
+- Prompt/task: "The fisher are just swinging their hand when 'catching' a fish with no other fishing animations happening... The fishers should be visibly casting their lines into the water just as the players do when fishing."
+- Steps:
+  - Added a companion fishing hook entity and renderer so clients see a bobber + line tied to the companion.
+  - Updated fisher logic to cast a line near the stand spot, only reel in if the bobber is in water, then recast after a short delay.
+  - Bumped version to 1.2.10.
+- Rationale: Makes fishing visually match player behavior and keeps the swing tied to an active line in water.
+- Build/Test: Not run (build failed earlier due to CRLF in `gradlew`).
+
+## 2025-12-30 (Fisher cast swing + varied target)
+- Prompt/task: "They fisher should also be 'swinging' when casting their lines... They should be targeting random water blocks within 5-7 blocks in front of themselves when casting."
+- Steps:
+  - Triggered a swing animation when casting so the line appears with a casting motion.
+  - Added a forward-constrained random target selection (5-7 blocks ahead with slight lateral variance) for each cast.
+  - Bumped version to 1.2.11.
+- Rationale: Aligns visuals with player-like casting and avoids a static bobber target.
+- Build/Test: Not run (build failed earlier due to CRLF in `gradlew`).
+
+## 2025-12-30 (Fisher surface water)
+- Prompt/task: "We need to make sure the bobber is always on the surface level water block. Only target water blocks with air above them."
+- Steps:
+  - Required fishable water to have clear air above so the bobber always sits on the surface.
+  - Bumped version to 1.2.12.
+- Rationale: Prevents targeting submerged water blocks and keeps the bobber visible at the surface.
+- Build/Test: Not run (build failed earlier due to CRLF in `gradlew`).

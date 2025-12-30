@@ -1,6 +1,7 @@
 package com.majorbonghits.moderncompanions.client;
 
 import com.majorbonghits.moderncompanions.client.renderer.CompanionRenderer;
+import com.majorbonghits.moderncompanions.client.renderer.CompanionFishingHookRenderer;
 import com.majorbonghits.moderncompanions.client.screen.CompanionScreen;
 import com.majorbonghits.moderncompanions.core.ModEntityTypes;
 import com.majorbonghits.moderncompanions.core.ModMenuTypes;
@@ -41,5 +42,6 @@ public final class ModClientEvents {
         event.registerEntityRenderer(ModEntityTypes.FIREBOLT.get(), ctx -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(ctx, 0.75F, true));
         event.registerEntityRenderer(ModEntityTypes.FIREBURST.get(), ctx -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(ctx, 1.5F, true));
         event.registerEntityRenderer(ModEntityTypes.SOFT_WITHER_SKULL.get(), net.minecraft.client.renderer.entity.WitherSkullRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.COMPANION_FISHING_HOOK.get(), CompanionFishingHookRenderer::new);
     }
 }
