@@ -1,6 +1,7 @@
 package com.majorbonghits.moderncompanions.core;
 
 import com.majorbonghits.moderncompanions.ModernCompanions;
+import com.majorbonghits.moderncompanions.item.AssignmentWandItem;
 import com.majorbonghits.moderncompanions.item.CompanionMoverItem;
 import com.majorbonghits.moderncompanions.item.ResurrectionScrollItem;
 import com.majorbonghits.moderncompanions.item.SummoningWandItem;
@@ -27,6 +28,8 @@ public final class ModItems {
             () -> new StoredCompanionItem(new Item.Properties().rarity(Rarity.RARE)));
     public static final DeferredHolder<Item, Item> COMPANION_MOVER = ITEMS.register("companion_mover",
             () -> new CompanionMoverItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final DeferredHolder<Item, Item> ASSIGNMENT_WAND = ITEMS.register("assignment_wand",
+            () -> new AssignmentWandItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredHolder<Item, Item> SUMMONING_WAND = ITEMS.register("summoning_wand",
             () -> new SummoningWandItem(new Item.Properties()));
 

@@ -1,5 +1,13 @@
 # Wanted Features
 
+# Better Combat Integration
+
+# NeoForge 1.20.1 Port
+
+# MCA Integration?
+
+
+
 ## Companions will have Favorite Foods
 * These foods will give additional healing and increase mood/bond
 
@@ -12,9 +20,6 @@
 
 ## Class Additions
 * Sneaky Stealth Rogue Class
-
-## Weapon Usage Expansion
-* Classes will PREFER their preferred weapons, but will use anything given to them - using their preferred weapons first.
 
 ## New Races
 * Strictly skin based, maybe specific names if rolled with a unique skin.

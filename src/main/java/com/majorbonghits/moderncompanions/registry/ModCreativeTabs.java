@@ -48,6 +48,7 @@ public final class ModCreativeTabs {
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.NECROMANCER_SPAWN_EGG.get());
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.RESURRECTION_SCROLL.get());
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.COMPANION_MOVER.get());
+                        output.accept(com.majorbonghits.moderncompanions.core.ModItems.ASSIGNMENT_WAND.get());
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.STORED_COMPANION.get());
                         output.accept(com.majorbonghits.moderncompanions.core.ModItems.SUMMONING_WAND.get());
 

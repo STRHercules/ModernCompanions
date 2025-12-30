@@ -4,6 +4,7 @@ import com.majorbonghits.moderncompanions.core.ModConfig;
 import com.majorbonghits.moderncompanions.core.ModMenuTypes;
 import com.majorbonghits.moderncompanions.entity.ai.*;
 import com.majorbonghits.moderncompanions.entity.personality.CompanionPersonality;
+import com.majorbonghits.moderncompanions.entity.job.CompanionJob;
 import com.majorbonghits.moderncompanions.menu.CompanionMenu;
 import com.majorbonghits.moderncompanions.core.ModItems;
 import com.majorbonghits.moderncompanions.core.ModEnchantments;
@@ -22,6 +23,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -47,6 +49,10 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -54,8 +60,15 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.Container;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.entity.item.ItemEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,6 +76,11 @@ import java.util.*;
 
 import com.majorbonghits.moderncompanions.entity.SummonedWitherSkeleton;
 import com.majorbonghits.moderncompanions.core.TagsInit;
+import com.majorbonghits.moderncompanions.entity.job.LumberjackJobGoal;
+import com.majorbonghits.moderncompanions.entity.job.HunterJobGoal;
+import com.majorbonghits.moderncompanions.entity.job.MinerJobGoal;
+import com.majorbonghits.moderncompanions.entity.job.FisherJobGoal;
+import com.majorbonghits.moderncompanions.entity.job.ChefJobGoal;
 
 /**
  * Port of the original AbstractHumanCompanionEntity with taming, leveling,
@@ -111,6 +129,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
     private static final EntityDataAccessor<Integer> PATROL_RADIUS = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Optional<BlockPos>> DELIVERY_CHEST = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+    private static final EntityDataAccessor<String> DELIVERY_DIMENSION = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<String> FOOD1 = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<String> FOOD2 = SynchedEntityData
@@ -144,6 +166,22 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     private static final EntityDataAccessor<Integer> MAJOR_KILLS = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> AGE_YEARS = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> JOB_ID = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> MINER_ORES_COUNTED = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> MINER_ORES_MINED = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> MINER_ORES_LIFETIME = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LUMBER_LOGS_SESSION = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> LUMBER_LOGS_LIFETIME = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> FISH_CAUGHT_SESSION = SynchedEntityData
+            .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> FISH_CAUGHT_LIFETIME = SynchedEntityData
             .defineId(AbstractHumanCompanionEntity.class, EntityDataSerializers.INT);
     private static final ResourceLocation MOD_MORALE_DAMAGE = ResourceLocation.fromNamespaceAndPath(
             com.majorbonghits.moderncompanions.ModernCompanions.MOD_ID, "morale_damage");
@@ -179,6 +217,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public PatrolGoal patrolGoal;
     public MoveBackToPatrolGoal moveBackGoal;
+    public com.majorbonghits.moderncompanions.entity.job.LumberjackJobGoal lumberjackGoal;
     private int lastFoodRequestTick = -200;
     private int specialistAttr = -1; // 0=STR,1=DEX,2=INT,3=END; -1 none
 
@@ -198,8 +237,26 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     private int equipmentStrengthBonus;
     private int equipmentDexterityBonus;
+    private ItemStack cachedPatrolWeapon = ItemStack.EMPTY; // weapon the companion held before swapping to job tool
+    private ItemStack cachedPatrolTool = ItemStack.EMPTY;   // tool currently borrowed from inventory while patrolling
+    private int cachedPatrolToolSlot = -1;                  // original slot of the borrowed tool so we can return it
     private int equipmentIntelligenceBonus;
     private int equipmentEnduranceBonus;
+    // Miner persistent memory: ore positions catalogued during patrol session
+    private java.util.List<BlockPos> minerOreMemory = new java.util.ArrayList<>();
+    private int minerOreIndex = 0;
+    private BlockPos minerPlanCenter = BlockPos.ZERO;
+    private int minerPlanRadius = 0;
+    private int minerPlanUp = 0;
+    private int minerPlanDown = 0;
+
+    private net.minecraft.world.level.ChunkPos forcedChestChunk;
+    private ResourceKey<Level> forcedChestDimension;
+    private long lastCourierMessageTick = -200L;
+    private boolean forceDeliverRequest;
+    private long lastDeliveryGameTime = -24000L;
+    private int committedSwimTicks;
+    private net.minecraft.world.phys.Vec3 committedSwimDir = net.minecraft.world.phys.Vec3.ZERO;
 
     // Client-side tracking of the last swing tick we already applied locally.
     private int lastAppliedSwingTick = -1;
@@ -214,6 +271,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             nav.setCanOpenDoors(true);
             nav.setCanFloat(true);
         }
+        this.setPathfindingMalus(PathType.WATER, 0.0F);
+        this.setPathfindingMalus(PathType.WATER_BORDER, 0.0F);
     }
 
     /* ---------- Registration ---------- */
@@ -248,6 +307,11 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(PICKUP_ITEMS, true);
         builder.define(PATROL_POS, Optional.empty());
         builder.define(PATROL_RADIUS, 10);
+        builder.define(DELIVERY_CHEST, Optional.empty());
+        builder.define(DELIVERY_DIMENSION, "");
+        if (minerOreMemory == null) minerOreMemory = new java.util.ArrayList<>();
+        minerOreMemory.clear();
+        minerOreIndex = 0;
         builder.define(FOOD1, "");
         builder.define(FOOD2, "");
         builder.define(FOOD1_AMT, 0);
@@ -272,6 +336,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         builder.define(AGE_YEARS, 0);
         builder.define(CUSTOM_SKIN_URL, "");
         builder.define(LAST_SWING_TICK, 0);
+        builder.define(JOB_ID, CompanionJob.NONE.id());
+        builder.define(MINER_ORES_COUNTED, 0);
+        builder.define(MINER_ORES_MINED, 0);
+        builder.define(MINER_ORES_LIFETIME, 0);
+        builder.define(LUMBER_LOGS_SESSION, 0);
+        builder.define(LUMBER_LOGS_LIFETIME, 0);
+        builder.define(FISH_CAUGHT_SESSION, 0);
+        builder.define(FISH_CAUGHT_LIFETIME, 0);
     }
 
     @Override
@@ -298,11 +370,33 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.goalSelector.addGoal(2, new AvoidCreeperGoal(this, 1.5D, 1.5D));
         this.goalSelector.addGoal(3, new MoveBackToGuardGoal(this));
         this.goalSelector.addGoal(3, new CustomFollowOwnerGoal(this, followSpeed(), followStartDistance(), followStopDistance(), true));
-        this.goalSelector.addGoal(4, new CustomWaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(7, new OpenDoorGoal(this, true));
-        this.goalSelector.addGoal(8, new LowHealthGoal(this));
+        this.goalSelector.addGoal(4, new DeliverToChestGoal(this, 1.1D));
+        if (ModConfig.safeGet(ModConfig.JOB_LUMBERJACK_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_LUMBERJACK_RADIUS);
+            this.lumberjackGoal = new LumberjackJobGoal(this, radius, true);
+            this.goalSelector.addGoal(5, lumberjackGoal);
+        }
+        if (ModConfig.safeGet(ModConfig.JOB_MINER_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_MINER_RADIUS);
+            this.goalSelector.addGoal(6, new MinerJobGoal(this, radius, true));
+        }
+        if (ModConfig.safeGet(ModConfig.JOB_FISHER_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_FISHER_RADIUS);
+            this.goalSelector.addGoal(7, new FisherJobGoal(this, radius, true));
+        }
+        if (ModConfig.safeGet(ModConfig.JOB_CHEF_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_CHEF_RADIUS);
+            this.goalSelector.addGoal(8, new ChefJobGoal(this, radius, true));
+        }
+        if (ModConfig.safeGet(ModConfig.JOB_HUNTER_ENABLED)) {
+            int radius = ModConfig.safeGet(ModConfig.JOB_HUNTER_RADIUS);
+            this.goalSelector.addGoal(9, new HunterJobGoal(this, radius, true));
+        }
+        this.goalSelector.addGoal(10, new CustomWaterAvoidingRandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(11, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(12, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(13, new OpenDoorGoal(this, true));
+        this.goalSelector.addGoal(14, new LowHealthGoal(this));
         patrolGoal = new PatrolGoal(this, 60, getPatrolRadius());
         moveBackGoal = new MoveBackToPatrolGoal(this, getPatrolRadius());
         this.goalSelector.addGoal(3, moveBackGoal);
@@ -344,6 +438,354 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     /* ---------- Flags & helpers ---------- */
 
+    /**
+     * Current job assignment. Job enum lives in a dedicated package so UI, NBT,
+     * and AI goals can share the same identifiers. Set via SetCompanionJobPayload
+     * from the CompanionScreen cycle button.
+     */
+    public CompanionJob getJob() {
+        return CompanionJob.fromId(this.entityData.get(JOB_ID));
+    }
+
+    public void setJob(CompanionJob job) {
+        CompanionJob safeJob = job == null ? CompanionJob.NONE : job;
+        this.entityData.set(JOB_ID, safeJob.id());
+    }
+
+    /**
+     * Re-sync any secondary flags that depend on job selection. This keeps legacy
+     * hunt/alert toggles aligned with the new job pipeline until the dedicated job
+     * goals take over more behavior.
+     */
+    public void onJobChanged() {
+        if (this.level() == null || this.level().isClientSide()) {
+            return;
+        }
+        CompanionJob job = getJob();
+        if (job == CompanionJob.HUNTER && ModConfig.safeGet(ModConfig.JOB_HUNTER_ENABLED) && !isHunting()) {
+            setHunting(true);
+        }
+        if (job != CompanionJob.HUNTER && isHunting()) {
+            setHunting(false);
+        }
+
+        // Reset per-session stats when a job is selected.
+        switch (job) {
+            case MINER -> {
+                setMinerOresCounted(0);
+                setMinerOresMined(0);
+            }
+            case LUMBERJACK -> setLumberLogsSession(0);
+            case FISHER -> setFishCaughtSession(0);
+            default -> {
+            }
+        }
+    }
+
+    /* ---------- Courier / chest assignment ---------- */
+
+    public Optional<BlockPos> getAssignedChest() {
+        return this.entityData.get(DELIVERY_CHEST);
+    }
+
+    public Optional<ResourceKey<Level>> getAssignedChestDimension() {
+        String raw = this.entityData.get(DELIVERY_DIMENSION);
+        if (raw == null || raw.isBlank()) return Optional.empty();
+        try {
+            return Optional.of(ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(raw)));
+        } catch (IllegalArgumentException ex) {
+            return Optional.empty();
+        }
+    }
+
+    public void assignDeliveryChest(ServerLevel level, BlockPos pos) {
+        releaseDeliveryChunkTicket(level);
+        this.entityData.set(DELIVERY_CHEST, Optional.of(pos.immutable()));
+        this.entityData.set(DELIVERY_DIMENSION, level.dimension().location().toString());
+        refreshDeliveryChunkTicket(level);
+    }
+
+    public void clearDeliveryChest(ServerLevel level) {
+        releaseDeliveryChunkTicket(level);
+        this.entityData.set(DELIVERY_CHEST, Optional.empty());
+        this.entityData.set(DELIVERY_DIMENSION, "");
+    }
+
+    public boolean hasDeliverableCargo() {
+        List<ItemStack> reservedEquipment = collectEquippedStacks();
+        for (int i = 0; i < this.inventory.getContainerSize(); i++) {
+            ItemStack stack = this.inventory.getItem(i);
+            if (stack.isEmpty()) continue;
+            if (reserveForEquippedCopy(stack, reservedEquipment)) continue;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isInventoryFull() {
+        for (int i = 0; i < this.inventory.getContainerSize(); i++) {
+            if (this.inventory.getItem(i).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean requestImmediateDelivery(@Nullable ServerPlayer requester) {
+        if (getAssignedChest().isEmpty()) {
+            if (requester != null) {
+                requester.sendSystemMessage(Component.translatable("message.modern_companions.courier.no_chest"));
+            }
+            return false;
+        }
+        this.forceDeliverRequest = true;
+        this.setTarget(null);
+        if (this.getNavigation() != null) {
+            this.getNavigation().stop();
+        }
+        return true;
+    }
+
+    public DeliveryResult deliverInventoryToChest(ServerLevel level, BlockPos chestPos) {
+        Container container = resolveChestContainer(level, chestPos);
+        if (container == null) {
+            clearDeliveryChest(level);
+            return DeliveryResult.MISSING;
+        }
+
+        List<ItemStack> reservedEquipment = collectEquippedStacks();
+        boolean movedAny = false;
+
+        for (int i = 0; i < this.inventory.getContainerSize(); i++) {
+            ItemStack stack = this.inventory.getItem(i);
+            if (stack.isEmpty()) continue;
+            if (reserveForEquippedCopy(stack, reservedEquipment)) continue;
+
+            if (shouldRetainForUse(stack)) continue;
+            if (getJob() == CompanionJob.LUMBERJACK && isSaplingItem(stack)) continue;
+
+            ItemStack toMove = stack.copy();
+            ItemStack remainder = insertIntoContainer(container, toMove);
+            if (remainder.getCount() != stack.getCount()) {
+                movedAny = true;
+            }
+            this.inventory.setItem(i, remainder);
+        }
+
+        if (container instanceof net.minecraft.world.level.block.entity.BlockEntity blockEntity) {
+            blockEntity.setChanged();
+        }
+        this.inventory.setChanged();
+
+        this.lastDeliveryGameTime = level.getGameTime();
+        onDeliveryFinished(movedAny ? DeliveryResult.SUCCESS : DeliveryResult.FULL);
+
+        return movedAny ? DeliveryResult.SUCCESS : DeliveryResult.FULL;
+    }
+
+    private Container resolveChestContainer(ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof ChestBlock) {
+            Container chest = ChestBlock.getContainer((ChestBlock) state.getBlock(), state, level, pos, true);
+            if (chest != null) return chest;
+        }
+        var be = level.getBlockEntity(pos);
+        if (be instanceof Container container) {
+            return container;
+        }
+        return null;
+    }
+
+    private void onDeliveryFinished(DeliveryResult result) {
+        if (result == DeliveryResult.SUCCESS && lumberjackGoal != null) {
+            lumberjackGoal.forceRescanAfterDeposit();
+        }
+        if (result == DeliveryResult.SUCCESS) {
+            clearForceDeliverRequest();
+        }
+    }
+
+    public void refreshDeliveryChunkTicket(ServerLevel level) {
+        if (!ModConfig.safeGet(ModConfig.JOB_ASSIGNED_CHESTS_CHUNKLOAD)) {
+            releaseDeliveryChunkTicket(level);
+            return;
+        }
+        Optional<BlockPos> pos = getAssignedChest();
+        Optional<ResourceKey<Level>> dim = getAssignedChestDimension();
+        if (pos.isEmpty() || dim.isEmpty()) return;
+        if (!level.dimension().equals(dim.get())) return;
+
+        ChunkPos chunkPos = new ChunkPos(pos.get());
+        releaseDeliveryChunkTicket(level);
+        level.getChunkSource().addRegionTicket(TicketType.FORCED, chunkPos, 1, chunkPos);
+        forcedChestChunk = chunkPos;
+        forcedChestDimension = dim.get();
+    }
+
+    private void releaseDeliveryChunkTicket(@Nullable ServerLevel level) {
+        if (forcedChestChunk == null || level == null) return;
+        if (forcedChestDimension != null && !level.dimension().equals(forcedChestDimension)) return;
+        level.getChunkSource().removeRegionTicket(TicketType.FORCED, forcedChestChunk, 1, forcedChestChunk);
+        forcedChestChunk = null;
+        forcedChestDimension = null;
+    }
+
+    public void alertChestUnloaded() {
+        notifyCourierOwnerText(Component.translatable("message.modern_companions.courier.unloaded"));
+    }
+
+    public void notifyCourierOwnerText(Component message) {
+        notifyCourierOwner(message, 80);
+    }
+
+    public boolean isForceDeliverRequested() {
+        return this.forceDeliverRequest;
+    }
+
+    public void clearForceDeliverRequest() {
+        this.forceDeliverRequest = false;
+    }
+
+    private void notifyCourierOwner(Component message, int cooldownTicks) {
+        if (!(this.level() instanceof ServerLevel server)) return;
+        long now = server.getGameTime();
+        if (now - lastCourierMessageTick < cooldownTicks) return;
+        lastCourierMessageTick = now;
+        if (this.getOwner() instanceof ServerPlayer owner) {
+            owner.sendSystemMessage(Component.translatable("chat.type.text", this.getDisplayName(), message));
+        }
+    }
+
+    private List<ItemStack> collectEquippedStacks() {
+        List<ItemStack> equipped = new ArrayList<>();
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemStack stack = this.getItemBySlot(slot);
+            if (!stack.isEmpty()) {
+                equipped.add(stack.copy());
+            }
+        }
+        return equipped;
+    }
+
+    private boolean reserveForEquippedCopy(ItemStack stack, List<ItemStack> reserved) {
+        for (int i = 0; i < reserved.size(); i++) {
+            ItemStack equipped = reserved.get(i);
+            if (ItemStack.isSameItemSameComponents(stack, equipped)) {
+                reserved.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private ItemStack insertIntoContainer(Container container, ItemStack stack) {
+        ItemStack remaining = stack;
+        for (int slot = 0; slot < container.getContainerSize() && !remaining.isEmpty(); slot++) {
+            ItemStack target = container.getItem(slot);
+            if (target.isEmpty()) {
+                int move = Math.min(remaining.getCount(), Math.min(remaining.getMaxStackSize(), container.getMaxStackSize()));
+                ItemStack placed = remaining.copyWithCount(move);
+                container.setItem(slot, placed);
+                remaining.shrink(move);
+                continue;
+            }
+            if (ItemStack.isSameItemSameComponents(target, remaining)) {
+                int max = Math.min(target.getMaxStackSize(), container.getMaxStackSize());
+                int space = max - target.getCount();
+                if (space > 0) {
+                    int move = Math.min(space, remaining.getCount());
+                    target.grow(move);
+                    remaining.shrink(move);
+                }
+            }
+        }
+        return remaining;
+    }
+
+    public enum DeliveryResult {
+        SUCCESS,
+        FULL,
+        MISSING
+    }
+
+    public long getLastDeliveryGameTime() {
+        return lastDeliveryGameTime;
+    }
+
+    private boolean shouldRetainForUse(ItemStack stack) {
+        if (stack.isEmpty()) return true;
+        if (CompanionData.isFood(stack)) return true;
+        if (CompanionData.isHealingPotion(stack)) return true;
+        if (stack.getItem() instanceof SwordItem || stack.getItem() instanceof AxeItem
+                || stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem) {
+            return true; // keep primary weapons
+        }
+        return false;
+    }
+
+    private boolean isSaplingItem(ItemStack stack) {
+        var block = net.minecraft.world.level.block.Block.byItem(stack.getItem());
+        if (block == net.minecraft.world.level.block.Blocks.AIR) return false;
+        BlockState state = block.defaultBlockState();
+        return state.is(BlockTags.SAPLINGS);
+    }
+
+    private void boostWaterMovement() {
+        if (!this.isInWater()) {
+            if (this.isSwimming()) this.setSwimming(false);
+            committedSwimTicks = 0;
+            return;
+        }
+        this.setSwimming(true);
+        var grace = this.getEffect(MobEffects.DOLPHINS_GRACE);
+        if (grace == null || grace.getDuration() <= 20) {
+            this.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 100, 0, true, false, false));
+        }
+
+        if (committedSwimTicks <= 0) {
+            committedSwimTicks = 200; // ~10 seconds before reconsidering
+            committedSwimDir = currentSwimVector();
+        }
+
+        if (committedSwimTicks > 0) {
+            double push = 1.25D;
+            this.getMoveControl().setWantedPosition(
+                    this.getX() + committedSwimDir.x * 1.8D,
+                    this.getY() + committedSwimDir.y * 0.15D,
+                    this.getZ() + committedSwimDir.z * 1.8D,
+                    push);
+        }
+    }
+
+    private void tickCommittedSwim() {
+        if (committedSwimTicks > 0) {
+            committedSwimTicks--;
+            if (this.getNavigation() instanceof GroundPathNavigation nav && !nav.isDone()) {
+                nav.setSpeedModifier(1.25D);
+            }
+        }
+    }
+
+    private net.minecraft.world.phys.Vec3 currentSwimVector() {
+        if (this.getNavigation() != null && this.getNavigation().getPath() != null) {
+            var path = this.getNavigation().getPath();
+            if (!path.isDone()) {
+                var next = path.getNextNodePos();
+                if (next != null) {
+                    net.minecraft.world.phys.Vec3 dir = net.minecraft.world.phys.Vec3.atCenterOf(next).subtract(this.position());
+                    if (dir.lengthSqr() > 0.0001D) {
+                        return dir.normalize();
+                    }
+                }
+            }
+        }
+        net.minecraft.world.phys.Vec3 look = this.getLookAngle();
+        if (look.lengthSqr() < 0.0001D) {
+            return new net.minecraft.world.phys.Vec3(0, 0, 1);
+        }
+        return look.normalize();
+    }
+
     public boolean isFollowing() {
         return this.entityData.get(FOLLOWING);
     }
@@ -357,7 +799,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public void setPatrolling(boolean value) {
+        boolean was = this.entityData.get(PATROLLING);
         this.entityData.set(PATROLLING, value);
+        if (!was && value) {
+            cachePatrolWeapon();
+            equipJobToolIfNeeded();
+        } else if (was && !value) {
+            restoreCachedWeapon();
+        }
     }
 
     public boolean isGuarding() {
@@ -366,6 +815,84 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public void setGuarding(boolean value) {
         this.entityData.set(GUARDING, value);
+    }
+
+    private void cachePatrolWeapon() {
+        ItemStack main = this.getMainHandItem();
+        cachedPatrolWeapon = main.isEmpty() ? ItemStack.EMPTY : main.copy();
+        if (!main.isEmpty()) {
+            // Hold onto a copy while we visually equip tools; clear the hand.
+            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        }
+    }
+
+    private void restoreCachedWeapon() {
+        // Tool stayed in inventory; just clear cached refs.
+        cachedPatrolTool = ItemStack.EMPTY;
+        cachedPatrolToolSlot = -1;
+
+        if (!cachedPatrolWeapon.isEmpty()) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, cachedPatrolWeapon);
+            cachedPatrolWeapon = ItemStack.EMPTY;
+        }
+    }
+
+    private void equipJobToolIfNeeded() {
+        CompanionJob job = getJob();
+        if (job == CompanionJob.NONE || !isPatrolling()) return;
+        ItemStack current = this.getMainHandItem();
+        if (isJobTool(current, job)) {
+            // Already holding a tool; remember it so we can return it later if we missed caching.
+            if (cachedPatrolTool.isEmpty()) {
+                cachedPatrolTool = current;
+            }
+            return;
+        }
+        int slot = findJobToolSlot(job);
+        if (slot < 0) return;
+
+        ItemStack tool = this.getInventory().getItem(slot);
+        if (tool.isEmpty()) return;
+
+        // Place the same stack in hand without removing it from the inventory slot.
+        // Sharing the instance keeps durability updates visible while leaving the tool visible in the GUI.
+        this.setItemSlot(EquipmentSlot.MAINHAND, tool);
+        cachedPatrolToolSlot = slot;
+        cachedPatrolTool = tool;
+    }
+
+    private boolean isJobTool(ItemStack stack, CompanionJob job) {
+        return switch (job) {
+            case LUMBERJACK -> stack.getItem() instanceof net.minecraft.world.item.AxeItem;
+            case MINER -> stack.getItem() instanceof net.minecraft.world.item.PickaxeItem;
+            case FISHER -> stack.getItem() instanceof net.minecraft.world.item.FishingRodItem;
+            default -> false;
+        };
+    }
+
+    /**
+     * Remove a single matching stack from the companion inventory so we avoid duplicating
+     * weapons/tools when swapping in and out of patrol mode.
+     */
+    private boolean removeOneMatchingFromInventory(ItemStack match) {
+        for (int i = 0; i < this.getInventory().getContainerSize(); i++) {
+            ItemStack stack = this.getInventory().getItem(i);
+            if (ItemStack.isSameItemSameComponents(stack, match)) {
+                this.getInventory().removeItem(i, 1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int findJobToolSlot(CompanionJob job) {
+        for (int i = 0; i < this.getInventory().getContainerSize(); i++) {
+            ItemStack stack = this.getInventory().getItem(i);
+            if (isJobTool(stack, job)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public boolean isPickupEnabled() {
@@ -430,11 +957,12 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
     }
 
     public void setPatrolRadius(int radius) {
-        this.entityData.set(PATROL_RADIUS, Mth.clamp(radius, 1, 64));
+        int clamped = Mth.clamp(radius, 1, 128);
+        this.entityData.set(PATROL_RADIUS, clamped);
         if (patrolGoal != null)
-            patrolGoal.radius = radius;
+            patrolGoal.radius = clamped;
         if (moveBackGoal != null)
-            moveBackGoal.radius = radius;
+            moveBackGoal.radius = clamped;
     }
 
     public void clearPatrol() {
@@ -551,6 +1079,131 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
 
     public int getKillCount() {
         return this.entityData.get(KILL_COUNT);
+    }
+
+    public java.util.List<BlockPos> getMinerOreMemory() {
+        return minerOreMemory;
+    }
+
+    public int getMinerOreIndex() {
+        return minerOreIndex;
+    }
+
+    public void setMinerOreIndex(int idx) {
+        this.minerOreIndex = Math.max(0, idx);
+    }
+
+    public void overwriteMinerOreMemory(java.util.List<BlockPos> newMemory) {
+        minerOreMemory.clear();
+        minerOreMemory.addAll(newMemory);
+    }
+
+    public void resetMinerOreMemory() {
+        minerOreMemory.clear();
+        minerOreIndex = 0;
+    }
+
+    public int getMinerOresCounted() {
+        return this.entityData.get(MINER_ORES_COUNTED);
+    }
+
+    public void setMinerOresCounted(int counted) {
+        this.entityData.set(MINER_ORES_COUNTED, Math.max(0, counted));
+    }
+
+    public int getMinerOresMined() {
+        return this.entityData.get(MINER_ORES_MINED);
+    }
+
+    public void setMinerOresMined(int mined) {
+        this.entityData.set(MINER_ORES_MINED, Math.max(0, mined));
+    }
+
+    public void incrementMinerOresMined() {
+        setMinerOresMined(getMinerOresMined() + 1);
+        setMinerOresLifetime(getMinerOresLifetime() + 1);
+    }
+
+    public int getMinerOresLifetime() {
+        return this.entityData.get(MINER_ORES_LIFETIME);
+    }
+
+    public void setMinerOresLifetime(int lifetime) {
+        this.entityData.set(MINER_ORES_LIFETIME, Math.max(0, lifetime));
+    }
+
+    public int getLumberLogsSession() {
+        return this.entityData.get(LUMBER_LOGS_SESSION);
+    }
+
+    public void setLumberLogsSession(int logs) {
+        this.entityData.set(LUMBER_LOGS_SESSION, Math.max(0, logs));
+    }
+
+    public void incrementLumberLogsSession() {
+        setLumberLogsSession(getLumberLogsSession() + 1);
+        setLumberLogsLifetime(getLumberLogsLifetime() + 1);
+    }
+
+    public int getLumberLogsLifetime() {
+        return this.entityData.get(LUMBER_LOGS_LIFETIME);
+    }
+
+    public void setLumberLogsLifetime(int logs) {
+        this.entityData.set(LUMBER_LOGS_LIFETIME, Math.max(0, logs));
+    }
+
+    public int getFishCaughtSession() {
+        return this.entityData.get(FISH_CAUGHT_SESSION);
+    }
+
+    public void setFishCaughtSession(int fish) {
+        this.entityData.set(FISH_CAUGHT_SESSION, Math.max(0, fish));
+    }
+
+    public void incrementFishCaughtSession() {
+        setFishCaughtSession(getFishCaughtSession() + 1);
+        setFishCaughtLifetime(getFishCaughtLifetime() + 1);
+    }
+
+    public int getFishCaughtLifetime() {
+        return this.entityData.get(FISH_CAUGHT_LIFETIME);
+    }
+
+    public void setFishCaughtLifetime(int fish) {
+        this.entityData.set(FISH_CAUGHT_LIFETIME, Math.max(0, fish));
+    }
+
+    public BlockPos getMinerPlanCenter() {
+        return minerPlanCenter == null ? BlockPos.ZERO : minerPlanCenter;
+    }
+
+    public void setMinerPlanCenter(BlockPos center) {
+        this.minerPlanCenter = center == null ? BlockPos.ZERO : center;
+    }
+
+    public int getMinerPlanRadius() {
+        return minerPlanRadius;
+    }
+
+    public void setMinerPlanRadius(int radius) {
+        this.minerPlanRadius = Math.max(0, radius);
+    }
+
+    public int getMinerPlanUp() {
+        return minerPlanUp;
+    }
+
+    public void setMinerPlanUp(int up) {
+        this.minerPlanUp = Math.max(0, up);
+    }
+
+    public int getMinerPlanDown() {
+        return minerPlanDown;
+    }
+
+    public void setMinerPlanDown(int down) {
+        this.minerPlanDown = Math.max(0, down);
     }
 
     public void setKillCount(int kills) {
@@ -1019,6 +1672,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
                     if (held.is(ModItems.COMPANION_MOVER.get())) {
                         return InteractionResult.PASS;
                     }
+                    if (held.is(ModItems.ASSIGNMENT_WAND.get())) {
+                        // Prevent the companion inventory GUI from opening when using the wand.
+                        return InteractionResult.CONSUME;
+                    }
                     if (player.isShiftKeyDown()) {
                         if (!this.level().isClientSide()) {
                             toggleSit((ServerPlayer) player);
@@ -1123,6 +1780,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putBoolean("Pickup", this.isPickupEnabled());
         tag.putInt("radius", this.getPatrolRadius());
         tag.putInt("sex", this.getSex());
+        tag.putString("JobId", this.getJob().id());
         tag.putInt("baseHealth", this.getBaseHealth());
         tag.putFloat("XpP", this.experienceProgress);
         tag.putInt("XpLevel", this.getExpLvl());
@@ -1137,6 +1795,23 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         tag.putInt("Intelligence", getBaseIntelligence());
         tag.putInt("Endurance", getBaseEndurance());
         tag.putInt("SpecialistAttr", getSpecialistAttributeIndex());
+        long[] oreArr = minerOreMemory.stream().mapToLong(BlockPos::asLong).toArray();
+        tag.putLongArray("MinerOreMemory", oreArr);
+        tag.putInt("MinerOreIndex", minerOreIndex);
+        tag.putInt("MinerOresCounted", getMinerOresCounted());
+        tag.putInt("MinerOresMined", getMinerOresMined());
+        tag.putInt("MinerOresLifetime", getMinerOresLifetime());
+        tag.putInt("LumberLogsSession", getLumberLogsSession());
+        tag.putInt("LumberLogsLifetime", getLumberLogsLifetime());
+        tag.putInt("FishCaughtSession", getFishCaughtSession());
+        tag.putInt("FishCaughtLifetime", getFishCaughtLifetime());
+        tag.putIntArray("MinerPlanCenter", new int[] { getMinerPlanCenter().getX(), getMinerPlanCenter().getY(), getMinerPlanCenter().getZ() });
+        tag.putInt("MinerPlanRadius", getMinerPlanRadius());
+        tag.putInt("MinerPlanUp", getMinerPlanUp());
+        tag.putInt("MinerPlanDown", getMinerPlanDown());
+        tag.putLong("LastDeliveryTime", lastDeliveryGameTime);
+        getAssignedChest().ifPresent(chest -> tag.putIntArray("AssignedChest", new int[] { chest.getX(), chest.getY(), chest.getZ() }));
+        getAssignedChestDimension().ifPresent(dim -> tag.putString("AssignedChestDim", dim.location().toString()));
         if (this.getPatrolPos().isPresent()) {
             int[] patrolPos = { this.getPatrolPos().get().getX(), this.getPatrolPos().get().getY(),
                     this.getPatrolPos().get().getZ() };
@@ -1172,6 +1847,8 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.setPickupEnabled(tag.contains("Pickup") ? tag.getBoolean("Pickup") : true);
         this.setPatrolRadius(tag.getInt("radius"));
         this.setSex(tag.getInt("sex"));
+        this.setJob(CompanionJob.fromId(tag.getString("JobId")));
+        this.onJobChanged();
         this.experienceProgress = tag.getFloat("XpP");
         this.totalExperience = tag.getInt("XpTotal");
         this.setExpLvl(tag.getInt("XpLevel"));
@@ -1192,6 +1869,48 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             this.setBaseHealth(tag.getInt("baseHealth"));
         }
         setSpecialistAttributeIndex(tag.contains("SpecialistAttr") ? tag.getInt("SpecialistAttr") : -1);
+        minerOreMemory.clear();
+        if (tag.contains("MinerOreMemory")) {
+            long[] arr = tag.getLongArray("MinerOreMemory");
+            for (long l : arr) {
+                minerOreMemory.add(BlockPos.of(l));
+            }
+        }
+        minerOreIndex = tag.getInt("MinerOreIndex");
+        if (tag.contains("MinerOresCounted")) setMinerOresCounted(tag.getInt("MinerOresCounted"));
+        if (tag.contains("MinerOresMined")) setMinerOresMined(tag.getInt("MinerOresMined"));
+        if (tag.contains("MinerOresLifetime")) setMinerOresLifetime(tag.getInt("MinerOresLifetime"));
+        if (tag.contains("LumberLogsSession")) setLumberLogsSession(tag.getInt("LumberLogsSession"));
+        if (tag.contains("LumberLogsLifetime")) setLumberLogsLifetime(tag.getInt("LumberLogsLifetime"));
+        if (tag.contains("FishCaughtSession")) setFishCaughtSession(tag.getInt("FishCaughtSession"));
+        if (tag.contains("FishCaughtLifetime")) setFishCaughtLifetime(tag.getInt("FishCaughtLifetime"));
+        if (tag.contains("MinerPlanCenter")) {
+            int[] arr = tag.getIntArray("MinerPlanCenter");
+            if (arr.length == 3) {
+                setMinerPlanCenter(new BlockPos(arr[0], arr[1], arr[2]));
+            }
+        }
+        if (tag.contains("MinerPlanRadius")) {
+            setMinerPlanRadius(tag.getInt("MinerPlanRadius"));
+        }
+        if (tag.contains("MinerPlanUp")) {
+            setMinerPlanUp(tag.getInt("MinerPlanUp"));
+        }
+        if (tag.contains("MinerPlanDown")) {
+            setMinerPlanDown(tag.getInt("MinerPlanDown"));
+        }
+        if (tag.contains("LastDeliveryTime")) {
+            lastDeliveryGameTime = tag.getLong("LastDeliveryTime");
+        }
+        if (tag.contains("AssignedChest")) {
+            int[] arr = tag.getIntArray("AssignedChest");
+            if (arr.length == 3) {
+                this.entityData.set(DELIVERY_CHEST, Optional.of(new BlockPos(arr[0], arr[1], arr[2])));
+            }
+        }
+        if (tag.contains("AssignedChestDim")) {
+            this.entityData.set(DELIVERY_DIMENSION, tag.getString("AssignedChestDim"));
+        }
         if (tag.contains("Personality", 10)) {
             personality.loadFrom(tag.getCompound("Personality"));
         } else {
@@ -1241,6 +1960,9 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
         this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
         this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
         checkArmor();
+        if (!this.level().isClientSide() && this.level() instanceof ServerLevel serverLevel) {
+            refreshDeliveryChunkTicket(serverLevel);
+        }
         if (tag.contains("Strength")) {
             setStrength(tag.getInt("Strength"));
             setDexterity(tag.getInt("Dexterity"));
@@ -1297,6 +2019,7 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             if (this.tickCount % 2 == 0 && isPickupEnabled() && this.isTame()) {
                 collectNearbyItems();
             }
+            boostWaterMovement();
             updateSprintState();
             tickBondAndMorale();
             if (this.tickCount % 10 == 0) {
@@ -1310,6 +2033,10 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             }
             trackDistanceNearOwner();
             tickAging();
+            tickCommittedSwim();
+            if (isPatrolling()) {
+                equipJobToolIfNeeded();
+            }
         }
         boolean equipmentChanged = recomputeEquipmentAttributeBonuses();
         if (equipmentChanged) {
@@ -1567,6 +2294,14 @@ public abstract class AbstractHumanCompanionEntity extends TamableAnimal {
             dropResurrectionScroll();
         }
         super.die(source);
+    }
+
+    @Override
+    public void onRemovedFromLevel() {
+        if (!this.level().isClientSide() && this.level() instanceof ServerLevel server) {
+            releaseDeliveryChunkTicket(server);
+        }
+        super.onRemovedFromLevel();
     }
 
     public void hurtArmor(DamageSource source, float amount) {

@@ -1,6 +1,7 @@
 package com.majorbonghits.moderncompanions.entity.ai;
 
 import com.majorbonghits.moderncompanions.entity.AbstractHumanCompanionEntity;
+import com.majorbonghits.moderncompanions.entity.job.CompanionJob;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.phys.Vec3;
@@ -33,6 +34,10 @@ public class PatrolGoal extends RandomStrollGoal {
         if (companion.getPatrolPos().isEmpty() || !companion.isPatrolling()) {
             return false;
         }
+        // If the companion has an active job, let the job goals drive movement instead of patrol strolling.
+        if (companion.getJob() != CompanionJob.NONE) {
+            return false;
+        }
         this.patrolVec = Vec3.atBottomCenterOf(companion.getPatrolPos().orElse(companion.blockPosition()));
         return super.canUse();
     }
@@ -40,23 +45,15 @@ public class PatrolGoal extends RandomStrollGoal {
     @Nullable
     @Override
     protected Vec3 getPosition() {
-        Vec3 vec = getRawPosition();
-        if (vec != null) {
-            double distance = vec.distanceTo(patrolVec);
-            if (distance > radius) {
-                vec = null;
-            }
+        Vec3 candidate = this.mob.getRandom().nextFloat() >= this.probability ? getRandomAroundPatrol() : super.getPosition();
+        if (candidate == null) {
+            candidate = super.getPosition();
         }
-        return vec;
+        return candidate;
     }
 
-    public Vec3 getRawPosition() {
-        if (this.mob.isInWaterOrBubble()) {
-            Vec3 vec3 = LandRandomPos.getPos(this.mob, radius, 7);
-            return vec3 == null ? super.getPosition() : vec3;
-        } else {
-            return this.mob.getRandom().nextFloat() >= this.probability ? LandRandomPos.getPos(this.mob, radius, 7) :
-                    super.getPosition();
-        }
+    private Vec3 getRandomAroundPatrol() {
+        if (patrolVec == null) return null;
+        return LandRandomPos.getPosTowards(this.mob, radius, 7, patrolVec);
     }
 }

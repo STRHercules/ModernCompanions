@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RC ",
+    "SE ",
+    " S "
+  ],
+  "key": {
+    "R": { "item": "minecraft:redstone" },
+    "C": { "item": "minecraft:chest" },
+    "S": { "item": "minecraft:stick" },
+    "E": { "item": "minecraft:emerald" }
+  },
+  "result": { "id": "modern_companions:assignment_wand", "count": 1 }
+}
