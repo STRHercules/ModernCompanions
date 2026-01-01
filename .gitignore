@@ -20,7 +20,7 @@ out
 build
 .gradle
 .gradle-user-home
-
+.gradle-temp
 # other
 eclipse
 run
